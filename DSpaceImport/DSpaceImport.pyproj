@@ -23,11 +23,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DSpaceImport.py" />
+    <Compile Include="DataObjects.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.7-32" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="config.ini" />
     <Content Include="requirements.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
