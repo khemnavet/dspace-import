@@ -5,13 +5,16 @@ import configparser
 from pathlib import Path
 
 from DataObjects import Mapping
+import dspacerequests
 
 class LogonDialog(wx.Dialog):
-    def __init__(self, config):
+    def __init__(self, config, dspaceRequests):
         labels = config['Labels']
         wx.Dialog.__init__(self, None, title=labels.get('logonDialogTitle','Login'))
         self.loginCookie = None
         self.loggedIn = False
+        self.config = config
+        self.dspaceRequest = dspaceRequests
 
         # input boxes for username and password
         # email row
@@ -41,10 +44,16 @@ class LogonDialog(wx.Dialog):
         self.Fit()
 
     def on_login(self, event):
-        # get 
-        # logon successful
-        self.loggedIn = True
-        self.Close()
+        try:
+            self.loginCookie = self.dspaceRequest.dspace_logon(self.email.GetValue(), self.password.GetValue())
+            self.loggedIn = True
+            self.Close()
+        except dspacerequests.LogonException as e:
+            with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['loginMessageBoxTitle'], style=wx.ICON_ERROR) as dlg:
+                        dlg.ShowModal()
+        except Exception as e:
+            with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['loginMessageBoxTitle'], style=wx.ICON_ERROR) as dlg:
+                        dlg.ShowModal()
 
 
 class MappingDialog(wx.Dialog):
@@ -67,9 +76,10 @@ class MappingDialog(wx.Dialog):
 
         index = 0
         for key,val in mappingData.items():
+            print('{} {}'.format(index, val.colName))
             self.mappingListCtrl.SetCellValue(index, 0, val.colName)
             self.mappingListCtrl.SetCellValue(index, 1, val.metadataField)
-            index =+ 1
+            index = index + 1
 
         dialogSizer = wx.BoxSizer(wx.VERTICAL)
         dialogSizer.Add(self.mappingListCtrl, 0, wx.ALL|wx.EXPAND, 5)
@@ -86,12 +96,12 @@ class MappingDialog(wx.Dialog):
         _newMapping = configparser.ConfigParser()
         _newMapping.add_section(self.config['Mapping']['mappingSectionName'])
         for index in range(0,self.mappingListCtrl.GetNumberRows()):
-            if len(self.mappingListCtrl.GetCellValue(index, 0)) > 0 and len(self.mappingListCtrl.GetCellValue(index, 1)) > 0:
-                row = Mapping(self.mappingListCtrl.GetCellValue(index, 0), self.mappingListCtrl.GetCellValue(index, 1))
+            if len(self.mappingListCtrl.GetCellValue(index, 0).strip()) > 0 and len(self.mappingListCtrl.GetCellValue(index, 1).strip()) > 0:
+                row = Mapping(self.mappingListCtrl.GetCellValue(index, 0).strip(), self.mappingListCtrl.GetCellValue(index, 1).strip())
                 self.mappingData[row.id] = row
                 _newMapping.set(self.config['Mapping']['mappingSectionName'], row.colName, row.metadataField)
         # prompt user to save the mapping 
-        with wx.FileDialog(self, message="Save file as ...", defaultFile=(self.fileName.name if len(self.fileName) > 0 else ""), wildcard=self.config['FileTypeWildcard']['mapFileWildcard'], style=wx.FD_SAVE) as saveDialog:
+        with wx.FileDialog(self, message="Save file as ...", defaultDir=str(self.fileName.parent), defaultFile=self.fileName.name, wildcard=self.config['FileTypeWildcard']['mapFileWildcard'], style=wx.FD_SAVE) as saveDialog:
             if saveDialog.ShowModal() == wx.ID_OK:
                 path = Path((saveDialog.GetPath()).replace('\\', '/'))
                 # write the file
@@ -115,23 +125,25 @@ class ImportPanel(wx.Panel):
         self.authenticated = authenticated
         self.authCookie = authCookie
         self.mappingDict = {}
-        self.fileName = ''
+        self.fileName = Path.home()/self.config['Mapping']['mappingFileName']
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(wx.StaticText(self, label=labels.get('mainPanelDescription','')), 0, wx.ALL, 5)
 
         # select excel file row
         excelRowSizer = wx.BoxSizer(wx.VERTICAL)
         excelRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelFilePickerLabel','Select file')), 0, wx.ALL, 5)
-        self.excelPicker = wx.FilePickerCtrl(self, size=(-1, 25), wildcard=self.config['FileTypeWildcard']['fileImportWildcard'])
-        excelRowSizer.Add(self.excelPicker, 0, wx.ALL, 5)
+        self.excelPicker = wx.FilePickerCtrl(self, wildcard=self.config['FileTypeWildcard']['fileImportWildcard'])
+        excelRowSizer.Add(self.excelPicker, 0, wx.ALL|wx.EXPAND, 5)
         mainSizer.Add(excelRowSizer)
-        mainSizer.AddSpacer(30)
+        mainSizer.AddSpacer(2)
+        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.AddSpacer(2)
 
         # mapping button
         mappingRowSizer = wx.BoxSizer(wx.VERTICAL)
         mappingRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelMappingDescription','Mapping setup')), 0, wx.ALL, 5)
         mappingRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelMappingFilePickerLabel','Select mapping file')), 0, wx.ALL, 5)
-        self.mappingPicker = wx.FilePickerCtrl(self, size=(-1, 25), wildcard=self.config['FileTypeWildcard']['mapFileWildcard'])
+        self.mappingPicker = wx.FilePickerCtrl(self, wildcard=self.config['FileTypeWildcard']['mapFileWildcard'])
         #add an event to this and process the file opened
         self.mappingPicker.Bind(wx.EVT_FILEPICKER_CHANGED, self.mapping_selected)
         mappingRowSizer.Add(self.mappingPicker, 0, wx.ALL, 5)
@@ -139,10 +151,44 @@ class ImportPanel(wx.Panel):
         self.mappingButton.Bind(wx.EVT_BUTTON, self.show_mapping_dialog)
         mappingRowSizer.Add(self.mappingButton, 0, wx.ALL, 5)
 
+        dupColRowSizer = wx.BoxSizer(wx.HORIZONTAL)
+        dupColRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelMappingDuplicateCheckField','Duplicate Field')), 0, wx.ALL, 5)
+        self.duplicateField = wx.Choice(self)
+        dupColRowSizer.Add(self.duplicateField, 0, wx.ALL, 5)
+        mappingRowSizer.Add(dupColRowSizer, 0, wx.ALL, 5)
+
         mainSizer.Add(mappingRowSizer)
-        mainSizer.AddSpacer(30)
+        mainSizer.AddSpacer(2)
+        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.AddSpacer(2)
 
         # file directory and buttons to choose files - exact or begins with
+        fileDirRowSizer = wx.BoxSizer(wx.VERTICAL)
+        fileDirRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemFileUploadDescription','Item Files')), 0, wx.ALL, 5)
+        fileDirRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemFileUploadDirPickerLabel','Directory containing files')), 0, wx.ALL, 5)
+        self.itemFileDirPicker = wx.DirPickerCtrl(self)
+        fileDirRowSizer.Add(self.itemFileDirPicker, 0, wx.ALL, 5)
+
+        uploadColRowSizer = wx.BoxSizer(wx.HORIZONTAL)
+        uploadColRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemFileUploadColumnLabel','Item File Column')), 0, wx.ALL, 5)
+        self.itemFileField = wx.Choice(self)
+        uploadColRowSizer.Add(self.itemFileField, 0, wx.ALL, 5)
+        fileDirRowSizer.Add(uploadColRowSizer, 0, wx.ALL, 5)
+
+        itemExtRowSizer = wx.BoxSizer(wx.HORIZONTAL)
+        itemExtRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemFileUploadFileExt','Item File Extension')), 0, wx.ALL, 5)
+        self.itemFileExtension = wx.TextCtrl(self)
+        itemExtRowSizer.Add(self.itemFileExtension, 0, wx.ALL, 5)
+        fileDirRowSizer.Add(itemExtRowSizer, 0, wx.ALL, 5)
+
+        self.itemFileProcess = wx.RadioBox(self, label=labels.get('mainPanelItemFileUploadProcessLabel','Item File Matching') , pos=(80,10), choices=[labels.get('mainPanelItemFileUploadProcessOption1'), labels.get('mainPanelItemFileUploadProcessOption2')], majorDimension=1, style=wx.RA_SPECIFY_ROWS)
+        # self.itemFileProcess.GetStringSelection() has the text of the selected control
+        fileDirRowSizer.Add(self.itemFileProcess, 0, wx.ALL, 5)
+
+        mainSizer.Add(fileDirRowSizer)
+        mainSizer.AddSpacer(2)
+        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.AddSpacer(2)
 
         # collection select
 
@@ -156,32 +202,49 @@ class ImportPanel(wx.Panel):
         _mapping = configparser.ConfigParser()
         _mapping.read(self.fileName)
         print(_mapping.sections())
+        self.mappingDict.clear()
         for key in _mapping[self.config['Mapping']['mappingSectionName']]:
             row = Mapping(key, _mapping[self.config['Mapping']['mappingSectionName']][key])
             self.mappingDict[row.id] = row
+        self.set_column_choices()
 
 
     def show_mapping_dialog(self, event):
         print("open mapping dialog")
         with MappingDialog(self.config, self.mappingDict, self.fileName) as mappingDlg:
             mappingDlg.ShowModal()
+            self.mappingDict = mappingDlg.mappingData
+            self.set_column_choices()
 
+    def set_column_choices(self):
+        _choices = ['']
+        for key,val in self.mappingDict.items():
+            _choices.append(val.colName)
+
+        self.duplicateField.Clear()
+        self.duplicateField.SetItems(_choices)
+        self.duplicateField.SetSelection(0)
+
+        self.itemFileField.Clear()
+        self.itemFileField.SetItems(_choices)
+        self.itemFileField.SetSelection(0)
 
 class ImportFrame(wx.Frame):
-    def __init__(self, config):
+    def __init__(self, config, dspaceRequests):
         labels = config['Labels']
-        super().__init__(None, title=labels.get('appMainTitle','Import'), size=(300, 500))
+        super().__init__(None, title=labels.get('appMainTitle','Import'), size=(400,800))
 
-        with LogonDialog(config) as logonDlg:
+        with LogonDialog(config, dspaceRequests) as logonDlg:
             logonDlg.ShowModal()
             self.authenticated = logonDlg.loggedIn
             self.authCookie = logonDlg.loginCookie
-            if not self.authenticated:
-                self.Close()
-
-        print (self.authenticated)
-        panel = ImportPanel(self, self.authenticated, self.authCookie, config)
-        self.Show()
+        
+        if not self.authenticated:
+            self.Close()
+        else :
+            print (self.authenticated)
+            panel = ImportPanel(self, self.authenticated, self.authCookie, config)
+            self.Show()
 
 
 if __name__ == '__main__':
@@ -189,6 +252,7 @@ if __name__ == '__main__':
     config = configparser.ConfigParser(empty_lines_in_values=False)
     config.read('config.ini')
     print(config.sections())
+    dspaceRequest = dspacerequests.DspaceRequests(config)
     app = wx.App(False)
-    frame = ImportFrame(config)
+    frame = ImportFrame(config, dspaceRequest)
     app.MainLoop()

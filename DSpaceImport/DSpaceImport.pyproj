@@ -26,6 +26,9 @@
     <Compile Include="DataObjects.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DSpaceRequests.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.7-32" />
