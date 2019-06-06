@@ -4,7 +4,7 @@ import wx.grid as gridlib
 import configparser
 from pathlib import Path
 
-from DataObjects import Mapping
+from DataObjects import Mapping, DSOTypes, DSO
 import dspacerequests
 
 class LogonDialog(wx.Dialog):
@@ -48,7 +48,7 @@ class LogonDialog(wx.Dialog):
             self.loginCookie = self.dspaceRequest.dspace_logon(self.email.GetValue(), self.password.GetValue())
             self.loggedIn = True
             self.Close()
-        except dspacerequests.LogonException as e:
+        except dspacerequests.DSpaceException as e:
             with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['loginMessageBoxTitle'], style=wx.ICON_ERROR) as dlg:
                         dlg.ShowModal()
         except Exception as e:
@@ -101,7 +101,7 @@ class MappingDialog(wx.Dialog):
                 self.mappingData[row.id] = row
                 _newMapping.set(self.config['Mapping']['mappingSectionName'], row.colName, row.metadataField)
         # prompt user to save the mapping 
-        with wx.FileDialog(self, message="Save file as ...", defaultDir=str(self.fileName.parent), defaultFile=self.fileName.name, wildcard=self.config['FileTypeWildcard']['mapFileWildcard'], style=wx.FD_SAVE) as saveDialog:
+        with wx.FileDialog(self, message=self.config['Messages']['fileSaveAsMessage'], defaultDir=str(self.fileName.parent), defaultFile=self.fileName.name, wildcard=self.config['FileTypeWildcard']['mapFileWildcard'], style=wx.FD_SAVE) as saveDialog:
             if saveDialog.ShowModal() == wx.ID_OK:
                 path = Path((saveDialog.GetPath()).replace('\\', '/'))
                 # write the file
@@ -109,16 +109,16 @@ class MappingDialog(wx.Dialog):
                     with open(path, "wt") as file:
                         _newMapping.write(file,False)
 
-                    with wx.MessageDialog(None, message="Saved file successfully", caption="Save successful", style=wx.ICON_INFORMATION) as dlg:
+                    with wx.MessageDialog(None, message=self.config['Messages']['fileSaveSuccessfulMessage'], caption=self.config['Messages']['fileSaveSuccessfulBoxTitle'], style=wx.ICON_INFORMATION) as dlg:
                         dlg.ShowModal()
                 except BaseException:
-                    with wx.MessageDialog(None, message="File not saved", caption="Save Failed", style=wx.ICON_ERROR) as dlg:
+                    with wx.MessageDialog(None, message=self.config['Messages']['fileSaveFailedMessage'], caption=self.config['Messages']['fileSaveFailedBoxTitle'], style=wx.ICON_ERROR) as dlg:
                         dlg.showModal()
                 
 
 
 class ImportPanel(wx.Panel):
-    def __init__(self, parent, authenticated, authCookie, config):
+    def __init__(self, parent, authenticated, authCookie, config, dspaceRequests):
         super().__init__(parent)
         labels = config['Labels']
         self.config = config
@@ -126,6 +126,9 @@ class ImportPanel(wx.Panel):
         self.authCookie = authCookie
         self.mappingDict = {}
         self.fileName = Path.home()/self.config['Mapping']['mappingFileName']
+        self.dspaceRequests = dspaceRequests
+        self.topCommunities = []
+        self.DSOs = {}
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(wx.StaticText(self, label=labels.get('mainPanelDescription','')), 0, wx.ALL, 5)
 
@@ -191,6 +194,29 @@ class ImportPanel(wx.Panel):
         mainSizer.AddSpacer(2)
 
         # collection select
+        collectionSelectRowSizer = wx.BoxSizer(wx.VERTICAL)
+        collectionSelectRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemCollectionDescription','Select Collection')), 0, wx.ALL, 5)
+
+        communityRowSizer = wx.BoxSizer(wx.HORIZONTAL)
+        communityRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemCommunityLabel', 'Community')), 0, wx.ALL, 5)
+        #self.community = wx.ComboBox(self)
+        self.community = wx.Choice(self, style=wx.VSCROLL)
+        # event handler
+        #self.community.Bind(wx.EVT_COMBOBOX, self.community_selected)
+        self.community.Bind(wx.EVT_CHOICE, self.community_selected)
+        communityRowSizer.Add(self.community, 0, wx.ALL, 5)
+        collectionSelectRowSizer.Add(communityRowSizer)
+
+        collectionRowSizer = wx.BoxSizer(wx.HORIZONTAL)
+        collectionRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemCollectionLabel', 'Collection')), 0, wx.ALL, 5)
+        self.collection = wx.Choice(self)
+        collectionRowSizer.Add(self.collection, 0, wx.ALL, 5)
+        collectionSelectRowSizer.Add(collectionRowSizer)
+
+        # populate with top collections
+        self.get_top_communities()
+
+        mainSizer.Add(collectionSelectRowSizer)
 
         # button to import
 
@@ -229,6 +255,85 @@ class ImportPanel(wx.Panel):
         self.itemFileField.SetItems(_choices)
         self.itemFileField.SetSelection(0)
 
+    def get_top_communities(self):
+        try:
+            self.DSOs.clear()
+            _top = self.dspaceRequests.dspace_top_communities()
+            for _comm in _top:
+                dso = DSO(_comm['uuid'], _comm['name'], None, DSOTypes.COMMUNITY)
+                self.DSOs[dso.id] = dso
+                # add the sub communities
+                for _subcom in _comm['subcommunities']:
+                    sdso = DSO(_subcom['uuid'], _subcom['name'], dso.id, DSOTypes.COMMUNITY)
+                    dso.addChild(sdso.id)
+                    self.DSOs[sdso.id] = sdso
+                # add the collections
+                for _coll in _comm['collections']:
+                    sdso = DSO(_coll['uuid'], _coll['name'], dso.id, DSOTypes.COLLECTION)
+                    self.DSOs[sdso.id] = sdso
+                    dso.addCollection(sdso.id)
+                self.DSOs[dso.id].itemsLoaded = True
+                self.topCommunities.append(dso.id)
+        except Exception as e:
+            print(str(e))
+        finally:
+            self._populate_community()
+            self.collection.Clear()
+
+    def _populate_community(self, parent = None, currCommunity = None):
+        self.community.Clear() # remove existing items in combobox
+        if (parent is None and currCommunity is None):
+            # show the top communities
+            for tc in self.topCommunities:
+                self.community.Append(self.DSOs[tc].name, self.DSOs[tc])
+        else:
+            self.community.Append(self.DSOs[currCommunity].name, self.DSOs[currCommunity])
+            if (parent is None):
+                self.community.Append(self.config['Labels']['mainPanelItemCollectionBackLabel'], None)
+            else:
+                self.community.Append(self.config['Labels']['mainPanelItemCollectionBackLabel'], self.DSOs[parent])
+            # children of currCommunity
+            for child in self.DSOs[currCommunity].children:
+                self.community.Append(self.DSOs[child].name, self.DSOs[child])
+            self.community.SetSelection(0)
+
+    def _populate_collection(self, currCommunity):
+        self.collection.Clear()
+        for coll in self.DSOs[currCommunity].collections:
+            self.collection.Append(self.DSOs[coll].name, self.DSOs[coll])
+        self.collection.InvalidateBestSize() 
+        self.collection.SetSize(self.collection.GetBestSize()) 
+        self.Layout() 
+
+    def community_selected(self, event):
+        obj = self.community.GetClientData(self.community.GetSelection())
+        if (obj is None):
+            # going back to the top communities
+            self._populate_community()
+            self.collection.Clear()
+        else:
+            print("{}, {}".format(obj.uuid, obj.name))
+            # check if children/collections are loaded
+            if not obj.itemsLoaded:
+                try:
+                    _comms = self.dspaceRequests.dspace_community(obj.uuid)
+                    for _comm in _comms['subcommunities']:
+                        print('adding community {} to dict'.format(_comm['name']))
+                        dso = DSO(_comm['uuid'], _comm['name'], obj.id, DSOTypes.COMMUNITY)
+                        self.DSOs[dso.id] = dso
+                        self.DSOs[obj.id].addChild(dso.id)
+                    for _coll in _comms['collections']:
+                        print('adding collection {} to dict'.format(_coll['name']))
+                        dso = DSO(_coll['uuid'], _coll['name'], obj.id, DSOTypes.COLLECTION)
+                        self.DSOs[dso.id] = dso
+                        self.DSOs[obj.id].addCollection(dso.id)
+                    self.DSOs[obj.id].itemsLoaded = True
+                except Exception as e:
+                    print(str(e))
+            # get the children and add to list
+            self._populate_community(obj.parent, obj.id)
+            self._populate_collection(obj.id)
+
 class ImportFrame(wx.Frame):
     def __init__(self, config, dspaceRequests):
         labels = config['Labels']
@@ -243,7 +348,7 @@ class ImportFrame(wx.Frame):
             self.Close()
         else :
             print (self.authenticated)
-            panel = ImportPanel(self, self.authenticated, self.authCookie, config)
+            panel = ImportPanel(self, self.authenticated, self.authCookie, config, dspaceRequests)
             self.Show()
 
 

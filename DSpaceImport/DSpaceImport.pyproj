@@ -26,7 +26,7 @@
     <Compile Include="DataObjects.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DSpaceRequests.py">
+    <Compile Include="dspacerequests.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
