@@ -2,6 +2,7 @@
 import wx
 import wx.grid as gridlib
 import configparser
+import pandas as pd
 from pathlib import Path
 
 from DataObjects import Mapping, DSOTypes, DSO
@@ -48,12 +49,10 @@ class LogonDialog(wx.Dialog):
             self.loginCookie = self.dspaceRequest.dspace_logon(self.email.GetValue(), self.password.GetValue())
             self.loggedIn = True
             self.Close()
-        except dspacerequests.DSpaceException as e:
-            with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['loginMessageBoxTitle'], style=wx.ICON_ERROR) as dlg:
-                        dlg.ShowModal()
         except Exception as e:
             with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['loginMessageBoxTitle'], style=wx.ICON_ERROR) as dlg:
                         dlg.ShowModal()
+            self.password.SetValue('')
 
 
 class MappingDialog(wx.Dialog):
@@ -98,7 +97,7 @@ class MappingDialog(wx.Dialog):
         for index in range(0,self.mappingListCtrl.GetNumberRows()):
             if len(self.mappingListCtrl.GetCellValue(index, 0).strip()) > 0 and len(self.mappingListCtrl.GetCellValue(index, 1).strip()) > 0:
                 row = Mapping(self.mappingListCtrl.GetCellValue(index, 0).strip(), self.mappingListCtrl.GetCellValue(index, 1).strip())
-                self.mappingData[row.id] = row
+                self.mappingData[row.colName] = row
                 _newMapping.set(self.config['Mapping']['mappingSectionName'], row.colName, row.metadataField)
         # prompt user to save the mapping 
         with wx.FileDialog(self, message=self.config['Messages']['fileSaveAsMessage'], defaultDir=str(self.fileName.parent), defaultFile=self.fileName.name, wildcard=self.config['FileTypeWildcard']['mapFileWildcard'], style=wx.FD_SAVE) as saveDialog:
@@ -121,22 +120,36 @@ class ImportPanel(wx.Panel):
     def __init__(self, parent, authenticated, authCookie, config, dspaceRequests):
         super().__init__(parent)
         labels = config['Labels']
+
+        # class variables
         self.config = config
         self.authenticated = authenticated
         self.authCookie = authCookie
         self.mappingDict = {}
         self.fileName = Path.home()/self.config['Mapping']['mappingFileName']
+        self.importFile = None
+        self.excelFileObj = None
+        self.importDataFrame = None
         self.dspaceRequests = dspaceRequests
         self.topCommunities = []
         self.DSOs = {}
+
+        # layout
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(wx.StaticText(self, label=labels.get('mainPanelDescription','')), 0, wx.ALL, 5)
 
         # select excel file row
         excelRowSizer = wx.BoxSizer(wx.VERTICAL)
         excelRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelFilePickerLabel','Select file')), 0, wx.ALL, 5)
-        self.excelPicker = wx.FilePickerCtrl(self, wildcard=self.config['FileTypeWildcard']['fileImportWildcard'])
+        self.excelPicker = wx.FilePickerCtrl(self, wildcard=self.config['FileTypeWildcard']['excelFileDescription']+'(*'+self.config['FileTypeWildcard']['excelFileType']+')|*'+self.config['FileTypeWildcard']['excelFileType'])
+        self.excelPicker.Bind(wx.EVT_FILEPICKER_CHANGED, self.import_file_selected)
         excelRowSizer.Add(self.excelPicker, 0, wx.ALL|wx.EXPAND, 5)
+        excelSheetSizer = wx.BoxSizer(wx.HORIZONTAL)
+        excelSheetSizer.Add(wx.StaticText(self, label=labels.get('mainPanelFilePickerChooseSheetLabel','Select sheet')), 0, wx.ALL, 5)
+        self.excelSheet = wx.Choice(self)
+        self.excelSheet.Bind(wx.EVT_CHOICE, self.import_sheet_selected)
+        excelSheetSizer.Add(self.excelSheet, 0, wx.ALL, 5)
+        excelRowSizer.Add(excelSheetSizer)
         mainSizer.Add(excelRowSizer)
         mainSizer.AddSpacer(2)
         mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
@@ -218,9 +231,16 @@ class ImportPanel(wx.Panel):
 
         mainSizer.Add(collectionSelectRowSizer)
 
+        mainSizer.AddSpacer(2)
+        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.AddSpacer(2)
+
         # button to import
+        self.importButton = wx.Button(self, label=labels.get('mainPanelImportButtonLabel','Import'))
+        mainSizer.Add(self.importButton, 0, wx.ALL, 5)
 
         self.SetSizer(mainSizer)
+
 
     def mapping_selected(self, event):
         self.fileName = Path((self.mappingPicker.GetPath()).replace('\\', '/'))
@@ -231,9 +251,51 @@ class ImportPanel(wx.Panel):
         self.mappingDict.clear()
         for key in _mapping[self.config['Mapping']['mappingSectionName']]:
             row = Mapping(key, _mapping[self.config['Mapping']['mappingSectionName']][key])
-            self.mappingDict[row.id] = row
+            self.mappingDict[row.colName] = row
+        # add columns for those in excel file but not in the mapping file
+        for col in self.importDataFrame.columns:
+            if col not in self.mappingDict:
+                row = Mapping(col, '')
+                self.mappingDict[row.colName] = row
         self.set_column_choices()
 
+    def import_file_selected(self, event):
+        try:
+            self.importFile = Path((self.excelPicker.GetPath()).replace('\\','/'))
+            print(self.importFile)
+            print(self.importFile.suffix)
+            self.excelFileObj = pd.ExcelFile(self.importFile)
+            self.excelSheet.SetItems(self.excelFileObj.sheet_names)
+            self.excelSheet.InvalidateBestSize() 
+            self.excelSheet.SetSize(self.excelSheet.GetBestSize()) 
+            
+        except Exception as e:
+            with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['importFileErrorBoxTitle'], style=wx.ICON_ERROR) as dlg:
+                dlg.ShowModal()
+            self.importFile.SetPath('')
+            self.excelSheet.Clear()
+            self.importFile = None
+            self.excelFileObj = None
+        finally:
+            self.mappingPicker.SetPath('')
+            self.fileName = None
+            self.importDataFrame = None
+            self.duplicateField.Clear()
+            self.itemFileField.Clear()
+            self.Layout()
+
+    def import_sheet_selected(self, event):
+        try:
+            print(self.excelSheet.GetSelection())
+            self.importDataFrame = self.excelFileObj.parse(self.excelSheet.GetSelection())
+            self.mappingDict.clear()
+            for col in self.importDataFrame.columns:
+                row = Mapping(col, '')
+                self.mappingDict[col] = row
+            self.set_column_choices()
+        except Exception as e:
+            with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['importFileErrorBoxTitle'], style=wx.ICON_ERROR) as dlg:
+                dlg.ShowModal()
 
     def show_mapping_dialog(self, event):
         print("open mapping dialog")
