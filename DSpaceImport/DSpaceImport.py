@@ -1,6 +1,7 @@
 # classes for the ui
 import wx
 import wx.grid as gridlib
+import wx.lib.scrolledpanel as scrolled
 import configparser
 import pandas as pd
 from pathlib import Path
@@ -58,15 +59,17 @@ class LogonDialog(wx.Dialog):
 class MappingDialog(wx.Dialog):
     def __init__(self, config, mappingData, fileName):
         labels = config['Labels']
-        wx.Dialog.__init__(self, None, title=labels.get('mappingDialogTitle','Mapping'))
+        wx.Dialog.__init__(self, None, title=labels.get('mappingDialogTitle','Mapping'), size=(500,500))
         self.mappingData = mappingData
         self.fileName = fileName
         self.config = config
 
-        print(self.mappingData)
-        print(self.fileName)
+        print(fileName)
 
-        self.mappingListCtrl = gridlib.Grid(self)
+        panel = wx.lib.scrolledpanel.ScrolledPanel(self)
+        panel.SetupScrolling()
+
+        self.mappingListCtrl = gridlib.Grid(panel)
         self.mappingListCtrl.CreateGrid(numRows=len(mappingData)+int(config['Mapping']['mappingNumberOfRows']), numCols=2)
         self.mappingListCtrl.SetColLabelValue(0, labels.get('mappingControlFileColumnLabel', 'Column'))
         self.mappingListCtrl.SetColLabelValue(1, labels.get('mappingControlMetadataFieldLabel', 'Field'))
@@ -80,14 +83,16 @@ class MappingDialog(wx.Dialog):
             self.mappingListCtrl.SetCellValue(index, 1, val.metadataField)
             index = index + 1
 
+        self.mappingListCtrl.AutoSizeColumns()
         dialogSizer = wx.BoxSizer(wx.VERTICAL)
         dialogSizer.Add(self.mappingListCtrl, 0, wx.ALL|wx.EXPAND, 5)
-        saveButton = wx.Button(self, label=labels.get('mappingDialogSaveButton','Save'))
+        saveButton = wx.Button(panel, label=labels.get('mappingDialogSaveButton','Save'))
         saveButton.Bind(wx.EVT_BUTTON, self.save_mapping)
         dialogSizer.AddSpacer(10)
         dialogSizer.Add(saveButton, 0, wx.ALL, 5)
-        self.SetSizer(dialogSizer)
-        self.Fit()
+        dialogSizer.AddSpacer(20)
+        panel.SetSizer(dialogSizer)
+        # self.Fit()
 
     def save_mapping(self, event):
         print("save button clicked")
@@ -96,7 +101,7 @@ class MappingDialog(wx.Dialog):
         _newMapping.add_section(self.config['Mapping']['mappingSectionName'])
         for index in range(0,self.mappingListCtrl.GetNumberRows()):
             if len(self.mappingListCtrl.GetCellValue(index, 0).strip()) > 0 and len(self.mappingListCtrl.GetCellValue(index, 1).strip()) > 0:
-                row = Mapping(self.mappingListCtrl.GetCellValue(index, 0).strip(), self.mappingListCtrl.GetCellValue(index, 1).strip())
+                row = Mapping(self.mappingListCtrl.GetCellValue(index, 0).strip().upper(), self.mappingListCtrl.GetCellValue(index, 1).strip())
                 self.mappingData[row.colName] = row
                 _newMapping.set(self.config['Mapping']['mappingSectionName'], row.colName, row.metadataField)
         # prompt user to save the mapping 
@@ -133,6 +138,8 @@ class ImportPanel(wx.Panel):
         self.dspaceRequests = dspaceRequests
         self.topCommunities = []
         self.DSOs = {}
+
+        print(self.fileName)
 
         # layout
         mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -197,7 +204,7 @@ class ImportPanel(wx.Panel):
         itemExtRowSizer.Add(self.itemFileExtension, 0, wx.ALL, 5)
         fileDirRowSizer.Add(itemExtRowSizer, 0, wx.ALL, 5)
 
-        self.itemFileProcess = wx.RadioBox(self, label=labels.get('mainPanelItemFileUploadProcessLabel','Item File Matching') , pos=(80,10), choices=[labels.get('mainPanelItemFileUploadProcessOption1'), labels.get('mainPanelItemFileUploadProcessOption2')], majorDimension=1, style=wx.RA_SPECIFY_ROWS)
+        self.itemFileProcess = wx.RadioBox(self, label=labels.get('mainPanelItemFileUploadProcessLabel','Item File Matching') , pos=(80,10), choices=[labels.get('mainPanelItemFileUploadProcessOptionExact'), labels.get('mainPanelItemFileUploadProcessOptionBegins')], majorDimension=1, style=wx.RA_SPECIFY_ROWS)
         # self.itemFileProcess.GetStringSelection() has the text of the selected control
         fileDirRowSizer.Add(self.itemFileProcess, 0, wx.ALL, 5)
 
@@ -237,6 +244,7 @@ class ImportPanel(wx.Panel):
 
         # button to import
         self.importButton = wx.Button(self, label=labels.get('mainPanelImportButtonLabel','Import'))
+        self.importButton.Bind(wx.EVT_BUTTON, self.do_import)
         mainSizer.Add(self.importButton, 0, wx.ALL, 5)
 
         self.SetSizer(mainSizer)
@@ -250,12 +258,12 @@ class ImportPanel(wx.Panel):
         print(_mapping.sections())
         self.mappingDict.clear()
         for key in _mapping[self.config['Mapping']['mappingSectionName']]:
-            row = Mapping(key, _mapping[self.config['Mapping']['mappingSectionName']][key])
+            row = Mapping(key.upper(), _mapping[self.config['Mapping']['mappingSectionName']][key])
             self.mappingDict[row.colName] = row
         # add columns for those in excel file but not in the mapping file
         for col in self.importDataFrame.columns:
-            if col not in self.mappingDict:
-                row = Mapping(col, '')
+            if col.upper() not in self.mappingDict:
+                row = Mapping(col.upper(), '')
                 self.mappingDict[row.colName] = row
         self.set_column_choices()
 
@@ -278,7 +286,7 @@ class ImportPanel(wx.Panel):
             self.excelFileObj = None
         finally:
             self.mappingPicker.SetPath('')
-            self.fileName = None
+            self.fileName = Path.home()/self.config['Mapping']['mappingFileName']
             self.importDataFrame = None
             self.duplicateField.Clear()
             self.itemFileField.Clear()
@@ -311,11 +319,11 @@ class ImportPanel(wx.Panel):
 
         self.duplicateField.Clear()
         self.duplicateField.SetItems(_choices)
-        self.duplicateField.SetSelection(0)
+        # self.duplicateField.SetSelection(0)
 
         self.itemFileField.Clear()
         self.itemFileField.SetItems(_choices)
-        self.itemFileField.SetSelection(0)
+        # self.itemFileField.SetSelection(0)
 
     def get_top_communities(self):
         try:
@@ -395,6 +403,60 @@ class ImportPanel(wx.Panel):
             # get the children and add to list
             self._populate_community(obj.parent, obj.id)
             self._populate_collection(obj.id)
+
+    def do_import(self, event):
+        try:
+            # excel file loaded
+            if self.excelFileObj is None:
+                raise Exception(self.config['Messages']['importButtonExcelFileNotLoadedError'])
+            # mapping setup or loaded
+            if len(self.mappingDict) == 0:
+                raise Exception(self.config['Messages']['importButtonMappingNotSetError'])
+            # at least one column should be mapped to a metadata field
+            if len(list(key for key in self.mappingDict if len(self.mappingDict[key].metadataField) > 0)) == 0:
+                raise Exception(self.config['Messages']['importButtonMappingAtLeastOneMetadata'])
+            # collection selected
+            if self.collection.GetSelection() == wx.NOT_FOUND:
+                raise Exception(self.config['Messages']['importButtonCollectionNotSelectedError'])
+            # if dir containing files entered, the file column has to be selected
+            if len(self.itemFileDirPicker.GetPath()) > 0: 
+                if self.itemFileField.GetSelection() == wx.NOT_FOUND:
+                    raise Exception(self.config['Messages']['importButtonFileNameFieldError'])
+                if self.itemFileProcess.GetSelection() == wx.NOT_FOUND:
+                    raise Exception(self.config['Messages']['importButtonFileProcessRadioNotChosen'])
+
+                _ext = ''
+                if len(self.itemFileExtension.GetValue().strip()) > 0:
+                    _ext = self.itemFileExtension.GetValue().strip()
+                    _ext = _ext if _ext.startswith('.') else '.'+_ext
+                print('extension is {}'.format(_ext))
+
+                print('item file process {}'.format(self.itemFileProcess.GetSelection()))
+                # if dir containing files entered, check if any rows in the excel file has missing file names. 
+                _fileDir = Path((self.itemFileDirPicker.GetPath()).replace('\\','/'))
+                _numMissing = 0
+                _missingList = []
+                if self.itemFileProcess.GetSelection() == 0: # exact matching
+                    for fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
+                        _file = _fileDir/(fname.strip()+_ext)
+                        print('checking file {} exists'.format(_file))
+                        if not _file.exists():
+                            _numMissing = _numMissing + 1
+                            _missingList.append(fname)
+                elif self.itemFileProcess.GetSelection() == 1: # begins with matching
+                    for fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
+                        print('looking for files that match {}'.format(fname+'*'+_ext))
+                        _file = list(_fileDir.glob(fname+'*'+_ext)) # returns a list
+                        if len(_file) == 0:
+                            _numMissing - _numMissing + 1
+                            _missingList.append(fname)
+
+                if _numMissing > 0:
+                    raise Exception(self.config['Messages']['importButtonFileMissing']+'{}'.format(_missingList))
+        except Exception as e:
+            with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['importButtonErrorBoxTitle'], style=wx.ICON_ERROR) as dlg:
+                dlg.ShowModal()
+
 
 class ImportFrame(wx.Frame):
     def __init__(self, config, dspaceRequests):
