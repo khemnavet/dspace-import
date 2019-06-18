@@ -4,6 +4,7 @@ import wx.grid as gridlib
 import wx.lib.scrolledpanel as scrolled
 import configparser
 import pandas as pd
+import math
 from pathlib import Path
 
 from DataObjects import Mapping, DSOTypes, DSO
@@ -296,6 +297,7 @@ class ImportPanel(wx.Panel):
         try:
             print(self.excelSheet.GetSelection())
             self.importDataFrame = self.excelFileObj.parse(self.excelSheet.GetSelection())
+            self.importDataFrame.columns = map(str.upper, self.importDataFrame.columns) # convert the column names to upper case
             self.mappingDict.clear()
             for col in self.importDataFrame.columns:
                 row = Mapping(col, '')
@@ -404,6 +406,16 @@ class ImportPanel(wx.Panel):
             self._populate_community(obj.parent, obj.id)
             self._populate_collection(obj.id)
 
+    def _form_encoded_row(self, row):
+        _data = {}
+        #for key,val in self.mappingDict.items():
+        #    if len(val.metadataField) > 0:
+        #        _data[val.metadataField] = row[val.colName]
+        for key in (key for key in self.mappingDict if len(self.mappingDict[key].metadataField) > 0):
+            print('metadata = {}, column = {}, value = {}'.format(self.mappingDict[key].metadataField, self.mappingDict[key].colName, row[self.mappingDict[key].colName]))
+            _data[self.mappingDict[key].metadataField] = row[self.mappingDict[key].colName]
+        return _data
+
     def do_import(self, event):
         try:
             # excel file loaded
@@ -438,21 +450,36 @@ class ImportPanel(wx.Panel):
                 _missingList = []
                 if self.itemFileProcess.GetSelection() == 0: # exact matching
                     for fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
-                        _file = _fileDir/(fname.strip()+_ext)
-                        print('checking file {} exists'.format(_file))
-                        if not _file.exists():
-                            _numMissing = _numMissing + 1
-                            _missingList.append(fname)
+                        # if filename set - can have records without filenames
+                        if len(fname.strip()) > 0:
+                            _file = _fileDir/(fname.strip()+_ext)
+                            # print('checking file {} exists'.format(_file))
+                            if not _file.exists():
+                                _numMissing = _numMissing + 1
+                                _missingList.append(fname)
                 elif self.itemFileProcess.GetSelection() == 1: # begins with matching
                     for fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
-                        print('looking for files that match {}'.format(fname+'*'+_ext))
-                        _file = list(_fileDir.glob(fname+'*'+_ext)) # returns a list
-                        if len(_file) == 0:
-                            _numMissing - _numMissing + 1
-                            _missingList.append(fname)
+                        # if filename set - can have records without filenames
+                        if len(fname.strip()) > 0:
+                            print('looking for files that match {}'.format(fname+'*'+_ext))
+                            _file = list(_fileDir.glob(fname+'*'+_ext)) # returns a list
+                            if len(_file) == 0:
+                                _numMissing - _numMissing + 1
+                                _missingList.append(fname)
 
                 if _numMissing > 0:
-                    raise Exception(self.config['Messages']['importButtonFileMissing']+'{}'.format(_missingList))
+                    raise Exception(self.config['Messages']['importButtonFileMissing']+'\n'+'\n'.join(map(str, _missingList)))
+
+            # items can be imported
+            # loop over dataframe and generate dict to send to server
+            print('importing data')
+            for index, row in self.importDataFrame.iterrows():
+                # mapping between row and dc fields
+                print('data for for {}'.format(index))
+                # print(row)
+                _data = self._form_encoded_row(row)
+                print(_data)
+
         except Exception as e:
             with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['importButtonErrorBoxTitle'], style=wx.ICON_ERROR) as dlg:
                 dlg.ShowModal()
