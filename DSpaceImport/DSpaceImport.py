@@ -489,6 +489,8 @@ class ImportFrame(wx.Frame):
         labels = config['Labels']
         super().__init__(None, title=labels.get('appMainTitle','Import'), size=(400,800))
 
+        self.Bind(wx.EVT_CLOSE, self.onClose)
+
         with LogonDialog(config, dspaceRequests) as logonDlg:
             logonDlg.ShowModal()
             self.authenticated = logonDlg.loggedIn
@@ -501,6 +503,13 @@ class ImportFrame(wx.Frame):
             panel = ImportPanel(self, self.authenticated, self.authCookie, config, dspaceRequests)
             self.Show()
 
+    def onClose(self, event):
+        if event.CanVeto():
+            try:
+                dspaceRequest.dspace_logoff()
+            except Exception as e:
+                print('Could not logoff')
+        self.Destroy()
 
 if __name__ == '__main__':
     # load config

@@ -32,6 +32,12 @@ class DspaceRequests(object):
         except:
             raise
 
+    def dspace_logoff(self):
+        try:
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/logout', cookies=self.cookieJar)
+        except:
+            raise
+
     def dspace_top_communities(self):
         try:
             print('get top communities')
