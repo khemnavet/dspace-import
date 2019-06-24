@@ -4,7 +4,6 @@ import wx.grid as gridlib
 import wx.lib.scrolledpanel as scrolled
 import configparser
 import pandas as pd
-import math
 from pathlib import Path
 
 from DataObjects import Mapping, DSOTypes, DSO
@@ -53,7 +52,7 @@ class LogonDialog(wx.Dialog):
             self.Close()
         except Exception as e:
             with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['loginMessageBoxTitle'], style=wx.ICON_ERROR) as dlg:
-                        dlg.ShowModal()
+                dlg.ShowModal()
             self.password.SetValue('')
 
 
