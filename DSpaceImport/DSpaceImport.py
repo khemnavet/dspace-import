@@ -257,6 +257,7 @@ class ImportPanel(wx.Panel):
         _mapping.read(self.fileName)
         print(_mapping.sections())
         self.mappingDict.clear()
+        # all the key values (column names) are converted to uppercase
         for key in _mapping[self.config['Mapping']['mappingSectionName']]:
             row = Mapping(key.upper(), _mapping[self.config['Mapping']['mappingSectionName']][key])
             self.mappingDict[row.colName] = row
@@ -406,13 +407,16 @@ class ImportPanel(wx.Panel):
             self._populate_collection(obj.id)
 
     def _form_encoded_row(self, row):
-        _data = {}
+        _data = [] # create a list of tuples of (key,value) pairs to send
         #for key,val in self.mappingDict.items():
         #    if len(val.metadataField) > 0:
         #        _data[val.metadataField] = row[val.colName]
         for key in (key for key in self.mappingDict if len(self.mappingDict[key].metadataField) > 0):
-            print('metadata = {}, column = {}, value = {}'.format(self.mappingDict[key].metadataField, self.mappingDict[key].colName, row[self.mappingDict[key].colName]))
-            _data[self.mappingDict[key].metadataField] = row[self.mappingDict[key].colName]
+            print('metadata = {}, column = {}, value = {}, isnan = {}'.format(self.mappingDict[key].metadataField, self.mappingDict[key].colName, row[self.mappingDict[key].colName], pd.isna(row[self.mappingDict[key].colName])))
+            if not pd.isna(row[self.mappingDict[key].colName]):
+                print('add to list')
+                _data.append((self.mappingDict[key].metadataField, row[self.mappingDict[key].colName]))
+            #_data[self.mappingDict[key].metadataField] = row[self.mappingDict[key].colName]
         return _data
 
     def do_import(self, event):
@@ -475,9 +479,8 @@ class ImportPanel(wx.Panel):
             for index, row in self.importDataFrame.iterrows():
                 # mapping between row and dc fields
                 print('data for for {}'.format(index))
-                # print(row)
                 _data = self._form_encoded_row(row)
-                print(_data)
+                # print(_data)
 
         except Exception as e:
             with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['importButtonErrorBoxTitle'], style=wx.ICON_ERROR) as dlg:
