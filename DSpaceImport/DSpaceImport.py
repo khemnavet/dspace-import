@@ -180,6 +180,12 @@ class ImportPanel(wx.Panel):
         dupColRowSizer.Add(self.duplicateField, 0, wx.ALL, 5)
         mappingRowSizer.Add(dupColRowSizer, 0, wx.ALL, 5)
 
+        titleColRowSizer = wx.BoxSizer(wx.HORIZONTAL)
+        titleColRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelMappingTitleField', 'Title Field')), 0, wx.ALL, 5)
+        self.titleField = wx.Choice(self)
+        titleColRowSizer.Add(self.titleField, 0, wx.ALL, 5)
+        mappingRowSizer.Add(titleColRowSizer, 0, wx.ALL, 5)
+
         mainSizer.Add(mappingRowSizer)
         mainSizer.AddSpacer(2)
         mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
@@ -290,6 +296,7 @@ class ImportPanel(wx.Panel):
             self.fileName = Path.home()/self.config['Mapping']['mappingFileName']
             self.importDataFrame = None
             self.duplicateField.Clear()
+            self.titleField.Clear()
             self.itemFileField.Clear()
             self.Layout()
 
@@ -322,6 +329,9 @@ class ImportPanel(wx.Panel):
         self.duplicateField.Clear()
         self.duplicateField.SetItems(_choices)
         # self.duplicateField.SetSelection(0)
+
+        self.titleField.Clear()
+        self.titleField.SetItems(_choices)
 
         self.itemFileField.Clear()
         self.itemFileField.SetItems(_choices)
@@ -419,6 +429,8 @@ class ImportPanel(wx.Panel):
             #_data[self.mappingDict[key].metadataField] = row[self.mappingDict[key].colName]
         return _data
 
+    
+
     def do_import(self, event):
         try:
             # excel file loaded
@@ -430,6 +442,10 @@ class ImportPanel(wx.Panel):
             # at least one column should be mapped to a metadata field
             if len(list(key for key in self.mappingDict if len(self.mappingDict[key].metadataField) > 0)) == 0:
                 raise Exception(self.config['Messages']['importButtonMappingAtLeastOneMetadata'])
+            # title column selected
+            print(self.titleField.GetSelection())
+            if self.titleField.GetSelection() == wx.NOT_FOUND:
+                raise Exception(self.config['Messages']['titleFieldNotSelectedMessage'])
             # collection selected
             if self.collection.GetSelection() == wx.NOT_FOUND:
                 raise Exception(self.config['Messages']['importButtonCollectionNotSelectedError'])
@@ -479,7 +495,9 @@ class ImportPanel(wx.Panel):
             for index, row in self.importDataFrame.iterrows():
                 # mapping between row and dc fields
                 print('data for for {}'.format(index))
-                _data = self._form_encoded_row(row)
+                # have to post an item object to create it in collection
+
+                #_data = self._metadata_data(row)
                 # print(_data)
 
         except Exception as e:
