@@ -429,7 +429,18 @@ class ImportPanel(wx.Panel):
             #_data[self.mappingDict[key].metadataField] = row[self.mappingDict[key].colName]
         return _data
 
-    
+    '''
+     create the metadata object format for the row
+     list of dictionary
+     each dictionary is {"key": <dc metadata field>, "value": <column value>, "language": ""}
+    '''
+    def _metadata_data(self, row):
+        _data = []
+        for key in (key for key in self.mappingDict if len(self.mappingDict[key].metadataField) > 0):
+            # print('metadata = {}, column = {}, value = {}, isnan = {}'.format(self.mappingDict[key].metadataField, self.mappingDict[key].colName, row[self.mappingDict[key].colName], pd.isna(row[self.mappingDict[key].colName])))
+            if not pd.isna(row[self.mappingDict[key].colName]):
+                _data.append({'key':self.mappingDict[key].metadataField, 'value':row[self.mappingDict[key].colName], 'language':''})
+        return _data
 
     def do_import(self, event):
         try:
@@ -443,7 +454,7 @@ class ImportPanel(wx.Panel):
             if len(list(key for key in self.mappingDict if len(self.mappingDict[key].metadataField) > 0)) == 0:
                 raise Exception(self.config['Messages']['importButtonMappingAtLeastOneMetadata'])
             # title column selected
-            print(self.titleField.GetSelection())
+            print(self.titleField.GetString(self.titleField.GetSelection()))
             if self.titleField.GetSelection() == wx.NOT_FOUND:
                 raise Exception(self.config['Messages']['titleFieldNotSelectedMessage'])
             # collection selected
@@ -492,13 +503,14 @@ class ImportPanel(wx.Panel):
             # items can be imported
             # loop over dataframe and generate dict to send to server
             print('importing data')
+            # collection to import to
+            _coll = self.collection.GetClientData(self.collection.GetSelection())
             for index, row in self.importDataFrame.iterrows():
                 # mapping between row and dc fields
                 print('data for for {}'.format(index))
                 # have to post an item object to create it in collection
-
-                #_data = self._metadata_data(row)
-                # print(_data)
+                _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':self._metadata_data(row)}
+                _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
 
         except Exception as e:
             with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['importButtonErrorBoxTitle'], style=wx.ICON_ERROR) as dlg:
