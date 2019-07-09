@@ -528,10 +528,19 @@ class ImportPanel(wx.Panel):
                 # have to post an item object to create it in collection
                 _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':self._metadata_data(row)}
                 print('sending {} to dspace'.format(_item_obj))
-                # _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
-                # print('item returned: {}'.format(_dspace_item))
+                _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
+                print('item returned: {}'.format(_dspace_item))
                 # the file for this item
-                
+                if len(self.itemFileDirPicker.GetPath()) > 0:
+                    if self.itemFileProcess.GetSelection() == 0: # exact matching
+                        _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]
+                        if len(_fname.strip()) > 0: # if the file name is set - can have items without files
+                            _file = _fileDir/(_fname.strip()+_ext) # the file
+                            print('sending file {}'.format(_file.name))
+                            _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
+
+                    # elif self.itemFileProcess.GetSelection() == 1: # begins with matching
+
                 self.currImp.SetValue(str(int(self.currImp.GetValue()) + 1))
 
             # finished importing, display message to user

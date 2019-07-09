@@ -2,6 +2,8 @@ import requests
 import urllib.parse
 import json
 import re
+import mimetypes
+from pathlib import Path
 
 __all__ = ['DspaceRequests','LogonException']
 
@@ -9,6 +11,7 @@ class DspaceRequests(object):
     def __init__(self, config):
         self.config = config
         self.cookieJar = None
+        mimetypes.init()
 
     """
      attempt logon to the dspace repository
@@ -96,6 +99,21 @@ class DspaceRequests(object):
             if not self._valid_uuid(collection_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/collections/'+collection_uuid+'/items', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=item_object)
+            if _req.status_code == requests.codes.ok:
+                return json.loads(_req.content)
+            elif _req.status_code == requests.codes.unauthorized:
+                raise DSpaceException(self.config['Messages']['dspaceUnauthorisedMessage'])
+            _req.raise_for_status()
+        except:
+            raise
+
+    def dspace_item_add_bitstream(self, item_uuid, file):
+        try:
+            print('adding bitstream {} to item {}'.format(file.name, item_uuid))
+            if not self._valid_uuid(item_uuid):
+                raise DSpaceException(self.config['Messages']['invalidUUID'])
+            _file_to_post = {'file':(file.name, open(file, 'rb'), mimetypes.types_map[file.suffix])}
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, files=_file_to_post)
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             elif _req.status_code == requests.codes.unauthorized:
