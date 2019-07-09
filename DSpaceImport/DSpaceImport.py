@@ -64,8 +64,6 @@ class MappingDialog(wx.Dialog):
         self.fileName = fileName
         self.config = config
 
-        print(fileName)
-
         panel = wx.lib.scrolledpanel.ScrolledPanel(self)
         panel.SetupScrolling()
 
@@ -139,7 +137,7 @@ class ImportPanel(wx.Panel):
         self.topCommunities = []
         self.DSOs = {}
 
-        print(self.fileName)
+        # print(self.fileName)
 
         # layout
         mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -248,6 +246,21 @@ class ImportPanel(wx.Panel):
         mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
         mainSizer.AddSpacer(2)
 
+        # controls to show items imported
+        notificationRowSizer = wx.BoxSizer(wx.HORIZONTAL)
+        notificationRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelImportNotification', 'Importing')), 0, wx.ALL, 5)
+        self.currImp = wx.TextCtrl(self, style=wx.TE_READONLY, value="0")
+        notificationRowSizer.Add(self.currImp, 0, wx.ALL, 5)
+        notificationRowSizer.Add(wx.StaticText(self, label=" / "), 0, wx.ALL, 5)
+        self.impTo = wx.TextCtrl(self, style=wx.TE_READONLY, value="0")
+        notificationRowSizer.Add(self.impTo, 0, wx.ALL, 5)
+        
+        mainSizer.Add(notificationRowSizer)
+
+        mainSizer.AddSpacer(2)
+        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.AddSpacer(2)
+
         # button to import
         self.importButton = wx.Button(self, label=labels.get('mainPanelImportButtonLabel','Import'))
         self.importButton.Bind(wx.EVT_BUTTON, self.do_import)
@@ -258,10 +271,10 @@ class ImportPanel(wx.Panel):
 
     def mapping_selected(self, event):
         self.fileName = Path((self.mappingPicker.GetPath()).replace('\\', '/'))
-        print(self.fileName)
+        # print(self.fileName)
         _mapping = configparser.ConfigParser()
         _mapping.read(self.fileName)
-        print(_mapping.sections())
+        # print(_mapping.sections())
         self.mappingDict.clear()
         # all the key values (column names) are converted to uppercase
         for key in _mapping[self.config['Mapping']['mappingSectionName']]:
@@ -277,8 +290,8 @@ class ImportPanel(wx.Panel):
     def import_file_selected(self, event):
         try:
             self.importFile = Path((self.excelPicker.GetPath()).replace('\\','/'))
-            print(self.importFile)
-            print(self.importFile.suffix)
+            # print(self.importFile)
+            # print(self.importFile.suffix)
             self.excelFileObj = pd.ExcelFile(self.importFile)
             self.excelSheet.SetItems(self.excelFileObj.sheet_names)
             self.excelSheet.InvalidateBestSize() 
@@ -295,6 +308,8 @@ class ImportPanel(wx.Panel):
             self.mappingPicker.SetPath('')
             self.fileName = Path.home()/self.config['Mapping']['mappingFileName']
             self.importDataFrame = None
+            self.impTo.SetValue("0")
+            self.currImp.SetValue("0")
             self.duplicateField.Clear()
             self.titleField.Clear()
             self.itemFileField.Clear()
@@ -302,9 +317,11 @@ class ImportPanel(wx.Panel):
 
     def import_sheet_selected(self, event):
         try:
-            print(self.excelSheet.GetSelection())
+            # print(self.excelSheet.GetSelection())
             self.importDataFrame = self.excelFileObj.parse(self.excelSheet.GetSelection())
             self.importDataFrame.columns = map(str.upper, self.importDataFrame.columns) # convert the column names to upper case
+            self.impTo.SetValue(str(self.importDataFrame.shape[0]))
+            self.currImp.SetValue("0")
             self.mappingDict.clear()
             for col in self.importDataFrame.columns:
                 row = Mapping(col, '')
@@ -315,7 +332,7 @@ class ImportPanel(wx.Panel):
                 dlg.ShowModal()
 
     def show_mapping_dialog(self, event):
-        print("open mapping dialog")
+        # print("open mapping dialog")
         with MappingDialog(self.config, self.mappingDict, self.fileName) as mappingDlg:
             mappingDlg.ShowModal()
             self.mappingDict = mappingDlg.mappingData
@@ -454,7 +471,7 @@ class ImportPanel(wx.Panel):
             if len(list(key for key in self.mappingDict if len(self.mappingDict[key].metadataField) > 0)) == 0:
                 raise Exception(self.config['Messages']['importButtonMappingAtLeastOneMetadata'])
             # title column selected
-            print(self.titleField.GetString(self.titleField.GetSelection()))
+            # print(self.titleField.GetString(self.titleField.GetSelection()))
             if self.titleField.GetSelection() == wx.NOT_FOUND:
                 raise Exception(self.config['Messages']['titleFieldNotSelectedMessage'])
             # collection selected
@@ -510,7 +527,16 @@ class ImportPanel(wx.Panel):
                 print('data for for {}'.format(index))
                 # have to post an item object to create it in collection
                 _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':self._metadata_data(row)}
-                _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
+                print('sending {} to dspace'.format(_item_obj))
+                # _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
+                # print('item returned: {}'.format(_dspace_item))
+                # the file for this item
+                
+                self.currImp.SetValue(str(int(self.currImp.GetValue()) + 1))
+
+            # finished importing, display message to user
+            with wx.MessageDialog(None, message=self.config['Messages']['importButtonSuccessMessage'], caption=self.config['Messages']['importButtonSuccessBoxTitle'], style=wx.ICON_INFORMATION) as dlg:
+                dlg.ShowModal()
 
         except Exception as e:
             with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['importButtonErrorBoxTitle'], style=wx.ICON_ERROR) as dlg:
@@ -520,7 +546,7 @@ class ImportPanel(wx.Panel):
 class ImportFrame(wx.Frame):
     def __init__(self, config, dspaceRequests):
         labels = config['Labels']
-        super().__init__(None, title=labels.get('appMainTitle','Import'), size=(400,800))
+        super().__init__(None, title=labels.get('appMainTitle','Import'), size=(400,850))
 
         self.Bind(wx.EVT_CLOSE, self.onClose)
 
@@ -532,7 +558,7 @@ class ImportFrame(wx.Frame):
         if not self.authenticated:
             self.Close()
         else :
-            print (self.authenticated)
+            # print (self.authenticated)
             panel = ImportPanel(self, self.authenticated, self.authCookie, config, dspaceRequests)
             self.Show()
 
@@ -548,7 +574,7 @@ if __name__ == '__main__':
     # load config
     config = configparser.ConfigParser(empty_lines_in_values=False)
     config.read('config.ini')
-    print(config.sections())
+    # print(config.sections())
     dspaceRequest = dspacerequests.DspaceRequests(config)
     app = wx.App(False)
     frame = ImportFrame(config, dspaceRequest)

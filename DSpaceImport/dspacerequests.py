@@ -95,7 +95,7 @@ class DspaceRequests(object):
             print('adding item to collection {}'.format(collection_uuid))
             if not self._valid_uuid(collection_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
-            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/collections/'+collection_uuid+'/items', cookies=self.cookieJar, json=item_object)
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/collections/'+collection_uuid+'/items', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=item_object)
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             elif _req.status_code == requests.codes.unauthorized:
