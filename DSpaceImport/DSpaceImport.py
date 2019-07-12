@@ -319,7 +319,7 @@ class ImportPanel(wx.Panel):
         try:
             # print(self.excelSheet.GetSelection())
             self.importDataFrame = self.excelFileObj.parse(self.excelSheet.GetSelection())
-            self.importDataFrame.columns = map(str.upper, self.importDataFrame.columns) # convert the column names to upper case
+            self.importDataFrame.columns = map(str.strip, map(str.upper, self.importDataFrame.columns)) # convert the column names to upper case and remove spaces
             self.impTo.SetValue(str(self.importDataFrame.shape[0]))
             self.currImp.SetValue("0")
             self.mappingDict.clear()
@@ -488,9 +488,9 @@ class ImportPanel(wx.Panel):
                 if len(self.itemFileExtension.GetValue().strip()) > 0:
                     _ext = self.itemFileExtension.GetValue().strip()
                     _ext = _ext if _ext.startswith('.') else '.'+_ext
-                print('extension is {}'.format(_ext))
+                # print('extension is {}'.format(_ext))
 
-                print('item file process {}'.format(self.itemFileProcess.GetSelection()))
+                # print('item file process {}'.format(self.itemFileProcess.GetSelection()))
                 # if dir containing files entered, check if any rows in the excel file has missing file names. 
                 _fileDir = Path((self.itemFileDirPicker.GetPath()).replace('\\','/'))
                 _numMissing = 0
@@ -511,7 +511,7 @@ class ImportPanel(wx.Panel):
                             print('looking for files that match {}'.format(fname+'*'+_ext))
                             _file = list(_fileDir.glob(fname+'*'+_ext)) # returns a list
                             if len(_file) == 0:
-                                _numMissing - _numMissing + 1
+                                _numMissing = _numMissing + 1
                                 _missingList.append(fname)
 
                 if _numMissing > 0:
@@ -524,7 +524,7 @@ class ImportPanel(wx.Panel):
             _coll = self.collection.GetClientData(self.collection.GetSelection())
             for index, row in self.importDataFrame.iterrows():
                 # mapping between row and dc fields
-                print('data for for {}'.format(index))
+                print('data for row {}'.format(index))
                 # have to post an item object to create it in collection
                 _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':self._metadata_data(row)}
                 print('sending {} to dspace'.format(_item_obj))
