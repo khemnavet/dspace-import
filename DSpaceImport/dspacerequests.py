@@ -4,6 +4,7 @@ import json
 import re
 import mimetypes
 from pathlib import Path
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 __all__ = ['DspaceRequests','LogonException']
 
@@ -112,8 +113,11 @@ class DspaceRequests(object):
             print('adding bitstream {} to item {}'.format(file.name, item_uuid))
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
-            _file_to_post = {'file':(file.name, open(file, 'rb'), mimetypes.types_map[file.suffix])}
-            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, files=_file_to_post, timeout=(9.05, 120))
+            # use requesttoolbelt to upload the files
+            _multi_part_encoder = MultipartEncoder(fields={'file':(file.name, open(file, 'rb'), mimetypes.types_map[file.suffix])})
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json','Content-Type':_multi_part_encoder.content_type}, cookies=self.cookieJar, data=_multi_part_encoder, timeout=(9.05, 120))
+            #_file_to_post = {'file':(file.name, open(file, 'rb'), mimetypes.types_map[file.suffix])}
+            #_req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, files=_file_to_post, timeout=(9.05, 120))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             elif _req.status_code == requests.codes.unauthorized:
