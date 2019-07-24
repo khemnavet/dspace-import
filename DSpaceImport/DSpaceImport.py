@@ -496,23 +496,23 @@ class ImportPanel(wx.Panel):
                 _numMissing = 0
                 _missingList = []
                 if self.itemFileProcess.GetSelection() == 0: # exact matching
-                    for fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
+                    for _fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
                         # if filename set - can have records without filenames
-                        if len(fname.strip()) > 0:
-                            _file = _fileDir/(fname.strip()+_ext)
+                        if len(_fname.strip()) > 0:
+                            _file = _fileDir/(_fname.strip()+_ext)
                             # print('checking file {} exists'.format(_file))
                             if not _file.exists():
                                 _numMissing = _numMissing + 1
                                 _missingList.append(fname)
                 elif self.itemFileProcess.GetSelection() == 1: # begins with matching
-                    for fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
+                    for _fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
                         # if filename set - can have records without filenames
-                        if len(fname.strip()) > 0:
-                            print('looking for files that match {}'.format(fname+'*'+_ext))
-                            _file = list(_fileDir.glob(fname+'*'+_ext)) # returns a list
-                            if len(_file) == 0:
+                        if len(_fname.strip()) > 0:
+                            print('looking for files that match {}'.format(_fname+'*'+_ext))
+                            _files = list(_fileDir.glob(_fname+'*'+_ext)) # returns a list
+                            if len(_files) == 0:
                                 _numMissing = _numMissing + 1
-                                _missingList.append(fname)
+                                _missingList.append(_fname)
 
                 if _numMissing > 0:
                     raise Exception(self.config['Messages']['importButtonFileMissing']+'\n'+'\n'.join(map(str, _missingList)))
@@ -532,14 +532,17 @@ class ImportPanel(wx.Panel):
                 print('item returned: {}'.format(_dspace_item))
                 # the file for this item
                 if len(self.itemFileDirPicker.GetPath()) > 0:
-                    if self.itemFileProcess.GetSelection() == 0: # exact matching
-                        _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]
-                        if len(_fname.strip()) > 0: # if the file name is set - can have items without files
+                    _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]
+                    if len(_fname.strip()) > 0: # if the file name is set - can have items without files
+                        if self.itemFileProcess.GetSelection() == 0: # exact matching
                             _file = _fileDir/(_fname.strip()+_ext) # the file
                             print('sending file {}'.format(_file.name))
                             _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
-
-                    # elif self.itemFileProcess.GetSelection() == 1: # begins with matching
+                        elif self.itemFileProcess.GetSelection() == 1: # begins with matching
+                            _files = list(_fileDir.glob(_fname+'*'+_ext)) # returns a list
+                            for _file in _files:
+                                print('sending file {}'.format(_file.name))
+                                _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
 
                 self.currImp.SetValue(str(int(self.currImp.GetValue()) + 1))
 
