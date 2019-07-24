@@ -23,7 +23,7 @@ class DspaceRequests(object):
             _match = re.match('^([a-zA-Z\-\+_%]+(\.[a-zA-Z\-\+_%]+)*)@([a-zA-Z0-9\-]+)(\.[a-zA-Z0-9\-]+)*\.([a-zA-Z][a-zA-Z][a-zA-Z]*)$', username)
             if (_match is None):
                 raise DSpaceException(self.config['Messages']['invalidUserName'])
-            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/login', data={'email':urllib.parse.quote_plus(username, safe='@'),'password':password})
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/login', data={'email':urllib.parse.quote_plus(username, safe='@'),'password':password}, timeout=(9.05, 27))
             if _req.status_code == requests.codes.unauthorized:
                 # raise exception
                 raise DSpaceException(self.config['Messages']['loginFailed'])
@@ -37,14 +37,14 @@ class DspaceRequests(object):
 
     def dspace_logoff(self):
         try:
-            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/logout', cookies=self.cookieJar)
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/logout', cookies=self.cookieJar, timeout=(9.05, 27))
         except:
             raise
 
     def dspace_top_communities(self):
         try:
             print('get top communities')
-            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/top-communities?expand=subCommunities,collections', headers={'Accept':'application/json'}, cookies=self.cookieJar)
+            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/top-communities?expand=subCommunities,collections', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 60))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             _req.raise_for_status()
@@ -62,7 +62,7 @@ class DspaceRequests(object):
             print('get community '+uuid)
             if not self._valid_uuid(uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
-            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/'+uuid+'?expand=subCommunities,collections', headers={'Accept':'application/json'}, cookies=self.cookieJar)
+            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/'+uuid+'?expand=subCommunities,collections', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             _req.raise_for_status()
@@ -74,7 +74,7 @@ class DspaceRequests(object):
             print('get subcommunities for {}'.format(uuid))
             if not self._valid_uuid(uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
-            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/'+uuid+'/communities', headers={'Accept':'application/json'}, cookies=self.cookieJar)
+            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/'+uuid+'/communities', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             _req.raise_for_status()
@@ -86,7 +86,7 @@ class DspaceRequests(object):
             print('get collections for community {}'.format(uuid))
             if not self._valid_uuid(uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
-            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/'+uuid+'/collections', headers={'Accept':'application/json'}, cookies=self.cookieJar)
+            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/'+uuid+'/collections', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             _req.raise_for_status()
@@ -98,7 +98,7 @@ class DspaceRequests(object):
             print('adding item to collection {}'.format(collection_uuid))
             if not self._valid_uuid(collection_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
-            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/collections/'+collection_uuid+'/items', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=item_object)
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/collections/'+collection_uuid+'/items', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=item_object, timeout=(9.05, 60))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             elif _req.status_code == requests.codes.unauthorized:
@@ -113,7 +113,7 @@ class DspaceRequests(object):
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _file_to_post = {'file':(file.name, open(file, 'rb'), mimetypes.types_map[file.suffix])}
-            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, files=_file_to_post)
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, files=_file_to_post, timeout=(9.05, 120))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             elif _req.status_code == requests.codes.unauthorized:
