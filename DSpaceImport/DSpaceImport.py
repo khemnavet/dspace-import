@@ -459,6 +459,11 @@ class ImportPanel(wx.Panel):
                 _data.append({'key':self.mappingDict[key].metadataField, 'value':row[self.mappingDict[key].colName], 'language':''})
         return _data
 
+    def _metadata_single_field_data(self, row, key):
+        if pd.isna(row[key]):
+            return False
+        return [{'key':self.mappingDict[key].metadataField, 'value':row[self.mappingDict[key].colName], 'language':''}]
+
     def do_import(self, event):
         try:
             # excel file loaded
@@ -498,7 +503,7 @@ class ImportPanel(wx.Panel):
                 if self.itemFileProcess.GetSelection() == 0: # exact matching
                     for _fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
                         # if filename set - can have records without filenames
-                        if len(_fname.strip()) > 0:
+                        if not pd.isna(_fname) and len(_fname.strip()) > 0:
                             _file = _fileDir/(_fname.strip()+_ext)
                             # print('checking file {} exists'.format(_file))
                             if not _file.exists():
@@ -507,7 +512,7 @@ class ImportPanel(wx.Panel):
                 elif self.itemFileProcess.GetSelection() == 1: # begins with matching
                     for _fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
                         # if filename set - can have records without filenames
-                        if len(_fname.strip()) > 0:
+                        if not pd.isna(_fname) and len(_fname.strip()) > 0:
                             print('looking for files that match {}'.format(_fname+'*'+_ext))
                             _files = list(_fileDir.glob(_fname+'*'+_ext)) # returns a list
                             if len(_files) == 0:
@@ -525,25 +530,29 @@ class ImportPanel(wx.Panel):
             for index, row in self.importDataFrame.iterrows():
                 # mapping between row and dc fields
                 print('data for row {}'.format(index))
-                # have to post an item object to create it in collection
-                _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':self._metadata_data(row)}
-                print('sending {} to dspace'.format(_item_obj))
-                _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
-                print('item returned: {}'.format(_dspace_item))
-                # the file for this item
-                if len(self.itemFileDirPicker.GetPath()) > 0:
-                    _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]
-                    if len(_fname.strip()) > 0: # if the file name is set - can have items without files
-                        if self.itemFileProcess.GetSelection() == 0: # exact matching
-                            _file = _fileDir/(_fname.strip()+_ext) # the file
-                            print('sending file {}'.format(_file.name))
-                            _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
-                        elif self.itemFileProcess.GetSelection() == 1: # begins with matching
-                            _files = list(_fileDir.glob(_fname+'*'+_ext)) # returns a list
-                            for _file in _files:
+                _item_metadata = self._metadata_data(row)
+                if len(_item_metadata) > 0:
+                    # check if duplicates are to be checked, field len(self.duplicateField) gt 0 and if duplicates exist, use that item else create new
+                    
+                    # have to post an item object to create it in collection
+                    _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':_item_metadata}
+                    print('sending {} to dspace'.format(_item_obj))
+                    _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
+                    print('item returned: {}'.format(_dspace_item))
+                    # the file for this item
+                    if len(self.itemFileDirPicker.GetPath()) > 0:
+                        _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]
+                        if len(_fname.strip()) > 0: # if the file name is set - can have items without files
+                            if self.itemFileProcess.GetSelection() == 0: # exact matching
+                                _file = _fileDir/(_fname.strip()+_ext) # the file
                                 print('sending file {}'.format(_file.name))
                                 _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
-
+                            elif self.itemFileProcess.GetSelection() == 1: # begins with matching
+                                _files = list(_fileDir.glob(_fname+'*'+_ext)) # returns a list
+                                for _file in _files:
+                                    print('sending file {}'.format(_file.name))
+                                    _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
+                # increment counter displaying current row imported
                 self.currImp.SetValue(str(int(self.currImp.GetValue()) + 1))
 
             # finished importing, display message to user
