@@ -500,25 +500,21 @@ class ImportPanel(wx.Panel):
                 _fileDir = Path((self.itemFileDirPicker.GetPath()).replace('\\','/'))
                 _numMissing = 0
                 _missingList = []
-                if self.itemFileProcess.GetSelection() == 0: # exact matching
-                    for _fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
-                        # if filename set - can have records without filenames
-                        if not pd.isna(_fname) and len(_fname.strip()) > 0:
+                for _fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
+                    # if filename set - can have records without filenames
+                    if not pd.isna(_fname) and len(_fname.strip()) > 0:
+                        if self.itemFileProcess.GetSelection() == 0: # exact matching
                             _file = _fileDir/(_fname.strip()+_ext)
                             # print('checking file {} exists'.format(_file))
                             if not _file.exists():
                                 _numMissing = _numMissing + 1
-                                _missingList.append(fname)
-                elif self.itemFileProcess.GetSelection() == 1: # begins with matching
-                    for _fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
-                        # if filename set - can have records without filenames
-                        if not pd.isna(_fname) and len(_fname.strip()) > 0:
+                                _missingList.append(_fname)
+                        elif self.itemFileProcess.GetSelection() == 1: # begins with matching
                             print('looking for files that match {}'.format(_fname+'*'+_ext))
                             _files = list(_fileDir.glob(_fname+'*'+_ext)) # returns a list
                             if len(_files) == 0:
                                 _numMissing = _numMissing + 1
                                 _missingList.append(_fname)
-
                 if _numMissing > 0:
                     raise Exception(self.config['Messages']['importButtonFileMissing']+'\n'+'\n'.join(map(str, _missingList)))
 
