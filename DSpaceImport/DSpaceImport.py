@@ -124,6 +124,10 @@ class ImportPanel(wx.Panel):
         super().__init__(parent)
         labels = config['Labels']
 
+        panel = wx.lib.scrolledpanel.ScrolledPanel(self)
+        panel.SetAutoLayout(1)
+        panel.SetupScrolling(scroll_x = False)
+
         # class variables
         self.config = config
         self.authenticated = authenticated
@@ -141,90 +145,93 @@ class ImportPanel(wx.Panel):
 
         # layout
         mainSizer = wx.BoxSizer(wx.VERTICAL)
-        mainSizer.Add(wx.StaticText(self, label=labels.get('mainPanelDescription','')), 0, wx.ALL, 5)
+        mainSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelDescription','')), 0, wx.ALL, 5)
 
         # select excel file row
         excelRowSizer = wx.BoxSizer(wx.VERTICAL)
-        excelRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelFilePickerLabel','Select file')), 0, wx.ALL, 5)
-        self.excelPicker = wx.FilePickerCtrl(self, wildcard=self.config['FileTypeWildcard']['excelFileDescription']+'(*'+self.config['FileTypeWildcard']['excelFileType']+')|*'+self.config['FileTypeWildcard']['excelFileType'])
+        excelRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelFilePickerLabel','Select file')), 0, wx.ALL, 5)
+        self.excelPicker = wx.FilePickerCtrl(panel, wildcard=self.config['FileTypeWildcard']['excelFileDescription']+'(*'+self.config['FileTypeWildcard']['excelFileType']+')|*'+self.config['FileTypeWildcard']['excelFileType'])
         self.excelPicker.Bind(wx.EVT_FILEPICKER_CHANGED, self.import_file_selected)
         excelRowSizer.Add(self.excelPicker, 0, wx.ALL|wx.EXPAND, 5)
         excelSheetSizer = wx.BoxSizer(wx.HORIZONTAL)
-        excelSheetSizer.Add(wx.StaticText(self, label=labels.get('mainPanelFilePickerChooseSheetLabel','Select sheet')), 0, wx.ALL, 5)
-        self.excelSheet = wx.Choice(self)
+        excelSheetSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelFilePickerChooseSheetLabel','Select sheet')), 0, wx.ALL, 5)
+        self.excelSheet = wx.Choice(panel)
         self.excelSheet.Bind(wx.EVT_CHOICE, self.import_sheet_selected)
         excelSheetSizer.Add(self.excelSheet, 0, wx.ALL, 5)
         excelRowSizer.Add(excelSheetSizer)
         mainSizer.Add(excelRowSizer)
         mainSizer.AddSpacer(2)
-        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.Add(wx.StaticLine(panel, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
         mainSizer.AddSpacer(2)
 
         # mapping button
         mappingRowSizer = wx.BoxSizer(wx.VERTICAL)
-        mappingRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelMappingDescription','Mapping setup')), 0, wx.ALL, 5)
-        mappingRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelMappingFilePickerLabel','Select mapping file')), 0, wx.ALL, 5)
-        self.mappingPicker = wx.FilePickerCtrl(self, wildcard=self.config['FileTypeWildcard']['mapFileWildcard'])
+        mappingRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelMappingDescription','Mapping setup')), 0, wx.ALL, 5)
+        mappingRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelMappingFilePickerLabel','Select mapping file')), 0, wx.ALL, 5)
+        self.mappingPicker = wx.FilePickerCtrl(panel, wildcard=self.config['FileTypeWildcard']['mapFileWildcard'])
         #add an event to this and process the file opened
         self.mappingPicker.Bind(wx.EVT_FILEPICKER_CHANGED, self.mapping_selected)
         mappingRowSizer.Add(self.mappingPicker, 0, wx.ALL, 5)
-        self.mappingButton = wx.Button(self, label=labels.get('mainPanelMappingSetupButton','Setup mapping'))
+        self.mappingButton = wx.Button(panel, label=labels.get('mainPanelMappingSetupButton','Setup mapping'))
         self.mappingButton.Bind(wx.EVT_BUTTON, self.show_mapping_dialog)
         mappingRowSizer.Add(self.mappingButton, 0, wx.ALL, 5)
 
         dupColRowSizer = wx.BoxSizer(wx.HORIZONTAL)
-        dupColRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelMappingDuplicateCheckField','Duplicate Field')), 0, wx.ALL, 5)
-        self.duplicateField = wx.Choice(self)
+        dupColRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelMappingDuplicateCheckField','Duplicate Field')), 0, wx.ALL, 5)
+        self.duplicateField = wx.Choice(panel)
         dupColRowSizer.Add(self.duplicateField, 0, wx.ALL, 5)
         mappingRowSizer.Add(dupColRowSizer, 0, wx.ALL, 5)
 
         titleColRowSizer = wx.BoxSizer(wx.HORIZONTAL)
-        titleColRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelMappingTitleField', 'Title Field')), 0, wx.ALL, 5)
-        self.titleField = wx.Choice(self)
+        titleColRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelMappingTitleField', 'Title Field')), 0, wx.ALL, 5)
+        self.titleField = wx.Choice(panel)
         titleColRowSizer.Add(self.titleField, 0, wx.ALL, 5)
         mappingRowSizer.Add(titleColRowSizer, 0, wx.ALL, 5)
 
         mainSizer.Add(mappingRowSizer)
         mainSizer.AddSpacer(2)
-        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.Add(wx.StaticLine(panel, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
         mainSizer.AddSpacer(2)
 
         # file directory and buttons to choose files - exact or begins with
         fileDirRowSizer = wx.BoxSizer(wx.VERTICAL)
-        fileDirRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemFileUploadDescription','Item Files')), 0, wx.ALL, 5)
-        fileDirRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemFileUploadDirPickerLabel','Directory containing files')), 0, wx.ALL, 5)
-        self.itemFileDirPicker = wx.DirPickerCtrl(self)
+        fileDirRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelItemFileUploadDescription','Item Files')), 0, wx.ALL, 5)
+        fileDirRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelItemFileUploadDirPickerLabel','Directory containing files')), 0, wx.ALL, 5)
+        self.itemFileDirPicker = wx.DirPickerCtrl(panel)
         fileDirRowSizer.Add(self.itemFileDirPicker, 0, wx.ALL, 5)
 
         uploadColRowSizer = wx.BoxSizer(wx.HORIZONTAL)
-        uploadColRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemFileUploadColumnLabel','Item File Column')), 0, wx.ALL, 5)
-        self.itemFileField = wx.Choice(self)
+        uploadColRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelItemFileUploadColumnLabel','Item File Column')), 0, wx.ALL, 5)
+        self.itemFileField = wx.Choice(panel)
         uploadColRowSizer.Add(self.itemFileField, 0, wx.ALL, 5)
         fileDirRowSizer.Add(uploadColRowSizer, 0, wx.ALL, 5)
 
         itemExtRowSizer = wx.BoxSizer(wx.HORIZONTAL)
-        itemExtRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemFileUploadFileExt','Item File Extension')), 0, wx.ALL, 5)
-        self.itemFileExtension = wx.TextCtrl(self)
+        itemExtRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelItemFileUploadFileExt','Item File Extension')), 0, wx.ALL, 5)
+        self.itemFileExtension = wx.TextCtrl(panel)
         itemExtRowSizer.Add(self.itemFileExtension, 0, wx.ALL, 5)
         fileDirRowSizer.Add(itemExtRowSizer, 0, wx.ALL, 5)
 
-        self.itemFileProcess = wx.RadioBox(self, label=labels.get('mainPanelItemFileUploadProcessLabel','Item File Matching') , pos=(80,10), choices=[labels.get('mainPanelItemFileUploadProcessOptionExact'), labels.get('mainPanelItemFileUploadProcessOptionBegins')], majorDimension=1, style=wx.RA_SPECIFY_ROWS)
+        self.itemFileProcess = wx.RadioBox(panel, label=labels.get('mainPanelItemFileUploadProcessLabel','Item File Matching') , pos=(80,10), choices=[labels.get('mainPanelItemFileUploadProcessOptionExact'), labels.get('mainPanelItemFileUploadProcessOptionBegins')], majorDimension=1, style=wx.RA_SPECIFY_ROWS)
         # self.itemFileProcess.GetStringSelection() has the text of the selected control
         fileDirRowSizer.Add(self.itemFileProcess, 0, wx.ALL, 5)
 
+        self.itemFileDuplicates = wx.RadioBox(panel, label=labels.get('mainPanelItemFileUploadRemoveExisting', 'Remove existing files'), pos=(80,10), choices=[labels.get('mainPanelItemFileUploadRemoveExistingOptionNo','No'), labels.get('mainPanelItemFileUploadRemoveExistingOptionYes', 'Yes')], majorDimension=1, style=wx.RA_SPECIFY_ROWS)
+        fileDirRowSizer.Add(self.itemFileDuplicates, 0, wx.ALL, 5)
+
         mainSizer.Add(fileDirRowSizer)
         mainSizer.AddSpacer(2)
-        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.Add(wx.StaticLine(panel, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
         mainSizer.AddSpacer(2)
 
         # collection select
         collectionSelectRowSizer = wx.BoxSizer(wx.VERTICAL)
-        collectionSelectRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemCollectionDescription','Select Collection')), 0, wx.ALL, 5)
+        collectionSelectRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelItemCollectionDescription','Select Collection')), 0, wx.ALL, 5)
 
         communityRowSizer = wx.BoxSizer(wx.HORIZONTAL)
-        communityRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemCommunityLabel', 'Community')), 0, wx.ALL, 5)
+        communityRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelItemCommunityLabel', 'Community')), 0, wx.ALL, 5)
         #self.community = wx.ComboBox(self)
-        self.community = wx.Choice(self, style=wx.VSCROLL)
+        self.community = wx.Choice(panel, style=wx.VSCROLL)
         # event handler
         #self.community.Bind(wx.EVT_COMBOBOX, self.community_selected)
         self.community.Bind(wx.EVT_CHOICE, self.community_selected)
@@ -232,8 +239,8 @@ class ImportPanel(wx.Panel):
         collectionSelectRowSizer.Add(communityRowSizer)
 
         collectionRowSizer = wx.BoxSizer(wx.HORIZONTAL)
-        collectionRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelItemCollectionLabel', 'Collection')), 0, wx.ALL, 5)
-        self.collection = wx.Choice(self)
+        collectionRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelItemCollectionLabel', 'Collection')), 0, wx.ALL, 5)
+        self.collection = wx.Choice(panel)
         collectionRowSizer.Add(self.collection, 0, wx.ALL, 5)
         collectionSelectRowSizer.Add(collectionRowSizer)
 
@@ -243,30 +250,34 @@ class ImportPanel(wx.Panel):
         mainSizer.Add(collectionSelectRowSizer)
 
         mainSizer.AddSpacer(2)
-        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.Add(wx.StaticLine(panel, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
         mainSizer.AddSpacer(2)
 
         # controls to show items imported
         notificationRowSizer = wx.BoxSizer(wx.HORIZONTAL)
-        notificationRowSizer.Add(wx.StaticText(self, label=labels.get('mainPanelImportNotification', 'Importing')), 0, wx.ALL, 5)
-        self.currImp = wx.TextCtrl(self, style=wx.TE_READONLY, value="0")
+        notificationRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelImportNotification', 'Importing')), 0, wx.ALL, 5)
+        self.currImp = wx.TextCtrl(panel, style=wx.TE_READONLY, value="0")
         notificationRowSizer.Add(self.currImp, 0, wx.ALL, 5)
-        notificationRowSizer.Add(wx.StaticText(self, label=" / "), 0, wx.ALL, 5)
-        self.impTo = wx.TextCtrl(self, style=wx.TE_READONLY, value="0")
+        notificationRowSizer.Add(wx.StaticText(panel, label=" / "), 0, wx.ALL, 5)
+        self.impTo = wx.TextCtrl(panel, style=wx.TE_READONLY, value="0")
         notificationRowSizer.Add(self.impTo, 0, wx.ALL, 5)
         
         mainSizer.Add(notificationRowSizer)
 
         mainSizer.AddSpacer(2)
-        mainSizer.Add(wx.StaticLine(self, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
+        mainSizer.Add(wx.StaticLine(panel, style=wx.LI_HORIZONTAL), 0, wx.ALL|wx.EXPAND, 5)
         mainSizer.AddSpacer(2)
 
         # button to import
-        self.importButton = wx.Button(self, label=labels.get('mainPanelImportButtonLabel','Import'))
+        self.importButton = wx.Button(panel, label=labels.get('mainPanelImportButtonLabel','Import'))
         self.importButton.Bind(wx.EVT_BUTTON, self.do_import)
         mainSizer.Add(self.importButton, 0, wx.ALL, 5)
 
-        self.SetSizer(mainSizer)
+        panel.SetSizer(mainSizer)
+
+        panelSizer = wx.BoxSizer(wx.VERTICAL)
+        panelSizer.Add(panel, 1, wx.EXPAND)
+        self.SetSizer(panelSizer)
 
 
     def mapping_selected(self, event):
@@ -461,8 +472,8 @@ class ImportPanel(wx.Panel):
 
     def _metadata_single_field_data(self, row, key):
         if pd.isna(row[key]):
-            return False
-        return [{'key':self.mappingDict[key].metadataField, 'value':row[self.mappingDict[key].colName], 'language':''}]
+            return {}
+        return {'key':self.mappingDict[key].metadataField, 'value':row[self.mappingDict[key].colName], 'language':''}
 
     def do_import(self, event):
         try:
@@ -529,12 +540,32 @@ class ImportPanel(wx.Panel):
                 _item_metadata = self._metadata_data(row)
                 if len(_item_metadata) > 0:
                     # check if duplicates are to be checked, field len(self.duplicateField) gt 0 and if duplicates exist, use that item else create new
-                    
-                    # have to post an item object to create it in collection
-                    _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':_item_metadata}
-                    print('sending {} to dspace'.format(_item_obj))
-                    _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
-                    print('item returned: {}'.format(_dspace_item))
+                    _item_found = False
+                    if not (self.duplicateField.GetSelection() == wx.NOT_FOUND):
+                        # metadata for find
+                        _metadataEntry = self._metadata_single_field_data(row, self.duplicateField.GetString(self.duplicateField.GetSelection()))
+                        if len(_metadataEntry) > 0:
+                            print('searching collection {} for {}'.format(_coll.uuid, _metadataEntry))
+                            _search_results = self.dspaceRequests.dspace_find_item(_coll.uuid, _metadataEntry)
+                            if len(_search_results) > 0:
+                                # print(_search_results)
+                                _item_found = True
+                                _dspace_item = _search_results[0] # update only the first one found
+                                # remove the existing metadata and add the ones in the current row
+                                print('updating metadata for item {}'.format(_dspace_item['uuid']))
+                                self.dspaceRequests.dspace_item_update_metadata(_dspace_item['uuid'], _item_metadata)
+                                if self.itemFileDuplicates.GetSelection() == 1: #remove existing files
+                                    _item_bitstreams = self.dspaceRequests.dspace_item_bitstreams(_dspace_item['uuid'])
+                                    # print(_item_bitstreams)
+                                    for _bitstream in _item_bitstreams:
+                                        self.dspaceRequests.dspace_item_remove_bitstream(_dspace_item['uuid'], _bitstream['uuid'])
+
+                    if not _item_found:
+                        # have to post an item object to create it in collection
+                        _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':_item_metadata}
+                        print('sending {} to dspace'.format(_item_obj))
+                        _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
+                        print('item returned: {}'.format(_dspace_item))
                     # the file for this item
                     if len(self.itemFileDirPicker.GetPath()) > 0:
                         _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]

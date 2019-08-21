@@ -108,6 +108,48 @@ class DspaceRequests(object):
         except:
             raise
 
+    def dspace_item_add_metadata(self, item_uuid, metadata_object):
+        try:
+            print('adding metadata to item {}'.format(item_uuid))
+            if not self._valid_uuid(item_uuid):
+                raise DSpaceException(self.config['Messages']['invalidUUID'])
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/metadata', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=metadata_object, timeout=(9.05, 60))
+            if _req.status_code == requests.codes.ok:
+                return True
+            elif _req.status_code == requests.codes.unauthorized:
+                raise DSpaceException(self.config['Messages']['dspaceUnauthorisedMessage'])
+            _req.raise_for_status()
+        except:
+            raise
+
+    def dspace_item_update_metadata(self, item_uuid, metadata_object):
+        try:
+            print('updating metadata for item {}'.format(item_uuid))
+            if not self._valid_uuid(item_uuid):
+                raise DSpaceException(self.config['Messages']['invalidUUID'])
+            _req = requests.put(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/metadata', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=metadata_object, timeout=(9.05, 60))
+            if _req.status_code == requests.codes.ok:
+                return True
+            elif _req.status_code == requests.codes.unauthorized:
+                raise DSpaceException(self.config['Messages']['dspaceUnauthorisedMessage'])
+            _req.raise_for_status()
+        except:
+            raise
+
+    def dspace_item_remove_metadata(self, item_uuid):
+        try:
+            print('clearing metadata for item {}'.format(item_uuid))
+            if not self._valid_uuid(item_uuid):
+                raise DSpaceException(self.config['Messages']['invalidUUID'])
+            _req = requests.delete(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/metadata', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 60))
+            if _req.status_code == requests.codes.ok:
+                return True
+            elif _req.status_code == requests.codes.unauthorized:
+                raise DSpaceException(self.config['Messages']['dspaceUnauthorisedMessage'])
+            _req.raise_for_status()
+        except:
+            raise
+
     def dspace_item_add_bitstream(self, item_uuid, file):
         try:
             print('adding bitstream {} to item {}'.format(file.name, item_uuid))
@@ -118,6 +160,50 @@ class DspaceRequests(object):
             _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json','Content-Type':_multi_part_encoder.content_type}, cookies=self.cookieJar, data=_multi_part_encoder, timeout=(9.05, 120))
             #_file_to_post = {'file':(file.name, open(file, 'rb'), mimetypes.types_map[file.suffix])}
             #_req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, files=_file_to_post, timeout=(9.05, 120))
+            if _req.status_code == requests.codes.ok:
+                return json.loads(_req.content)
+            elif _req.status_code == requests.codes.unauthorized:
+                raise DSpaceException(self.config['Messages']['dspaceUnauthorisedMessage'])
+            _req.raise_for_status()
+        except:
+            raise
+
+    def dspace_item_remove_bitstream(self, item_uuid, bitstream_uuid):
+        try:
+            print('removing bitstream {} from item {}'.format(bitstream_uuid, item_uuid))
+            if not self._valid_uuid(item_uuid):
+                raise DSpaceException(self.config['Messages']['invalidUUID'])
+            if not self._valid_uuid(bitstream_uuid):
+                raise DSpaceException(self.config['Messages']['invalidUUID'])
+            _req = requests.delete(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams/'+bitstream_uuid, cookies=self.cookieJar, timeout=(9.05, 27))
+            if _req.status_code == requests.codes.ok:
+                return True
+            elif _req.status_code == requests.codes.unauthorized:
+                raise DSpaceException(self.config['Messages']['dspaceUnauthorisedMessage'])
+            _req.raise_for_status()
+        except:
+            raise
+
+    def dspace_item_bitstreams(self, item_uuid):
+        try:
+            print('all bitstreams for item {}'.format(item_uuid))
+            if not self._valid_uuid(item_uuid):
+                raise DSpaceException(self.config['Messages']['invalidUUID'])
+            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?limit=100', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
+            if _req.status_code == requests.codes.ok:
+                return json.loads(_req.content)
+            elif _req.status_code == requests.codes.unauthorized:
+                raise DSpaceException(self.config['Messages']['dspaceUnauthorisedMessage'])
+            _req.raise_for_status()
+        except:
+            raise
+
+    def dspace_find_item(self, collection_uuid, metadataEntry_object):
+        try:
+            print('searching for item in collection {}'.format(collection_uuid))
+            if not self._valid_uuid(collection_uuid):
+                raise DSpaceException(self.config['Messages']['invalidUUID'])
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/collections/'+collection_uuid+'/find-by-metadata-field', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=metadataEntry_object, timeout=(9.05, 60))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             elif _req.status_code == requests.codes.unauthorized:
