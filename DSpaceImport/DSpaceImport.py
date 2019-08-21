@@ -422,18 +422,18 @@ class ImportPanel(wx.Panel):
             self._populate_community()
             self.collection.Clear()
         else:
-            print("{}, {}".format(obj.uuid, obj.name))
+            print("selecting {} - {}, find subcommunities and collections".format(obj.uuid, obj.name))
             # check if children/collections are loaded
             if not obj.itemsLoaded:
                 try:
                     _comms = self.dspaceRequests.dspace_community(obj.uuid)
                     for _comm in _comms['subcommunities']:
-                        print('adding community {} to dict'.format(_comm['name']))
+                        print('adding community {}'.format(_comm['name']))
                         dso = DSO(_comm['uuid'], _comm['name'], obj.id, DSOTypes.COMMUNITY)
                         self.DSOs[dso.id] = dso
                         self.DSOs[obj.id].addChild(dso.id)
                     for _coll in _comms['collections']:
-                        print('adding collection {} to dict'.format(_coll['name']))
+                        print('adding collection {}'.format(_coll['name']))
                         dso = DSO(_coll['uuid'], _coll['name'], obj.id, DSOTypes.COLLECTION)
                         self.DSOs[dso.id] = dso
                         self.DSOs[obj.id].addCollection(dso.id)
@@ -443,19 +443,6 @@ class ImportPanel(wx.Panel):
             # get the children and add to list
             self._populate_community(obj.parent, obj.id)
             self._populate_collection(obj.id)
-
-    def _form_encoded_row(self, row):
-        _data = [] # create a list of tuples of (key,value) pairs to send
-        #for key,val in self.mappingDict.items():
-        #    if len(val.metadataField) > 0:
-        #        _data[val.metadataField] = row[val.colName]
-        for key in (key for key in self.mappingDict if len(self.mappingDict[key].metadataField) > 0):
-            print('metadata = {}, column = {}, value = {}, isnan = {}'.format(self.mappingDict[key].metadataField, self.mappingDict[key].colName, row[self.mappingDict[key].colName], pd.isna(row[self.mappingDict[key].colName])))
-            if not pd.isna(row[self.mappingDict[key].colName]):
-                print('add to list')
-                _data.append((self.mappingDict[key].metadataField, row[self.mappingDict[key].colName]))
-            #_data[self.mappingDict[key].metadataField] = row[self.mappingDict[key].colName]
-        return _data
 
     '''
      create the metadata object format for the row

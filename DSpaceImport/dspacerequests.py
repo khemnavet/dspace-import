@@ -44,7 +44,7 @@ class DspaceRequests(object):
 
     def dspace_top_communities(self):
         try:
-            print('get top communities')
+            print('dspace request - get top communities')
             _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/top-communities?expand=subCommunities,collections', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 60))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
@@ -60,7 +60,7 @@ class DspaceRequests(object):
 
     def dspace_community(self, uuid):
         try:
-            print('get community '+uuid)
+            print('dspace request - get community '+uuid)
             if not self._valid_uuid(uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/'+uuid+'?expand=subCommunities,collections', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
@@ -72,7 +72,7 @@ class DspaceRequests(object):
 
     def dspace_community_subCommunities(self, uuid):
         try:
-            print('get subcommunities for {}'.format(uuid))
+            print('dspace request - get subcommunities for {}'.format(uuid))
             if not self._valid_uuid(uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/'+uuid+'/communities', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
@@ -84,7 +84,7 @@ class DspaceRequests(object):
 
     def dspace_community_collections(self, uuid):
         try:
-            print('get collections for community {}'.format(uuid))
+            print('dspace request - get collections for community {}'.format(uuid))
             if not self._valid_uuid(uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/communities/'+uuid+'/collections', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
@@ -96,7 +96,7 @@ class DspaceRequests(object):
 
     def dspace_collection_add_item(self, collection_uuid, item_object):
         try:
-            print('adding item to collection {}'.format(collection_uuid))
+            print('dspace request - adding item to collection {}'.format(collection_uuid))
             if not self._valid_uuid(collection_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/collections/'+collection_uuid+'/items', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=item_object, timeout=(9.05, 60))
@@ -110,7 +110,7 @@ class DspaceRequests(object):
 
     def dspace_item_add_metadata(self, item_uuid, metadata_object):
         try:
-            print('adding metadata to item {}'.format(item_uuid))
+            print('dspace request - add metadata to item {}'.format(item_uuid))
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/metadata', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=metadata_object, timeout=(9.05, 60))
@@ -124,7 +124,7 @@ class DspaceRequests(object):
 
     def dspace_item_update_metadata(self, item_uuid, metadata_object):
         try:
-            print('updating metadata for item {}'.format(item_uuid))
+            print('dspace request - update metadata for item {}'.format(item_uuid))
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.put(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/metadata', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=metadata_object, timeout=(9.05, 60))
@@ -138,7 +138,7 @@ class DspaceRequests(object):
 
     def dspace_item_remove_metadata(self, item_uuid):
         try:
-            print('clearing metadata for item {}'.format(item_uuid))
+            print('dspace request - clear metadata for item {}'.format(item_uuid))
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.delete(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/metadata', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 60))
@@ -152,7 +152,7 @@ class DspaceRequests(object):
 
     def dspace_item_add_bitstream(self, item_uuid, file):
         try:
-            print('adding bitstream {} to item {}'.format(file.name, item_uuid))
+            print('dspace request - add file {} to item {}'.format(file.name, item_uuid))
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             # use requesttoolbelt to upload the files
@@ -170,7 +170,7 @@ class DspaceRequests(object):
 
     def dspace_item_remove_bitstream(self, item_uuid, bitstream_uuid):
         try:
-            print('removing bitstream {} from item {}'.format(bitstream_uuid, item_uuid))
+            print('dspace request - remove bitstream {} from item {}'.format(bitstream_uuid, item_uuid))
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             if not self._valid_uuid(bitstream_uuid):
@@ -186,7 +186,7 @@ class DspaceRequests(object):
 
     def dspace_item_bitstreams(self, item_uuid):
         try:
-            print('all bitstreams for item {}'.format(item_uuid))
+            print('dspace request - get all bitstreams for item {}'.format(item_uuid))
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?limit=100', headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
@@ -200,7 +200,7 @@ class DspaceRequests(object):
 
     def dspace_find_item(self, collection_uuid, metadataEntry_object):
         try:
-            print('searching for item in collection {}'.format(collection_uuid))
+            print('dspace request - search for item in collection {} matching metadata field'.format(collection_uuid))
             if not self._valid_uuid(collection_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/collections/'+collection_uuid+'/find-by-metadata-field', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=metadataEntry_object, timeout=(9.05, 60))
