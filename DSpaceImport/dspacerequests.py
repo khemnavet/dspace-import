@@ -203,7 +203,9 @@ class DspaceRequests(object):
             print('dspace request - search for item in collection {} matching metadata field'.format(collection_uuid))
             if not self._valid_uuid(collection_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
-            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/collections/'+collection_uuid+'/find-by-metadata-field', headers={'Accept':'application/json'}, cookies=self.cookieJar, json=metadataEntry_object, timeout=(9.05, 60))
+            # metadataEntry_object['key'] = metadata field, metadataEntry_object['value'] = field value to search for
+            data = {'query_field[]':metadataEntry_object['key'], 'query_op[]':'equals', 'query_val[]':urllib.parse.quote_plus(metadataEntry_object['value']), 'collSel[]':collection_uuid}
+            _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/filtered-items', params=data, headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 60))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             elif _req.status_code == requests.codes.unauthorized:

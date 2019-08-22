@@ -534,10 +534,10 @@ class ImportPanel(wx.Panel):
                         if len(_metadataEntry) > 0:
                             print('searching collection {} for {}'.format(_coll.uuid, _metadataEntry))
                             _search_results = self.dspaceRequests.dspace_find_item(_coll.uuid, _metadataEntry)
-                            if len(_search_results) > 0:
-                                # print(_search_results)
+                            if _search_results['item-count'] > 0:
+                                #print(_search_results)
                                 _item_found = True
-                                _dspace_item = _search_results[0] # update only the first one found
+                                _dspace_item = _search_results['items'][0] # update only the first one found
                                 # remove the existing metadata and add the ones in the current row
                                 print('updating metadata for item {}'.format(_dspace_item['uuid']))
                                 self.dspaceRequests.dspace_item_update_metadata(_dspace_item['uuid'], _item_metadata)
