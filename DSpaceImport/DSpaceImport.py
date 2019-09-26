@@ -209,6 +209,9 @@ class ImportPanel(wx.Panel):
         dupColRowSizer.Add(self.duplicateField, 0, wx.ALL, 5)
         mappingRowSizer.Add(dupColRowSizer, 0, wx.ALL, 5)
 
+        self.itemMetadataUpdate = wx.RadioBox(panel, label=labels.get('mainPanelItemMetadataExistingUpdate', 'Update metadata for existing items'), pos=(80,10), choices=[labels.get('mainPanelItemMetadataExistingUpdateOptionNo','No'), labels.get('mainPanelItemMetadataExistingUpdateOptionYes', 'Yes')], majorDimension=1, style=wx.RA_SPECIFY_ROWS)
+        mappingRowSizer.Add(self.itemMetadataUpdate, 0, wx.ALL, 5)
+
         titleColRowSizer = wx.BoxSizer(wx.HORIZONTAL)
         titleColRowSizer.Add(wx.StaticText(panel, label=labels.get('mainPanelMappingTitleField', 'Title Field')), 0, wx.ALL, 5)
         self.titleField = wx.Choice(panel)
@@ -567,8 +570,9 @@ class ImportPanel(wx.Panel):
                                     _item_found = True
                                     _dspace_item = _search_results['items'][0] # update only the first one found
                                     # remove the existing metadata and add the ones in the current row
-                                    print('updating metadata for item {}'.format(_dspace_item['uuid']))
-                                    self.dspaceRequests.dspace_item_update_metadata(_dspace_item['uuid'], _item_metadata)
+                                    if self.itemMetadataUpdate.GetSelection() == 1: # update the metadata selected
+                                        print('updating metadata for item {}'.format(_dspace_item['uuid']))
+                                        self.dspaceRequests.dspace_item_update_metadata(_dspace_item['uuid'], _item_metadata)
                                     if self.itemFileDuplicates.GetSelection() == 1: #remove existing files
                                         _item_bitstreams = self.dspaceRequests.dspace_item_bitstreams(_dspace_item['uuid'])
                                         # print(_item_bitstreams)
