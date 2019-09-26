@@ -214,6 +214,23 @@ class DspaceRequests(object):
         except:
             raise
 
+    def dspace_valid_metadata_field(self, metadataElement_list):
+        try:
+            if len(metadataElement_list) == 2:
+                print('dspace request - find metadata element, schema: {}, element: {}'.format(metadataElement_list[0], metadataElement_list[1]))
+                _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/registries/schema/'+metadataElement_list[0]+'/metadata-fields/'+metadataElement_list[1], headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
+            elif len(metadataElement_list) == 3:
+                print('dspace request - find metadata element, schema: {}, element: {}, qualifier: {}'.format(metadataElement_list[0], metadataElement_list[1], metadataElement_list[2]))
+                _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/registries/schema/'+metadataElement_list[0]+'/metadata-fields/'+metadataElement_list[1]+'/'+metadataElement_list[2], headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 27))
+            else:
+                raise DSpaceException(self.config['Messages']['invalidMetadataFieldLengthMessage'])
+            if _req.status_code == requests.codes.ok:
+                return True
+            else:
+                return False
+        except:
+            raise
+
 class DSpaceException(Exception):
     def __init__(self, msg):
         self.msg = msg

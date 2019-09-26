@@ -57,12 +57,13 @@ class LogonDialog(wx.Dialog):
 
 
 class MappingDialog(wx.Dialog):
-    def __init__(self, config, mappingData, fileName):
+    def __init__(self, config, mappingData, fileName, dspaceRequests):
         labels = config['Labels']
         wx.Dialog.__init__(self, None, title=labels.get('mappingDialogTitle','Mapping'), size=(500,500))
         self.mappingData = mappingData
         self.fileName = fileName
         self.config = config
+        self.dspaceRequests = dspaceRequests
 
         panel = wx.lib.scrolledpanel.ScrolledPanel(self)
         panel.SetupScrolling()
@@ -94,29 +95,55 @@ class MappingDialog(wx.Dialog):
 
     def save_mapping(self, event):
         print("save button clicked")
-        self.mappingData.clear()
-        _newMapping = configparser.ConfigParser()
-        _newMapping.add_section(self.config['Mapping']['mappingSectionName'])
-        for index in range(0,self.mappingListCtrl.GetNumberRows()):
-            if len(self.mappingListCtrl.GetCellValue(index, 0).strip()) > 0 and len(self.mappingListCtrl.GetCellValue(index, 1).strip()) > 0:
-                row = Mapping(self.mappingListCtrl.GetCellValue(index, 0).strip().upper(), self.mappingListCtrl.GetCellValue(index, 1).strip())
-                self.mappingData[row.colName] = row
-                _newMapping.set(self.config['Mapping']['mappingSectionName'], row.colName, row.metadataField)
-        # prompt user to save the mapping 
-        with wx.FileDialog(self, message=self.config['Messages']['fileSaveAsMessage'], defaultDir=str(self.fileName.parent), defaultFile=self.fileName.name, wildcard=self.config['FileTypeWildcard']['mapFileWildcard'], style=wx.FD_SAVE) as saveDialog:
-            if saveDialog.ShowModal() == wx.ID_OK:
-                path = Path((saveDialog.GetPath()).replace('\\', '/'))
-                # write the file
-                try:
-                    with open(path, "wt") as file:
-                        _newMapping.write(file,False)
+        # check the metadata fields entered, has to be 2 or 3 segments
+        _metadataOk = True
+        try:
+            for index in range(0,self.mappingListCtrl.GetNumberRows()):
+                _colourDB = wx.ColourDatabase()
+                self.mappingListCtrl.SetCellBackgroundColour(index, 1, _colourDB.Find('WHITE'))
+                if len(self.mappingListCtrl.GetCellValue(index, 0).strip()) > 0 and len(self.mappingListCtrl.GetCellValue(index, 1).strip()) > 0:
+                    _metadataSplit = self.mappingListCtrl.GetCellValue(index, 1).strip().split('.')
+                    if not (len(_metadataSplit) == 2 or len(_metadataSplit) == 3):
+                        self.mappingListCtrl.SetCellBackgroundColour(index, 1, _colourDB.Find('RED'))
+                        _metadataOk = False
+                    # elif not self.dspaceRequests.dspace_valid_metadata_field(_metadataSplit):
+                    #    self.mappingListCtrl.SetCellBackgroundColour(index, 1, _colourDB.Find('RED'))
+                    #    _metadataOk = False
+                        
+        except Exception as e:
+            with wx.MessageDialog(None, message=str(e), caption=self.config['Messages']['setupMappingErrorBoxTitle'], style=wx.ICON_ERROR) as dlg:
+                dlg.ShowModal()
+            _metadataOk = False
 
-                    with wx.MessageDialog(None, message=self.config['Messages']['fileSaveSuccessfulMessage'], caption=self.config['Messages']['fileSaveSuccessfulBoxTitle'], style=wx.ICON_INFORMATION) as dlg:
-                        dlg.ShowModal()
-                except BaseException:
-                    with wx.MessageDialog(None, message=self.config['Messages']['fileSaveFailedMessage'], caption=self.config['Messages']['fileSaveFailedBoxTitle'], style=wx.ICON_ERROR) as dlg:
-                        dlg.showModal()
-                
+        if _metadataOk:
+            self.mappingListCtrl.ForceRefresh()
+            self.mappingData.clear()
+            _newMapping = configparser.ConfigParser()
+            _newMapping.add_section(self.config['Mapping']['mappingSectionName'])
+            for index in range(0,self.mappingListCtrl.GetNumberRows()):
+                if len(self.mappingListCtrl.GetCellValue(index, 0).strip()) > 0 and len(self.mappingListCtrl.GetCellValue(index, 1).strip()) > 0:
+                    row = Mapping(self.mappingListCtrl.GetCellValue(index, 0).strip().upper(), self.mappingListCtrl.GetCellValue(index, 1).strip())
+                    self.mappingData[row.colName] = row
+                    _newMapping.set(self.config['Mapping']['mappingSectionName'], row.colName, row.metadataField)
+                elif len(self.mappingListCtrl.GetCellValue(index, 0).strip()) > 0: # column does not have a mapping so add to the mappingData as empty so that the column will be available for the other dropdowns
+                    row = Mapping(self.mappingListCtrl.GetCellValue(index, 0).strip().upper(), '')
+                    self.mappingData[row.colName] = row
+            # prompt user to save the mapping 
+            with wx.FileDialog(self, message=self.config['Messages']['fileSaveAsMessage'], defaultDir=str(self.fileName.parent), defaultFile=self.fileName.name, wildcard=self.config['FileTypeWildcard']['mapFileWildcard'], style=wx.FD_SAVE) as saveDialog:
+                if saveDialog.ShowModal() == wx.ID_OK:
+                    path = Path((saveDialog.GetPath()).replace('\\', '/'))
+                    # write the file
+                    try:
+                        with open(path, "wt") as file:
+                            _newMapping.write(file,False)
+
+                        with wx.MessageDialog(None, message=self.config['Messages']['fileSaveSuccessfulMessage'], caption=self.config['Messages']['fileSaveSuccessfulBoxTitle'], style=wx.ICON_INFORMATION) as dlg:
+                            dlg.ShowModal()
+                    except BaseException:
+                        with wx.MessageDialog(None, message=self.config['Messages']['fileSaveFailedMessage'], caption=self.config['Messages']['fileSaveFailedBoxTitle'], style=wx.ICON_ERROR) as dlg:
+                            dlg.showModal()
+        else:
+            self.mappingListCtrl.ForceRefresh()
 
 
 class ImportPanel(wx.Panel):
@@ -344,7 +371,7 @@ class ImportPanel(wx.Panel):
 
     def show_mapping_dialog(self, event):
         # print("open mapping dialog")
-        with MappingDialog(self.config, self.mappingDict, self.fileName) as mappingDlg:
+        with MappingDialog(self.config, self.mappingDict, self.fileName, self.dspaceRequests) as mappingDlg:
             mappingDlg.ShowModal()
             self.mappingDict = mappingDlg.mappingData
             self.set_column_choices()
