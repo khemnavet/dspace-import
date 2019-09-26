@@ -524,48 +524,49 @@ class ImportPanel(wx.Panel):
             for index, row in self.importDataFrame.iterrows():
                 # mapping between row and dc fields
                 print('data for row {}'.format(index))
-                _item_metadata = self._metadata_data(row)
-                if len(_item_metadata) > 0:
-                    # check if duplicates are to be checked, field len(self.duplicateField) gt 0 and if duplicates exist, use that item else create new
-                    _item_found = False
-                    if not (self.duplicateField.GetSelection() == wx.NOT_FOUND):
-                        # metadata for find
-                        _metadataEntry = self._metadata_single_field_data(row, self.duplicateField.GetString(self.duplicateField.GetSelection()))
-                        if len(_metadataEntry) > 0:
-                            print('searching collection {} for {}'.format(_coll.uuid, _metadataEntry))
-                            _search_results = self.dspaceRequests.dspace_find_item(_coll.uuid, _metadataEntry)
-                            if _search_results['item-count'] > 0:
-                                #print(_search_results)
-                                _item_found = True
-                                _dspace_item = _search_results['items'][0] # update only the first one found
-                                # remove the existing metadata and add the ones in the current row
-                                print('updating metadata for item {}'.format(_dspace_item['uuid']))
-                                self.dspaceRequests.dspace_item_update_metadata(_dspace_item['uuid'], _item_metadata)
-                                if self.itemFileDuplicates.GetSelection() == 1: #remove existing files
-                                    _item_bitstreams = self.dspaceRequests.dspace_item_bitstreams(_dspace_item['uuid'])
-                                    # print(_item_bitstreams)
-                                    for _bitstream in _item_bitstreams:
-                                        self.dspaceRequests.dspace_item_remove_bitstream(_dspace_item['uuid'], _bitstream['uuid'])
+                if not pd.isna(row[self.titleField.GetString(self.titleField.GetSelection())]): #title column has a value
+                    _item_metadata = self._metadata_data(row)
+                    if len(_item_metadata) > 0:
+                        # check if duplicates are to be checked, field len(self.duplicateField) gt 0 and if duplicates exist, use that item else create new
+                        _item_found = False
+                        if not (self.duplicateField.GetSelection() == wx.NOT_FOUND):
+                            # metadata for find
+                            _metadataEntry = self._metadata_single_field_data(row, self.duplicateField.GetString(self.duplicateField.GetSelection()))
+                            if len(_metadataEntry) > 0:
+                                print('searching collection {} for {}'.format(_coll.uuid, _metadataEntry))
+                                _search_results = self.dspaceRequests.dspace_find_item(_coll.uuid, _metadataEntry)
+                                if _search_results['item-count'] > 0:
+                                    #print(_search_results)
+                                    _item_found = True
+                                    _dspace_item = _search_results['items'][0] # update only the first one found
+                                    # remove the existing metadata and add the ones in the current row
+                                    print('updating metadata for item {}'.format(_dspace_item['uuid']))
+                                    self.dspaceRequests.dspace_item_update_metadata(_dspace_item['uuid'], _item_metadata)
+                                    if self.itemFileDuplicates.GetSelection() == 1: #remove existing files
+                                        _item_bitstreams = self.dspaceRequests.dspace_item_bitstreams(_dspace_item['uuid'])
+                                        # print(_item_bitstreams)
+                                        for _bitstream in _item_bitstreams:
+                                            self.dspaceRequests.dspace_item_remove_bitstream(_dspace_item['uuid'], _bitstream['uuid'])
 
-                    if not _item_found:
-                        # have to post an item object to create it in collection
-                        _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':_item_metadata}
-                        print('sending {} to dspace'.format(_item_obj))
-                        _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
-                        print('item returned: {}'.format(_dspace_item))
-                    # the file for this item
-                    if len(self.itemFileDirPicker.GetPath()) > 0:
-                        _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]
-                        if len(_fname.strip()) > 0: # if the file name is set - can have items without files
-                            if self.itemFileProcess.GetSelection() == 0: # exact matching
-                                _file = _fileDir/(_fname.strip()+_ext) # the file
-                                print('sending file {}'.format(_file.name))
-                                _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
-                            elif self.itemFileProcess.GetSelection() == 1: # begins with matching
-                                _files = list(_fileDir.glob(_fname+'*'+_ext)) # returns a list
-                                for _file in _files:
+                        if not _item_found:
+                            # have to post an item object to create it in collection
+                            _item_obj = {'name':row[self.titleField.GetString(self.titleField.GetSelection())], 'type':'item', 'metadata':_item_metadata}
+                            print('sending {} to dspace'.format(_item_obj))
+                            _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
+                            print('item returned: {}'.format(_dspace_item))
+                        # the file for this item
+                        if len(self.itemFileDirPicker.GetPath()) > 0:
+                            _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]
+                            if not pd.isna(_fname) and len(_fname.strip()) > 0: # if the file name is set - can have items without files
+                                if self.itemFileProcess.GetSelection() == 0: # exact matching
+                                    _file = _fileDir/(_fname.strip()+_ext) # the file
                                     print('sending file {}'.format(_file.name))
                                     _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
+                                elif self.itemFileProcess.GetSelection() == 1: # begins with matching
+                                    _files = list(_fileDir.glob(_fname+'*'+_ext)) # returns a list
+                                    for _file in _files:
+                                        print('sending file {}'.format(_file.name))
+                                        _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
                 # increment counter displaying current row imported
                 self.currImp.SetValue(str(int(self.currImp.GetValue()) + 1))
 
