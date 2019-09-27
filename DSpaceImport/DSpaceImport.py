@@ -5,6 +5,7 @@ import wx.lib.scrolledpanel as scrolled
 import configparser
 import pandas as pd
 from pathlib import Path
+import datetime
 
 from DataObjects import Mapping, DSOTypes, DSO
 import dspacerequests
@@ -147,7 +148,7 @@ class MappingDialog(wx.Dialog):
 
 
 class ImportPanel(wx.Panel):
-    def __init__(self, parent, authenticated, authCookie, config, dspaceRequests):
+    def __init__(self, parent, authenticated, authCookie, config, dspaceRequests, email):
         super().__init__(parent)
         labels = config['Labels']
 
@@ -165,6 +166,7 @@ class ImportPanel(wx.Panel):
         self.excelFileObj = None
         self.importDataFrame = None
         self.dspaceRequests = dspaceRequests
+        self.email = email
         self.topCommunities = []
         self.DSOs = {}
 
@@ -559,6 +561,8 @@ class ImportPanel(wx.Panel):
                     if len(_item_metadata) > 0:
                         # check if duplicates are to be checked, field len(self.duplicateField) gt 0 and if duplicates exist, use that item else create new
                         _item_found = False
+                        _bitstream_removed = ''
+                        _metadata_changed = False
                         if not (self.duplicateField.GetSelection() == wx.NOT_FOUND):
                             # metadata for find
                             _metadataEntry = self._metadata_single_field_data(row, self.duplicateField.GetString(self.duplicateField.GetSelection()))
@@ -573,11 +577,13 @@ class ImportPanel(wx.Panel):
                                     if self.itemMetadataUpdate.GetSelection() == 1: # update the metadata selected
                                         print('updating metadata for item {}'.format(_dspace_item['uuid']))
                                         self.dspaceRequests.dspace_item_update_metadata(_dspace_item['uuid'], _item_metadata)
+                                        _metadata_changed = True
                                     if self.itemFileDuplicates.GetSelection() == 1: #remove existing files
                                         _item_bitstreams = self.dspaceRequests.dspace_item_bitstreams(_dspace_item['uuid'])
                                         # print(_item_bitstreams)
                                         for _bitstream in _item_bitstreams:
                                             self.dspaceRequests.dspace_item_remove_bitstream(_dspace_item['uuid'], _bitstream['uuid'])
+                                            _bitstream_removed = _bitstream_removed + ' ' + _bitstream['name']
 
                         if not _item_found:
                             # have to post an item object to create it in collection
@@ -586,6 +592,7 @@ class ImportPanel(wx.Panel):
                             _dspace_item = self.dspaceRequests.dspace_collection_add_item(_coll.uuid, _item_obj)
                             print('item returned: {}'.format(_dspace_item))
                         # the file for this item
+                        _bitstream_added = ''
                         if len(self.itemFileDirPicker.GetPath()) > 0:
                             _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]
                             if not pd.isna(_fname) and len(_fname.strip()) > 0: # if the file name is set - can have items without files
@@ -593,11 +600,33 @@ class ImportPanel(wx.Panel):
                                     _file = _fileDir/(_fname.strip()+_ext) # the file
                                     print('sending file {}'.format(_file.name))
                                     _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
+                                    _bitstream_added = _bitstream_obj['name'] + ': ' + str(_bitstream_obj['sizeBytes']) + 'bytes, checksum: ' + _bitstream_obj['checkSum']['value'] + '(' + _bitstream_obj['checkSum']['checkSumAlgorithm'] + ')'
                                 elif self.itemFileProcess.GetSelection() == 1: # begins with matching
                                     _files = list(_fileDir.glob(_fname+'*'+_ext)) # returns a list
                                     for _file in _files:
                                         print('sending file {}'.format(_file.name))
                                         _bitstream_obj = self.dspaceRequests.dspace_item_add_bitstream(_dspace_item['uuid'], _file)
+                                        _bitstream_added = _bitstream_added + ' ' + _bitstream_obj['name'] + ': ' + str(_bitstream_obj['sizeBytes']) + 'bytes, checksum: ' + _bitstream_obj['checkSum']['value'] + '(' + _bitstream_obj['checkSum']['checkSumAlgorithm'] + ')'
+                        # add item provenance
+                        _provenance = {}
+                        _provenance['key'] = 'dc.description.provenance'
+                        _provenance['language'] = 'en_US'
+                        _utcTime = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+                        _metadata = []
+                        if _item_found: #item was updated so record it was updated
+                            _provenance['value'] = 'Edited by ' + self.email + ' on ' + _utcTime + '(GMT).'
+                            if _metadata_changed:
+                                _provenance['value'] = _provenance['value'] + ' Metadata changed.'
+                            if len(_bitstream_removed) > 0:
+                                _provenance['value'] = _provenance['value'] + ' Removed ' + _bitstream_removed + '.'
+                            if len(_bitstream_added) > 0:
+                                _provenance['value'] = _provenance['value'] + ' Added ' + _bitstream_added + '.'
+                        else: #item was added
+                            _provenance['value'] = 'Submitted by ' + self.email + ' on ' + _utcTime + '(GMT).'
+                            if len(_bitstream_added) > 0:
+                                _provenance['value'] = _provenance['value'] + ' Added ' + _bitstream_added + '.'
+                        _metadata.append(_provenance)
+                        self.dspaceRequests.dspace_item_add_metadata(_dspace_item['uuid'], _metadata)
                 # increment counter displaying current row imported
                 self.currImp.SetValue(str(int(self.currImp.GetValue()) + 1))
 
@@ -621,12 +650,13 @@ class ImportFrame(wx.Frame):
             logonDlg.ShowModal()
             self.authenticated = logonDlg.loggedIn
             self.authCookie = logonDlg.loginCookie
+            self.email = logonDlg.email.GetValue()
         
         if not self.authenticated:
             self.Close()
         else :
             # print (self.authenticated)
-            panel = ImportPanel(self, self.authenticated, self.authCookie, config, dspaceRequests)
+            panel = ImportPanel(self, self.authenticated, self.authCookie, config, dspaceRequests, self.email)
             self.Show()
 
     def onClose(self, event):
