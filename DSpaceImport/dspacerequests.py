@@ -155,11 +155,11 @@ class DspaceRequests(object):
             print('dspace request - add file {} to item {}'.format(file.name, item_uuid))
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
-            # use requesttoolbelt to upload the files
-            _multi_part_encoder = MultipartEncoder(fields={'file':(file.name, open(file, 'rb'), mimetypes.types_map[file.suffix])})
-            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json','Content-Type':_multi_part_encoder.content_type}, cookies=self.cookieJar, data=_multi_part_encoder, timeout=(9.05, 120))
-            #_file_to_post = {'file':(file.name, open(file, 'rb'), mimetypes.types_map[file.suffix])}
-            #_req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, files=_file_to_post, timeout=(9.05, 120))
+            data = open(file, 'rb')
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, data=data, timeout=(9.05, 120))
+            # use requesttoolbelt to upload the files, this method is adding extra headers to the file so revert to the data method above
+            #_multi_part_encoder = MultipartEncoder(fields={'file':(file.name.replace(' ','_'), open(file, 'rb'), mimetypes.types_map[file.suffix.lower()])})
+            #_req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, data=_multi_part_encoder, timeout=(9.05, 120))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
             elif _req.status_code == requests.codes.unauthorized:
