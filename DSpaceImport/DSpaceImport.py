@@ -569,6 +569,7 @@ class ImportPanel(wx.Panel):
                             if len(_metadataEntry) > 0:
                                 print('searching collection {} for {}'.format(_coll.uuid, _metadataEntry))
                                 _search_results = self.dspaceRequests.dspace_find_item(_coll.uuid, _metadataEntry)
+                                print('found {} records'.format(_search_results['item-count']))
                                 if _search_results['item-count'] > 0:
                                     #print(_search_results)
                                     _item_found = True

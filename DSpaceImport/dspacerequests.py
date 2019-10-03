@@ -204,7 +204,7 @@ class DspaceRequests(object):
             if not self._valid_uuid(collection_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             # metadataEntry_object['key'] = metadata field, metadataEntry_object['value'] = field value to search for
-            data = {'query_field[]':metadataEntry_object['key'], 'query_op[]':'equals', 'query_val[]':urllib.parse.quote_plus(metadataEntry_object['value']), 'collSel[]':collection_uuid}
+            data = {'query_field[]':metadataEntry_object['key'], 'query_op[]':'equals', 'query_val[]':metadataEntry_object['value'], 'collSel[]':collection_uuid}
             _req = requests.get(self.config['DSpace']['dspaceRestURL']+'/filtered-items', params=data, headers={'Accept':'application/json'}, cookies=self.cookieJar, timeout=(9.05, 60))
             if _req.status_code == requests.codes.ok:
                 return json.loads(_req.content)
