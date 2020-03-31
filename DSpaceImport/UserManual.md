@@ -102,4 +102,11 @@ The items are uploaded to the selected collection by clicking on the "Import" bu
 <figcaption><b>Figure 11</b>: Import button</figcaption>
 </figure>
 
+The application does a number of checks, depending on the options chosen and the data in the Excel file, when the “Import” button is clicked. If there are any errors, these will be shown in a dialog popup. An example is shown in figure 12.
+
+<figure>
+<img src="images/import_error.png" alt="Import error example">
+<figcaption><b>Figure 12</b>: Import Error Example</figcaption>
+</figure>
+
 The application will display a message "Imported items successfully" when all the items have been uploaded to the collection.

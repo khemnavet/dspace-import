@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Dspace Importer</title>
+</head>
+<body>
+
+    <h2 id="dspace-importer">Dspace Importer</h2>
+<p>The application is used to batch add items to a collection in DSpace. The metadata for the items are entered into an Excel file.</p>
+<h3 id="the-excel-file">The Excel File</h3>
+<p>The file has one item per row. The first row has to contain the column headings. The column heading names can be repeated. The column heading names are mapped to metadata elements in DSpace. The Excel file has one column for the title of the item. This column is required. The application imports one sheet from the Excel file at a time.</p>
+<h3 id="starting-the-application">Starting the Application</h3>
+<p>The application is started from the command prompt. Within the command prompt, change directory to the directory containing the application files using the cd command. The application is started using the command <code>py DSpaceImport.py</code>.</p>
+<h3 id="using-the-application">Using the Application</h3>
+<p>The import is done by a DSpace user. When the application opens, a logon prompt is shown (figure 1).  The user will need to have submission access to the collection the items are to be uploaded to.</p>
+<figure>
+<img src="images/logon_screen.png" alt="Logon Screen">
+<figcaption><b>Figure 1</b>: Logon Screen</figcaption>
+</figure>
+<p>The application then opens upon successful, the application will be displayed (figure 2).</p>
+<figure>
+<img src="images/application_form.png" alt="Application Screen">
+<figcaption><b>Figure 2</b>: Application Screen</figcaption>
+</figure>
+<p>The Excel file is chosen using the &quot;Select Excel file to import&quot; file select field. Click on the &quot;Browse&quot; button to browse to the directory containing the file. The &quot;Choose Excel sheet to import&quot; dropdown list is redrawn with all the sheets in the file (figure 3). The sheet is then chosen from this list.</p>
+<figure>
+<img src="images/choose_excel.png" alt="Select Excel sheet to import">
+<figcaption><b>Figure 3</b>: Select Excel sheet to import</figcaption>
+</figure>
+<p>The mapping between the column heading names and the DSpace metadata elements is then setup. The mapping can be setup by clicking on the &quot;Setup Mapping&quot; button. A popup is shown with all the columns from the Excel file (figure 4).</p>
+<figure>
+<img src="images/mapping_screen.png" alt="Mapping Screen">
+<figcaption><b>Figure 4</b>: Mapping Screen</figcaption>
+</figure>
+<p>The metadata element is entered in the Metadata Field column. The metadata element is entered in the format <code>&lt;namespace&gt;.&lt;element&gt;.&lt;qualifier&gt;</code> for example, <code>dc.title</code> or <code>dc.contributor.author</code>. A metadata element does not have to be entered for all the Excel columns. Any column without a mapping will be skipped.</p>
+<p>The mapping is set by clicking on the &quot;Save Mapping&quot; button. The application also prompt to save the mapping to a file. This is optional. Saving the mapping to a file (with a <code>.map</code> extension) means that the mapping can be reused or shared with another user. The mapping can be reused if an Excel file with the same column heading names is used to import another set of data. The application will use the mapping file to match the column heading names to the metadata elements.</p>
+<p>A previously saved mapping can be used by clicking on the &quot;Select mapping file&quot; file select (figure 5).</p>
+<figure>
+<img src="images/select_mapping_file.png" alt="Select Mapping File Screen">
+<figcaption><b>Figure 5</b>: Select mapping file</figcaption>
+</figure>
+<p>The application can also, optionally, update the metadata of existing items in the collection or do not import the item from the Excel file if a duplicate is found. The Excel sheet will need to have a column that will be used to search for duplicates. This checking will be skipped if no columns are chosen. Figure 6 shows the controls to set this functionality.</p>
+<figure>
+<img src="images/update_existing_metadata.png" alt="Update existing metadata controls">
+<figcaption><b>Figure 6</b></figcaption>
+</figure>
+<p>The column in the Excel sheet that will be used to check for duplicates is chosen from the &quot;Select column to check for duplicates&quot; dropdown list. The &quot;Update the metadata for existing items?&quot; radio button is used to indicate if the duplicate items are updated or ignored.</p>
+<p>The column containing the title for the items is then selected using the &quot;Select column with title for items&quot; dropdown (figure 7). This is mandatory.</p>
+<figure>
+<img src="images/select_title_column.png" alt="Select title column">
+<figcaption><b>Figure 7</b>: Select title column</figcaption>
+</figure>
+<p>Files can be uploaded with each item. The Excel file will have a column with the name of the file. If the column is blank for a particular item, the item will be imported with just the metadata. Figure 8 shows the file upload controls.</p>
+<figure>
+<img src="images/file_upload_controls.png" alt="File upload controls">
+<figcaption><b>Figure 8</b>: File upload controls</figcaption>
+</figure>
+<p>The directory where the files are stored is chosen using the &quot;Select directory containing item files&quot; directory select. The application can search subdirectories if the subdirectory is included in the column for the file name in the Excel file. For example, <code>dir1/file1.pdf</code> will cause the application to look in the <code>dir1</code> subdirectory for <code>file1.pdf</code>. If this is left blank, no files will be uploaded with the items.</p>
+<p>The &quot;Select column containing file names&quot; dropdown is used to select the column from the Excel file with the file names. This is mandatory. The Excel file can have rows with the file name column blank. In this case, the item metadata alone will be imported.</p>
+<p>The &quot;Enter extension of the item files&quot; textbox has the extension of the files. If the names are entered in Excel without the extension, the extension can be entered here and the application will search for the file name. The application does not support a mixture of file names with and without the extension.</p>
+<p>The &quot;How to match item file names?&quot; radio button indicates how the application will search for file names. If the &quot;Exact match&quot; option is chosen, the application will use the file name as it is entered in the Excel file. This will upload a single file per item. The &quot;Begins with column value&quot; option causes the application to search for files with names starting with what is given in the file name column in Excel. The &quot;Enter extension of the item files&quot; textbox is required in this case and is used to search for the files. This option can be used to upload more than one file for an item. For example, if the file name column in the Excel file has <code>item_</code> and the file extension is <code>.pdf</code>, the application will match files <code>item_1.pdf</code>, <code>item_2.pdf</code>, <code>item_three.pdf</code>, and upload them with the item.</p>
+<p>The &quot;Remove existing files for duplicate items?&quot; radio button indicates how the application will treat with duplicates. If the &quot;Select column to check for duplicates&quot; dropdown is filled (figure 6) and &quot;Remove existing files for duplicate items?&quot; is set to &quot;Yes&quot;, the existing files for the duplicate items are removed and the files specified for the item in the Excel file (if any) are uploaded. If the radio button value is set to &quot;No&quot;, the files are not removed and the files specified in the Excel file (if any) are added to the item.</p>
+<p>The collection to upload the items to is then selected (figure 9). The community is selected from the community dropdown. The collection dropdown will redraw to display the collections in the selected community.</p>
+<figure>
+<img src="images/select_collection.png" alt="Select Collection">
+<figcaption><b>Figure 9</b>: Select Collection</figcaption>
+</figure>
+<p>To go to the parent community, there is a &quot;Back&quot; option under the selected community (figure 10). This will display the communities previously displayed.</p>
+<figure>
+<img src="images/community_back_option.png" alt="Back option">
+<figcaption><b>Figure 10</b></figcaption>
+</figure>
+<p>The items are uploaded to the selected collection by clicking on the &quot;Import&quot; button (figure 11).</p>
+<figure>
+<img src="images/import_button_control.png" alt="Import button">
+<figcaption><b>Figure 11</b>: Import button</figcaption>
+</figure>
+<p>The application does a number of checks, depending on the options chosen and the data in the Excel file, when the �Import� button is clicked. If there are any errors, these will be shown in a dialog popup. An example is shown in figure 12.</p>
+<figure>
+<img src="images/import_error.png" alt="Import error example">
+<figcaption><b>Figure 12</b>: Import Error Example</figcaption>
+</figure>
+<p>The application will display a message &quot;Imported items successfully&quot; when all the items have been uploaded to the collection.</p>
+
+
+</body>
+</html>
