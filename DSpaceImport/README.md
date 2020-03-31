@@ -2,7 +2,7 @@
 
 The application is used to batch add items to a collection in DSpace. The metadata for the items are entered into an Excel file.
 
-The usage instructions can be found in the [user manual](UserManual.md).
+The usage instructions can be read online at [user manual](UserManual.md) or downloaded as a [PDF](pdf/UserManual.pdf).
 
 #### Installation (Windows)
 

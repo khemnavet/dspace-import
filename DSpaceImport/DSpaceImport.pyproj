@@ -37,6 +37,11 @@
     <Content Include="config.ini" />
     <Content Include="README.md" />
     <Content Include="requirements.txt" />
+    <Content Include="UserManual.html">
+      <SubType>Content</SubType>
+      <DependentUpon>UserManual.md</DependentUpon>
+    </Content>
+    <Content Include="UserManual.md" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
