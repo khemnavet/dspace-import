@@ -32,7 +32,7 @@ Change directory to where the application files are:
 
 Install the required libraries:
 
-`..\Scripts\python.exe pip install -r requirements.txt`
+`..\Scripts\python.exe -m pip install -r requirements.txt`
 
 The application can be started using
 
