@@ -4,7 +4,7 @@ import json
 import re
 import mimetypes
 from pathlib import Path
-from requests_toolbelt.multipart.encoder import MultipartEncoder
+# from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 __all__ = ['DspaceRequests','LogonException']
 
@@ -156,7 +156,7 @@ class DspaceRequests(object):
             if not self._valid_uuid(item_uuid):
                 raise DSpaceException(self.config['Messages']['invalidUUID'])
             data = open(file, 'rb')
-            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, data=data, timeout=(9.05, 120))
+            _req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json','Content-Type':mimetypes.types_map[file.suffix.lower()]}, cookies=self.cookieJar, data=data, timeout=(9.05, 120))
             # use requesttoolbelt to upload the files, this method is adding extra headers to the file so revert to the data method above
             #_multi_part_encoder = MultipartEncoder(fields={'file':(file.name.replace(' ','_'), open(file, 'rb'), mimetypes.types_map[file.suffix.lower()])})
             #_req = requests.post(self.config['DSpace']['dspaceRestURL']+'/items/'+item_uuid+'/bitstreams?name='+urllib.parse.quote_plus(file.name), headers={'Accept':'application/json'}, cookies=self.cookieJar, data=_multi_part_encoder, timeout=(9.05, 120))

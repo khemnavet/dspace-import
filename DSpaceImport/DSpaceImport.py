@@ -3,7 +3,8 @@ import wx
 import wx.grid as gridlib
 import wx.lib.scrolledpanel as scrolled
 import configparser
-import pandas as pd
+# import pandas as pd
+from pandas import ExcelFile, isna
 from pathlib import Path
 import datetime
 
@@ -335,7 +336,7 @@ class ImportPanel(wx.Panel):
             self.importFile = Path((self.excelPicker.GetPath()).replace('\\','/'))
             # print(self.importFile)
             # print(self.importFile.suffix)
-            self.excelFileObj = pd.ExcelFile(self.importFile)
+            self.excelFileObj = ExcelFile(self.importFile)
             self.excelSheet.SetItems(self.excelFileObj.sheet_names)
             self.excelSheet.InvalidateBestSize() 
             self.excelSheet.SetSize(self.excelSheet.GetBestSize()) 
@@ -485,12 +486,12 @@ class ImportPanel(wx.Panel):
         _data = []
         for key in (key for key in self.mappingDict if len(self.mappingDict[key].metadataField) > 0):
             # print('metadata = {}, column = {}, value = {}, isnan = {}'.format(self.mappingDict[key].metadataField, self.mappingDict[key].colName, row[self.mappingDict[key].colName], pd.isna(row[self.mappingDict[key].colName])))
-            if not pd.isna(row[self.mappingDict[key].colName]):
+            if not isna(row[self.mappingDict[key].colName]):
                 _data.append({'key':self.mappingDict[key].metadataField, 'value':row[self.mappingDict[key].colName], 'language':''})
         return _data
 
     def _metadata_single_field_data(self, row, key):
-        if pd.isna(row[key]):
+        if isna(row[key]):
             return {}
         return {'key':self.mappingDict[key].metadataField, 'value':row[self.mappingDict[key].colName], 'language':''}
 
@@ -532,7 +533,7 @@ class ImportPanel(wx.Panel):
                 _missingList = []
                 for _fname in self.importDataFrame[self.itemFileField.GetString(self.itemFileField.GetSelection())]:
                     # if filename set - can have records without filenames
-                    if not pd.isna(_fname) and len(_fname.strip()) > 0:
+                    if not isna(_fname) and len(_fname.strip()) > 0:
                         if self.itemFileProcess.GetSelection() == 0: # exact matching
                             _file = _fileDir/(_fname.strip()+_ext)
                             # print('checking file {} exists'.format(_file))
@@ -556,7 +557,7 @@ class ImportPanel(wx.Panel):
             for index, row in self.importDataFrame.iterrows():
                 # mapping between row and dc fields
                 print('data for row {}'.format(index))
-                if not pd.isna(row[self.titleField.GetString(self.titleField.GetSelection())]): #title column has a value
+                if not isna(row[self.titleField.GetString(self.titleField.GetSelection())]): #title column has a value
                     _item_metadata = self._metadata_data(row)
                     if len(_item_metadata) > 0:
                         # check if duplicates are to be checked, field len(self.duplicateField) gt 0 and if duplicates exist, use that item else create new
@@ -596,7 +597,7 @@ class ImportPanel(wx.Panel):
                         _bitstream_added = ''
                         if len(self.itemFileDirPicker.GetPath()) > 0:
                             _fname = row[self.itemFileField.GetString(self.itemFileField.GetSelection())]
-                            if not pd.isna(_fname) and len(_fname.strip()) > 0: # if the file name is set - can have items without files
+                            if not isna(_fname) and len(_fname.strip()) > 0: # if the file name is set - can have items without files
                                 if self.itemFileProcess.GetSelection() == 0: # exact matching
                                     _file = _fileDir/(_fname.strip()+_ext) # the file
                                     print('sending file {}'.format(_file.name))
