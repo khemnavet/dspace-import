@@ -1,0 +1,4 @@
+appMainTitle = "UWISpace Importer"
+
+[DSpace]
+dspaceRestURL = "http://localhost:8081/server"
