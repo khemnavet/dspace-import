@@ -1,0 +1,6 @@
+# Virtual environment
+.venv/
+
+# Python Tools for Visual Studio (PTVS)
+__pycache__/
+*.pyc
