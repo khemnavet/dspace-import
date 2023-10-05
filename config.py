@@ -5,3 +5,6 @@ class ImporterConfig:
 
     def dspace_rest_url(self) -> str:
         return self.__config["DSpace"]["dspaceRestURL"]
+    
+    def locale(self) -> str:
+        return self.__config["locale"]
