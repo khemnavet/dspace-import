@@ -32,8 +32,7 @@ if __name__ == "__main__":
     wizard.setWindowTitle(_("app_title"))
     # wizard pages
     # login page
-    login_page = LoginPage(config, lang_i18n)
-    wizard.addPage(login_page.create_login_page())
+    wizard.addPage(LoginPage(config, lang_i18n))
     wizard.show()
 
     app.exec()
