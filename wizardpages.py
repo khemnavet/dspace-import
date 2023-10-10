@@ -6,23 +6,24 @@ from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression
 
 from config import ImporterConfig
-from metadataservice import MetadataService
-
+from dataobjects import ImporterData
+from dspaceauthservice import AuthException, DspaceAuthService
 
 class DSpaceWizardPages(QWizardPage):
-    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
         super().__init__()
-        self.__config = config
-        self.__lang_i18n = lang_i18n
+        self._config = config
+        self._shared_data = shared_data
+        self._lang_i18n = lang_i18n
         lang_i18n.install()
 
     def translation_value(self, translation_key: str) -> str:
-        return self.__lang_i18n.gettext(translation_key)
+        return self._lang_i18n.gettext(translation_key)
 
 class LoginPage(DSpaceWizardPages):
 
-    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
-        super().__init__(config=config, lang_i18n=lang_i18n)
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+        super().__init__(config=config, lang_i18n=lang_i18n, shared_data=shared_data)
         self.setTitle(_("login_page_title"))
         self.setSubTitle(_("login_page_subtitle"))
 
@@ -50,28 +51,30 @@ class LoginPage(DSpaceWizardPages):
         # register the fields and make them required
         self.registerField("username*", self.username_edit)
         self.registerField("password*", self.password_edit)
-
-
-    def __adjust_text_color(self, editor):
-        if not editor.hasAcceptableInput():
-            editor.setStyleSheet("QLineEdit { color: red; }")
-        else:
-            print("has acceptable input")
-            editor.setStyleSheet("QLineEdit { color: black; }")
     
+    def __show_critical_message_box(self, message: str):
+        msgBox = QMessageBox()
+        msgBox.setText(message)
+        msgBox.setIcon(QMessageBox.Critical)
+        msgBox.exec()
+
     def validatePage(self) -> bool:
         # this is called when next or finished is clicked
         # since registerField is used and the fields are required can only check that they are valid to login to dspace
         # validator on username does not validate string if field not in registerField?
         # return the tokens
         # setup a data structure where the tokens from the login are saved and can be refreshed
-        if not(len(self.username_edit.text()) > 0 and len(self.password_edit.text()) > 0):
-            msgBox = QMessageBox()
-            msgBox.setText("The username and password are required")
-            msgBox.setIcon(QMessageBox.Critical)
-            msgBox.exec()
-            return False
-        return len(self.username_edit.text()) > 0 and len(self.password_edit.text()) > 0
+        is_valid = False
+        if len(self.username_edit.text()) > 0 and len(self.password_edit.text()) > 0:
+            try:
+                auth_service = DspaceAuthService(self._config, self._shared_data)
+                auth_service.logon(self.username_edit.text(), self.password_edit.text())
+                is_valid = True
+            except AuthException:
+                self.__show_critical_message_box("Invalid username and password")
+        else:
+            self.__show_critical_message_box("The username and password are required")
+        return is_valid
         
 
     
