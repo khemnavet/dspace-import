@@ -9,6 +9,8 @@ from config import ImporterConfig
 from dataobjects import ImporterData
 from dspaceauthservice import AuthException, DspaceAuthService
 
+from communityservice import CommunityException, CommunityService
+
 class DSpaceWizardPages(QWizardPage):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
         super().__init__()
@@ -19,6 +21,12 @@ class DSpaceWizardPages(QWizardPage):
 
     def translation_value(self, translation_key: str) -> str:
         return self._lang_i18n.gettext(translation_key)
+    
+    def _show_critical_message_box(self, message: str):
+        msgBox = QMessageBox()
+        msgBox.setText(message)
+        msgBox.setIcon(QMessageBox.Critical)
+        msgBox.exec()
 
 class LoginPage(DSpaceWizardPages):
 
@@ -51,12 +59,6 @@ class LoginPage(DSpaceWizardPages):
         # register the fields and make them required
         self.registerField("username*", self.username_edit)
         self.registerField("password*", self.password_edit)
-    
-    def __show_critical_message_box(self, message: str):
-        msgBox = QMessageBox()
-        msgBox.setText(message)
-        msgBox.setIcon(QMessageBox.Critical)
-        msgBox.exec()
 
     def validatePage(self) -> bool:
         # this is called when next or finished is clicked
@@ -71,10 +73,24 @@ class LoginPage(DSpaceWizardPages):
                 auth_service.logon(self.username_edit.text(), self.password_edit.text())
                 is_valid = True
             except AuthException:
-                self.__show_critical_message_box("Invalid username and password")
+                self._show_critical_message_box("Invalid username and password")
         else:
-            self.__show_critical_message_box("The username and password are required")
+            self._show_critical_message_box("The username and password are required")
         return is_valid
         
+#######################################################################################################################
 
-    
+class CollectionPage(DSpaceWizardPages):
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+        super().__init__(config=config, lang_i18n=lang_i18n, shared_data=shared_data)
+        self.setTitle(_("collection_page_title"))
+        self.setSubTitle(_("collection_page_subtitle"))
+        # request to query communities
+        self.community_service = CommunityService(config, shared_data)
+        try:
+            self.community_service.get_top_communities()
+        except CommunityException as err:
+            self._show_critical_message_box(err)
+        
+        #combo boxes for communities and collections
+
