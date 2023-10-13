@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dspace_importer\n"
-"POT-Creation-Date: 2023-10-10 15:58-0400\n"
-"PO-Revision-Date: 2023-10-10 15:58-0400\n"
+"POT-Creation-Date: 2023-10-13 15:41-0400\n"
+"PO-Revision-Date: 2023-10-13 15:43-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -19,18 +19,34 @@ msgstr ""
 msgid "app_title"
 msgstr "UWISpace Importer"
 
-#: wizardpages.py:27
+#: wizardpages.py:34
 msgid "login_page_title"
 msgstr "Login"
 
-#: wizardpages.py:28
+#: wizardpages.py:35
 msgid "login_page_subtitle"
 msgstr "Enter your email address and password to logon to UWISpace"
 
-#: wizardpages.py:30
+#: wizardpages.py:37
 msgid "login_page_username_label"
 msgstr "Username"
 
-#: wizardpages.py:39
+#: wizardpages.py:46
 msgid "login_page_password_label"
 msgstr "Password"
+
+#: wizardpages.py:90
+msgid "collection_page_title"
+msgstr "Collection"
+
+#: wizardpages.py:91
+msgid "collection_page_subtitle"
+msgstr "Select the collection to import data to"
+
+#: wizardpages.py:94
+msgid "collection_page_community_label"
+msgstr "Community"
+
+#: wizardpages.py:97
+msgid "collection_page_collection_label"
+msgstr "Collection"
