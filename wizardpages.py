@@ -93,6 +93,7 @@ class CollectionPage(DSpaceWizardPages):
         #combo boxes for communities and collections
         community_label = QLabel(text=_("collection_page_community_label"))
         self.community_select = QComboBox()
+        #self.community_select.editTextChanged.connect()
 
         collection_label = QLabel(text=_("collection_page_collection_label"))
         self.collection_select = QComboBox()
@@ -106,13 +107,21 @@ class CollectionPage(DSpaceWizardPages):
 
         self.setLayout(layout)
     
+    def change_community(self):
+        pass
+        # selected_comm = self.community_select.
+
     def initializePage(self) -> None:
         try:
             if len(self._shared_data.communities_and_collections) == 0:
                 # request to query communities
                 self.community_service.get_top_communities()
             # populate the community drop down
-            
+            self.community_select.insertItem(0, "")
+            index = 1
+            for uuid, dso in self._shared_data.communities_and_collections.items():
+                self.community_select.insertItem(index, dso.name, userData=dso)
+                index = index + 1
 
         except CommunityException as err:
             self._show_critical_message_box(str(err))
