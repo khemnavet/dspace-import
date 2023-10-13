@@ -1,6 +1,7 @@
 from dspacecommunityrequest import DspaceCommunityRequest
 from config import ImporterConfig
 from dataobjects import ImporterData, DSO, DSOTypes
+from dspaceauthservice import DspaceAuthService
 from requests import HTTPError
 
 class CommunityException(Exception):
@@ -13,14 +14,15 @@ class CommunityException(Exception):
 class CommunityService:
     _self = None
 
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         if cls._self is None:
             cls._self = super().__new__(cls)
         return cls._self
     
     def __init__(self, config: ImporterConfig, shared_data: ImporterData) -> None:
+        auth_service = DspaceAuthService(config)
         self.__shared_data = shared_data
-        self.__community_request = DspaceCommunityRequest(config.dspace_rest_url(), shared_data.cookie_and_jwt())
+        self.__community_request = DspaceCommunityRequest(config.dspace_rest_url(), auth_service.get_bearer_jwt(), auth_service.get_auth_cookies())
     
     def get_top_communities(self):
         try:

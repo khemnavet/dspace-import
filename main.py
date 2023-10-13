@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication, QWizard
 from config import ImporterConfig
 from dataobjects import ImporterData
 from metadataservice import MetadataService
-from wizardpages import LoginPage
+from wizardpages import LoginPage, CollectionPage
 
 if __name__ == "__main__":
     with open("config.toml", "rb") as f:
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     # shared data
     shared_data = ImporterData()
-
+    
     print(metadata_service.get_schema_fields("dc"))
 
     # start the application and UI
@@ -37,7 +37,9 @@ if __name__ == "__main__":
     wizard.setWindowTitle(_("app_title"))
     # wizard pages
     # login page
-    wizard.addPage(LoginPage(config, lang_i18n, shared_data))
+    wizard.addPage(LoginPage(config, lang_i18n))
+    # collection select page
+    wizard.addPage(CollectionPage(config, lang_i18n, shared_data))
     wizard.show()
 
     app.exec()

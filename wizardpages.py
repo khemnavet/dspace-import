@@ -1,21 +1,20 @@
 # classes for the pages in the wizard
 
 from gettext import GNUTranslations
-from PySide6.QtWidgets import QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox
+from PySide6.QtWidgets import QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression
 
 from config import ImporterConfig
-from dataobjects import ImporterData
+from dataobjects import ImporterData, DSO
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
 
 class DSpaceWizardPages(QWizardPage):
-    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
         super().__init__()
         self._config = config
-        self._shared_data = shared_data
         self._lang_i18n = lang_i18n
         lang_i18n.install()
 
@@ -30,8 +29,8 @@ class DSpaceWizardPages(QWizardPage):
 
 class LoginPage(DSpaceWizardPages):
 
-    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
-        super().__init__(config=config, lang_i18n=lang_i18n, shared_data=shared_data)
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
+        super().__init__(config=config, lang_i18n=lang_i18n)
         self.setTitle(_("login_page_title"))
         self.setSubTitle(_("login_page_subtitle"))
 
@@ -69,7 +68,7 @@ class LoginPage(DSpaceWizardPages):
         is_valid = False
         if len(self.username_edit.text()) > 0 and len(self.password_edit.text()) > 0:
             try:
-                auth_service = DspaceAuthService(self._config, self._shared_data)
+                auth_service = DspaceAuthService(self._config)
                 auth_service.logon(self.username_edit.text(), self.password_edit.text())
                 is_valid = True
             except AuthException:
@@ -82,15 +81,38 @@ class LoginPage(DSpaceWizardPages):
 
 class CollectionPage(DSpaceWizardPages):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
-        super().__init__(config=config, lang_i18n=lang_i18n, shared_data=shared_data)
+        super().__init__(config=config, lang_i18n=lang_i18n)
+        self._shared_data = shared_data
+
+        # to get the communities and collections
+        self.community_service = CommunityService(self._config, self._shared_data)
+
         self.setTitle(_("collection_page_title"))
         self.setSubTitle(_("collection_page_subtitle"))
-        # request to query communities
-        self.community_service = CommunityService(config, shared_data)
-        try:
-            self.community_service.get_top_communities()
-        except CommunityException as err:
-            self._show_critical_message_box(err)
         
         #combo boxes for communities and collections
+        community_label = QLabel(text=_("collection_page_community_label"))
+        self.community_select = QComboBox()
 
+        collection_label = QLabel(text=_("collection_page_collection_label"))
+        self.collection_select = QComboBox()
+
+        # community_select.clear will clear all items from select
+        layout = QGridLayout()
+        layout.addWidget(community_label, 0, 0)
+        layout.addWidget(self.community_select, 0, 1)
+        layout.addWidget(collection_label, 1, 0)
+        layout.addWidget(self.collection_select, 1, 1)
+
+        self.setLayout(layout)
+    
+    def initializePage(self) -> None:
+        try:
+            if len(self._shared_data.communities_and_collections) == 0:
+                # request to query communities
+                self.community_service.get_top_communities()
+            # populate the community drop down
+            
+
+        except CommunityException as err:
+            self._show_critical_message_box(str(err))
