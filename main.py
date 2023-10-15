@@ -1,6 +1,7 @@
 import tomllib
 import gettext
 import os
+from sys import platform
 from PySide6.QtWidgets import QApplication, QWizard
 
 from config import ImporterConfig
@@ -35,6 +36,10 @@ if __name__ == "__main__":
 
     wizard = QWizard()
     wizard.setWindowTitle(_("app_title"))
+    if platform == "darwin":
+        wizard.setWizardStyle(QWizard.MacStyle)
+    else:
+        wizard.setWizardStyle(QWizard.ModernStyle)
     # wizard pages
     # login page
     wizard.addPage(LoginPage(config, lang_i18n))
