@@ -93,7 +93,7 @@ class CollectionPage(DSpaceWizardPages):
         #combo boxes for communities and collections
         community_label = QLabel(text=_("collection_page_community_label"))
         self.community_select = QComboBox()
-        #self.community_select.editTextChanged.connect()
+        self.community_select.currentIndexChanged.connect(self.change_community)
 
         collection_label = QLabel(text=_("collection_page_collection_label"))
         self.collection_select = QComboBox()
@@ -107,9 +107,21 @@ class CollectionPage(DSpaceWizardPages):
 
         self.setLayout(layout)
     
-    def change_community(self):
-        pass
-        # selected_comm = self.community_select.
+    def change_community(self, index):
+        print(index)
+        if index > 0: # 0 index is blank
+            curr_dso = self.community_select.itemData(index)
+            print(curr_dso.name)
+            # get the sub communities
+            sub_comm_list = self.community_service.get_subcommunities(curr_dso) # list of DSO
+            self.community_select.clear()
+            self.community_select.insertItem(0, "")
+            #self.community_select.insertItem(1, "Back", userData=curr_dso)
+            index = 1
+            for sub_comm in sub_comm_list:
+                self.community_select.insertItem(index, sub_comm.name, userData=sub_comm)
+                index = index + 1
+
 
     def initializePage(self) -> None:
         try:
