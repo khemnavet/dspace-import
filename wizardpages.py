@@ -106,18 +106,21 @@ class CollectionPage(DSpaceWizardPages):
         layout.addWidget(self.collection_select, 1, 1)
 
         self.setLayout(layout)
+
+        # register fields to make them required
+        self.registerField("collection*", self.collection_select)
     
     def change_community(self, index):
-        print(index)
         if index > 0: # 0 index is blank
             curr_dso = self.community_select.itemData(index)
-            #print(curr_dso.name)
             # get the sub communities
             sub_comm_list = self.community_service.get_subcommunities(curr_dso) # list of DSO
             self.community_select.clear()
-            self.community_select.insertItem(0, "")
-            index = 1
-            if curr_dso is not None:
+            if curr_dso is None:
+                self.community_select.insertItem(0, "")
+                index = 1
+            else:
+                self.community_select.insertItem(0, curr_dso.name)
                 if curr_dso.parent is None:
                     self.community_select.insertItem(1, "Back", userData=None)
                 else:
@@ -150,3 +153,9 @@ class CollectionPage(DSpaceWizardPages):
 
         except CommunityException as err:
             self._show_critical_message_box(str(err))
+
+    def validatePage(self) -> bool:
+        if self.collection_select.currentIndex == -1:
+            self._show_critical_message_box("The collection to import the data to is required.")
+            return False
+        return True
