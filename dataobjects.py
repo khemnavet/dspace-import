@@ -5,13 +5,14 @@ class DSOTypes(Enum):
     COLLECTION = 2
 
 class DSO(object):
-    def __init__(self, uuid, name, parent, type, itemsLoaded=False):
+    def __init__(self, uuid, name, parent, type, itemsLoaded=False, collLoaded=False):
         self.id = id(self)
         self.uuid = uuid
         self.name = name
         self.parent = parent
         self.type = type
-        self.itemsLoaded = itemsLoaded
+        self.itemsLoaded = itemsLoaded # if sub-communities have been obtained from the server for this community
+        self.collectionsLoaded = collLoaded # if the collections have been obtained from the server for this community
         self.children = []
         self.collections = []
 
