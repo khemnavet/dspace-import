@@ -45,13 +45,13 @@ class CommunityService:
                 result.append(self.__shared_data.communities_and_collections[c_id])
         else:
             # may have sub communities cached
-            print("return cached sub communities")
             comm_dso = self.__shared_data.communities_and_collections[community.id]
-            if comm_dso.itemsLoaded and len(comm_dso.children) > 0:
+            if comm_dso.itemsLoaded:
+                print("return cached sub communities")
                 # have sub communities to return
                 for c_id in comm_dso.children:
                     result.append(self.__shared_data.communities_and_collections[c_id])
-            elif not comm_dso.itemsLoaded:
+            else:
                 # request these from server
                 print("get sub communities from server")
                 try:
@@ -77,3 +77,32 @@ class CommunityService:
         
     def get_community_dso(self, community_id):
         return self.__shared_data.communities_and_collections[community_id]
+    
+    def get_collections(self, community: DSO):
+        result = []
+        comm_dso = self.__shared_data.communities_and_collections[community.id]
+        if comm_dso.collectionsLoaded:
+            # return cached collections
+            print("return cached collections")
+            for c_id in comm_dso.collections:
+                result.append(self.__shared_data.communities_and_collections[c_id])
+        else:
+            # get the collections from the server
+            print("get collections from server")
+            try:
+                curr_page = 0
+                colls = self.__community_request.sub_collections(comm_dso.uuid, curr_page)
+                while curr_page < colls["page"]["totalPages"]:
+                    for coll in colls["_embedded"]["collections"]:
+                        dsObject = DSO(coll["uuid"], coll["name"], comm_dso.id, DSOTypes.COLLECTION)
+                        self.__shared_data.add_community_and_collections(dsObject)
+                        comm_dso.addCollection(dsObject.id)
+                        result.append(dsObject)
+
+                    curr_page = curr_page + 1
+                    colls = self.__community_request.sub_collections(comm_dso.uuid, curr_page)
+                comm_dso.collectionsLoaded = True
+            except HTTPError as err:
+                print(f"Exception getting collections for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
+                raise CommunityException(err.response.reason)
+        return result
