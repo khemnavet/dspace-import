@@ -55,16 +55,25 @@ class CommunityService:
                 # request these from server
                 print("get sub communities from server")
                 try:
-                    comms = self.__community_request.sub_communities(comm_dso.uuid)
-                    if comms["page"]["totalElements"] > 0:
+                    curr_page = 0
+                    comms = self.__community_request.sub_communities(comm_dso.uuid, curr_page)
+                    while curr_page < comms["page"]["totalPages"]:
                         for sub_comm in comms["_embedded"]["subcommunities"]:
+                            #print(f"page {curr_page}")
                             dsObject = DSO(sub_comm["uuid"], sub_comm["name"], comm_dso.id, DSOTypes.COMMUNITY)
                             self.__shared_data.add_community_and_collections(dsObject)
                             comm_dso.addChild(dsObject.id)
                             result.append(dsObject)
+
+                        curr_page = curr_page + 1
+                        comms = self.__community_request.sub_communities(comm_dso.uuid, curr_page)
+
                     comm_dso.itemsLoaded = True
                 except HTTPError as err:
                     print(f"Exception getting sub communities for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
                     raise CommunityException(err.response.reason)
                 
-            return result
+        return result
+        
+    def get_community_dso(self, community_id):
+        return self.__shared_data.communities_and_collections[community_id]
