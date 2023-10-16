@@ -111,13 +111,18 @@ class CollectionPage(DSpaceWizardPages):
         print(index)
         if index > 0: # 0 index is blank
             curr_dso = self.community_select.itemData(index)
-            print(curr_dso.name)
+            #print(curr_dso.name)
             # get the sub communities
             sub_comm_list = self.community_service.get_subcommunities(curr_dso) # list of DSO
             self.community_select.clear()
             self.community_select.insertItem(0, "")
-            #self.community_select.insertItem(1, "Back", userData=curr_dso)
             index = 1
+            if curr_dso is not None:
+                if curr_dso.parent is None:
+                    self.community_select.insertItem(1, "Back", userData=None)
+                else:
+                    self.community_select.insertItem(1, "Back", userData=self.community_service.get_community_dso(curr_dso.parent))
+                index = 2
             for sub_comm in sub_comm_list:
                 self.community_select.insertItem(index, sub_comm.name, userData=sub_comm)
                 index = index + 1
