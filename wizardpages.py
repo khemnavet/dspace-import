@@ -127,6 +127,14 @@ class CollectionPage(DSpaceWizardPages):
                 self.community_select.insertItem(index, sub_comm.name, userData=sub_comm)
                 index = index + 1
 
+            # populate the collections
+            coll_list = self.community_service.get_collections(curr_dso) # list of DSO
+            self.collection_select.clear()
+            index = 0
+            for coll in coll_list:
+                self.collection_select.insertItem(index, coll.name, userData=coll)
+                index = index + 1
+
 
     def initializePage(self) -> None:
         try:
