@@ -19,8 +19,8 @@ class DspaceCommunityRequest:
             return req.json()
         req.raise_for_status()
 
-    def sub_communities(self, community_uuid):
-        req = requests.get(f"{self.__dspaceRestURL}/api/core/communities/{community_uuid}/subcommunities", headers={"Accept":"application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
+    def sub_communities(self, community_uuid, page_number = 0):
+        req = requests.get(f"{self.__dspaceRestURL}/api/core/communities/{community_uuid}/subcommunities?page={page_number}", headers={"Accept":"application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
         if req.status_code == requests.codes.ok:
             return req.json()
         req.raise_for_status()
