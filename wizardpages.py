@@ -11,7 +11,7 @@ from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
 from widgets import FileBrowser
-from excelfileservice import ExcelFileService
+from excelfileservice import ExcelFileService, ExcelFileException
 
 class DSpaceWizardPages(QWizardPage):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
@@ -193,7 +193,15 @@ class ExcelFileSelectPage(DSpaceWizardPages):
         print("in excel file selected handler")
         print(file_name)
         # instantiate excel file service
-        excelService = ExcelFileService(file_name)
-        # extract sheets and populate the excel_sheet_select widget
-        self.excel_sheet_select.clear()
-        self.excel_sheet_select.insertItems(0, excelService.get_sheet_names())
+        try:
+            excelService = ExcelFileService()
+            excelService.set_file(file_name)
+            # extract sheets and populate the excel_sheet_select widget
+            self.excel_sheet_select.clear()
+            self.excel_sheet_select.insertItems(0, excelService.get_sheet_names())
+        except ExcelFileException as err:
+            self.excel_sheet_select.clear()
+            self._show_critical_message_box(str(err))
+
+#######################################################################################################################
+
