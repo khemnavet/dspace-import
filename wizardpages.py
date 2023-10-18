@@ -10,6 +10,8 @@ from dataobjects import ImporterData, DSO
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
+from widgets import FileBrowser
+from excelfileservice import ExcelFileService
 
 class DSpaceWizardPages(QWizardPage):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
@@ -159,3 +161,39 @@ class CollectionPage(DSpaceWizardPages):
             self._show_critical_message_box("The collection to import the data to is required.")
             return False
         return True
+
+#######################################################################################################################
+
+class ExcelFileSelectPage(DSpaceWizardPages):
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+        super().__init__(config, lang_i18n)
+        self._shared_data = shared_data
+
+        self.setTitle(_("excel_page_title"))
+        self.setSubTitle(_("excel_page_subtitle"))
+
+        # file select for excel file
+        self.excel_file = FileBrowser(_("excel_page_import_file_label"), "Excel files (*.xlsx)", _("excel_page_file_select_button"))
+        self.excel_file.fileSelected.connect(self.excel_file_selected)
+        # sheet in excel file
+        excel_sheet_label = QLabel()
+        excel_sheet_label.setText(_("excel_page_sheet_label"))
+        self.excel_sheet_select = QComboBox()
+
+        layout = QGridLayout()
+        layout.addWidget(self.excel_file, 0, 0, 1, 2)
+        layout.addWidget(excel_sheet_label, 1, 0)
+        layout.addWidget(self.excel_sheet_select, 1, 1)
+
+        self.setLayout(layout)
+        # register the excel sheet select to make it required
+        self.registerField("excelSheet*", self.excel_sheet_select)
+
+    def excel_file_selected(self, file_name):
+        print("in excel file selected handler")
+        print(file_name)
+        # instantiate excel file service
+        excelService = ExcelFileService(file_name)
+        # extract sheets and populate the excel_sheet_select widget
+        self.excel_sheet_select.clear()
+        self.excel_sheet_select.insertItems(0, excelService.get_sheet_names())
