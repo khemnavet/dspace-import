@@ -25,11 +25,18 @@ class MetadataService:
         for schema in schemas["_embedded"]["metadataschemas"]:
             # print(schema["prefix"])
             self.metadata_schemas[schema["prefix"]] = MetadataSchema(schema["prefix"])
-            schema_fields = self.__public_dspace_request.get_metadata_schema_fields(schema["prefix"])
-            if schema_fields["page"]["totalElements"] > 0:
-                for field in schema_fields["_embedded"]["metadatafields"]:
-                    # print(f"add field - {field['id']}, {field['element']}, {field['qualifier']}")
-                    self.metadata_schemas[schema["prefix"]].add(MetadataField(field["id"], field["element"], field["qualifier"]))
+            curr_page = 0
+            total_pages = 1
+            # loop over the pages
+            while curr_page < total_pages:
+                schema_fields = self.__public_dspace_request.get_metadata_schema_fields(schema["prefix"], curr_page)
+                total_pages = schema_fields["page"]["totalPages"]
+                if schema_fields["page"]["totalElements"] > 0:
+                    for field in schema_fields["_embedded"]["metadatafields"]:
+                        # print(f"add field - {field['id']}, {field['element']}, {field['qualifier']}")
+                        self.metadata_schemas[schema["prefix"]].add(MetadataField(field["id"], field["element"], field["qualifier"]))
+                curr_page = curr_page + 1
+                
 
     def get_schemas(self) -> list:
         return list(self.metadata_schemas)

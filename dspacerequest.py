@@ -22,10 +22,10 @@ class PublicDspaceRequest:
         except:
             raise
     
-    def get_metadata_schema_fields(self, prefix):
+    def get_metadata_schema_fields(self, prefix, page):
         try:
             # print(f"get metadata fields for {prefix}")
-            req = requests.get(self.__dspaceRestURL + "/api/core/metadatafields/search/bySchema", params={"schema": prefix}, headers={"Accept": "application/json"})
+            req = requests.get(self.__dspaceRestURL + "/api/core/metadatafields/search/bySchema", params={"schema": prefix, "page": page}, headers={"Accept": "application/json"})
             if req.status_code == requests.codes.ok:
                 return req.json()
             req.raise_for_status()
