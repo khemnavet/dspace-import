@@ -1,5 +1,5 @@
 from pathlib import Path
-from pandas import ExcelFile
+from pandas import ExcelFile, DataFrame
 
 class ExcelFileException(Exception):
     def __init__(self, msg):
@@ -13,11 +13,13 @@ class ExcelFileService:
 
     def __new__(cls, *args, **kwargs):
         if cls._self is None:
+            print("create new instance of excel file service")
             cls._self = super().__new__(cls)
         return cls._self
     
     def __init__(self) -> None:
-        pass
+        #self.__dataframe = DataFrame()
+        self.__sheet = ""
     
     def set_file(self, file_name) -> None:
         try:
@@ -30,3 +32,20 @@ class ExcelFileService:
     
     def get_sheet_names(self) -> list:
         return self.__excel_file_obj.sheet_names
+    
+    def set_column_headings(self, sheet_name) -> None:
+        try:
+            self.__selected_sheet = sheet_name
+            #print(sheet_name)
+            self.__dataframe = self.__excel_file_obj.parse(sheet_name=sheet_name, header=0)
+            # self.__import_columns = list(self.__dataframe.columns.values)
+            print(list(self.__dataframe.columns.values))
+            print(self.__dataframe.info())
+        except Exception as e:
+            print(f"Error getting columns from excel file object: {str(e)}")
+            raise ExcelFileException(str(e))
+    
+    def get_column_headings(self):
+        import_columns = list(self.__dataframe.columns.values)
+        print(f"in get column headings: {import_columns} from sheet {self.__selected_sheet}")
+        return import_columns
