@@ -1,7 +1,7 @@
 # classes for the pages in the wizard
 
 from gettext import GNUTranslations
-from PySide6.QtWidgets import QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox
+from PySide6.QtWidgets import QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QHBoxLayout
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression
 
@@ -10,8 +10,9 @@ from dataobjects import ImporterData, DSO
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
-from widgets import FileBrowser
+from widgets import FileBrowser, SchemaFieldSelect
 from excelfileservice import ExcelFileService, ExcelFileException
+from metadataservice import MetadataService
 
 class DSpaceWizardPages(QWizardPage):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
@@ -190,18 +191,94 @@ class ExcelFileSelectPage(DSpaceWizardPages):
         self.registerField("excelSheet*", self.excel_sheet_select)
 
     def excel_file_selected(self, file_name):
-        print("in excel file selected handler")
-        print(file_name)
+        #print("in excel file selected handler")
+        print(f"importing data from {file_name}")
         # instantiate excel file service
         try:
-            excelService = ExcelFileService()
-            excelService.set_file(file_name)
+            self.excelService = ExcelFileService()
+            self.excelService.set_file(file_name)
             # extract sheets and populate the excel_sheet_select widget
             self.excel_sheet_select.clear()
-            self.excel_sheet_select.insertItems(0, excelService.get_sheet_names())
+            self.excel_sheet_select.insertItems(0, self.excelService.get_sheet_names())
         except ExcelFileException as err:
             self.excel_sheet_select.clear()
             self._show_critical_message_box(str(err))
+    
+    def validatePage(self) -> bool:
+        # selected sheet - get the columns headings of the selected sheet
+        try:
+            self.excelService.set_column_headings(self.excel_sheet_select.currentText())
+        except ExcelFileException as err:
+            self._show_critical_message_box(str(err))
+            return False
+        return super().validatePage()
 
 #######################################################################################################################
 
+class MappingPage(DSpaceWizardPages):
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
+        super().__init__(config, lang_i18n)
+
+        self.setTitle(_("mapping_page_title"))
+        self.setSubTitle(_("mapping_page_subtitle"))
+
+    def initializePage(self) -> None:
+        excelFileService = ExcelFileService()
+        metadataService = MetadataService(self._config)
+
+        # table layout for the mapping
+        layout = QGridLayout()
+        instruction_label = QLabel()
+        instruction_label.setText(_("mapping_page_instructions"))
+        layout.addWidget(instruction_label, 0, 0, 1, 2)
+
+        column_label = QLabel()
+        column_label.setText(_("mapping_page_column_heading"))
+        metadata_label = QLabel()
+        metadata_label.setText(_("mapping_page_metadata_heading"))
+        layout.addWidget(column_label, 1, 0)
+        layout.addWidget(metadata_label, 1, 1)
+
+        # display the columns
+        col_list = {}
+        index = 2
+        column_headings = excelFileService.get_column_headings()
+        for col in column_headings:
+            col_list[col] = {}
+            col_list[col]["col_label"] = QLabel()
+            col_list[col]["col_label"].setText(col)
+
+            col_list[col]["schema"] = SchemaFieldSelect(metadataService)
+
+            layout.addWidget(col_list[col]["col_label"], index, 0)
+            layout.addWidget(col_list[col]["schema"], index, 1)
+            index = index + 1
+        
+        # specify title column, 
+        title_label = QLabel()
+        title_label.setText(_("mapping_page_title_column_label"))
+        title_select = QComboBox()
+        title_select.insertItem(0, "")
+        title_select.insertItems(1, column_headings)
+        layout.addWidget(title_label, index, 0)
+        layout.addWidget(title_select, index, 1)
+        index = index + 1
+
+        # column to check for duplicates
+        duplicate_label = QLabel()
+        duplicate_label.setText(_("mapping_page_duplicate_column_label"))
+        duplicate_select = QComboBox()
+        duplicate_select.insertItem(0, "")
+        duplicate_select.insertItems(1, column_headings)
+        layout.addWidget(duplicate_label, index, 0)
+        layout.addWidget(duplicate_select, index, 1)
+        index = index + 1
+
+        # if to update existing
+
+        self.setLayout(layout)
+    
+    def validatePage(self) -> bool:
+        # validate page, at least one column is mapped to a metadata field
+        # title is required?
+        return super().validatePage()
