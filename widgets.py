@@ -1,5 +1,8 @@
+from typing import Optional
 from PySide6.QtCore import QDir, Signal
-from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFileDialog
+from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFileDialog, QComboBox
+
+from metadataservice import MetadataService
 
 class FileBrowser(QWidget):
     fileSelected = Signal(str, name="fileSelected")
@@ -38,4 +41,32 @@ class FileBrowser(QWidget):
             self.file_display.setText(self.file_paths[0])
             self.fileSelected.emit(self.file_paths[0])
 
-        
+#######################################################################################################################
+
+class SchemaFieldSelect(QWidget):
+
+    def __init__(self, metadata_service: MetadataService) -> None:
+        super().__init__()
+        self.__metadata_service = metadata_service
+
+        schemas = metadata_service.get_schemas()
+        self.schema = QComboBox()
+        self.schema.insertItems(0, schemas)
+        self.schema.currentIndexChanged.connect(self.schema_changed)
+
+        self.schema_fields = QComboBox()
+        self.schema_fields.insertItem(0, "") # blank first field to let user skip
+        self.schema_fields.insertItems(1, metadata_service.get_schema_fields(schemas[0]))
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.schema)
+        layout.addWidget(self.schema_fields)
+
+        self.setLayout(layout)
+
+    def schema_changed(self, index):
+        if index > -1:
+            schema_fields = self.__metadata_service.get_schema_fields(self.schema.currentText())
+            self.schema_fields.clear()
+            self.schema_fields.insertItem(0, "")
+            self.schema_fields.insertItems(1, schema_fields)
