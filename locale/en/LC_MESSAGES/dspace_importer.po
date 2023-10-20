@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dspace_importer\n"
-"POT-Creation-Date: 2023-10-17 15:44-0400\n"
-"PO-Revision-Date: 2023-10-18 11:50-0400\n"
+"POT-Creation-Date: 2023-10-19 15:44-0400\n"
+"PO-Revision-Date: 2023-10-19 15:45-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -19,56 +19,90 @@ msgstr ""
 msgid "app_title"
 msgstr "UWISpace Importer"
 
-#: wizardpages.py:35
+#: wizardpages.py:37
 msgid "login_page_title"
 msgstr "Login"
 
-#: wizardpages.py:36
+#: wizardpages.py:38
 msgid "login_page_subtitle"
 msgstr "Enter your email address and password to logon to UWISpace"
 
-#: wizardpages.py:38
+#: wizardpages.py:40
 msgid "login_page_username_label"
 msgstr "Username"
 
-#: wizardpages.py:47
+#: wizardpages.py:49
 msgid "login_page_password_label"
 msgstr "Password"
 
-#: wizardpages.py:91
+#: wizardpages.py:93
 msgid "collection_page_title"
 msgstr "Collection"
 
-#: wizardpages.py:92
+#: wizardpages.py:94
 msgid "collection_page_subtitle"
 msgstr "Select the collection to import data to"
 
-#: wizardpages.py:95
+#: wizardpages.py:97
 msgid "collection_page_community_label"
 msgstr "Community"
 
-#: wizardpages.py:99
+#: wizardpages.py:101
 msgid "collection_page_collection_label"
 msgstr "Collection"
 
-#: wizardpages.py:171
+#: wizardpages.py:173
 msgid "excel_page_title"
 msgstr "Excel File to Import"
 
-#: wizardpages.py:172
+#: wizardpages.py:174
 msgid "excel_page_subtitle"
 msgstr ""
 "Select the Excel file to import.\n"
 "The first row of the file must have the column names."
 
-#: wizardpages.py:175
+#: wizardpages.py:177
 msgid "excel_page_import_file_label"
 msgstr "Excel File"
 
-#: wizardpages.py:175
+#: wizardpages.py:177
 msgid "excel_page_file_select_button"
 msgstr "Browse"
 
-#: wizardpages.py:178
+#: wizardpages.py:181
 msgid "excel_page_sheet_label"
 msgstr "Select the sheet to import"
+
+#: wizardpages.py:222
+msgid "mapping_page_title"
+msgstr "Metadata Mapping"
+
+#: wizardpages.py:223
+msgid "mapping_page_subtitle"
+msgstr ""
+"Select the metadata field the data in the Excel column will be added to when "
+"importing the item."
+
+#: wizardpages.py:232
+msgid "mapping_page_instructions"
+msgstr ""
+"When selecting the metadata field, select the schema from the first combo "
+"box, then the metadata field from the second.\n"
+"\n"
+"Columns that are not mapped to a metadata field will not be imported."
+
+#: wizardpages.py:236
+msgid "mapping_page_column_heading"
+msgstr "Excel Column Name"
+
+#: wizardpages.py:238
+msgid "mapping_page_metadata_heading"
+msgstr "Metadata Field"
+
+#: wizardpages.py:259
+msgid "mapping_page_title_column_label"
+msgstr "Column with title of the item"
+
+#: wizardpages.py:269
+msgid "mapping_page_duplicate_column_label"
+msgstr "Column to check for duplicates"
