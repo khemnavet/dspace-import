@@ -88,7 +88,7 @@ class CollectionPage(DSpaceWizardPages):
         self._shared_data = shared_data
 
         # to get the communities and collections
-        self.community_service = CommunityService(self._config, self._shared_data)
+        self.community_service = CommunityService(self._config)
 
         self.setTitle(_("collection_page_title"))
         self.setSubTitle(_("collection_page_subtitle"))
@@ -144,13 +144,13 @@ class CollectionPage(DSpaceWizardPages):
 
     def initializePage(self) -> None:
         try:
-            if len(self._shared_data.communities_and_collections) == 0:
+            if len(self.community_service.communities_and_collections) == 0:
                 # request to query communities
                 self.community_service.get_top_communities()
             # populate the community drop down
             self.community_select.insertItem(0, "")
             index = 1
-            for uuid, dso in self._shared_data.communities_and_collections.items():
+            for _, dso in self.community_service.communities_and_collections.items():
                 self.community_select.insertItem(index, dso.name, userData=dso)
                 index = index + 1
 
@@ -161,6 +161,7 @@ class CollectionPage(DSpaceWizardPages):
         if self.collection_select.currentIndex == -1:
             self._show_critical_message_box("The collection to import the data to is required.")
             return False
+        self._shared_data.selected_community = self.collection_select.currentData
         return True
 
 #######################################################################################################################

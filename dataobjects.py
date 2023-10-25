@@ -43,20 +43,14 @@ class ImporterData:
     # may have to add self.lock = Threading.lock to __init__
     # method that wants to use a shared variable use with self.lock to acquire a lock for the variable then modify/read the variable
     def __init__(self) -> None:
-        self.__communities_collections = {}
-        self.__top_communities = []
+        self.__selected_community = None
 
     # getters
     @property
-    def communities_and_collections(self):
-        return self.__communities_collections
+    def selected_community(self):
+        return self.__selected_community
+
+    @selected_community.setter
+    def selected_community(self, coll: DSO):
+        self.__selected_community = coll
     
-    @property
-    def top_communities(self):
-        return self.__top_communities
-
-    def add_community_and_collections(self, community: DSO):
-        self.__communities_collections[community.id] = community
-
-    def add_top_community(self, community_id):
-        self.__top_communities.append(community_id)
