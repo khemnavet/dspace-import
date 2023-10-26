@@ -1,6 +1,6 @@
 from typing import Optional
 from PySide6.QtCore import QDir, Signal
-from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFileDialog, QComboBox
+from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFileDialog, QComboBox, QRadioButton
 
 from metadataservice import MetadataService
 
@@ -73,3 +73,38 @@ class SchemaFieldSelect(QWidget):
     
     def selected_schema_field(self):
         return self.schema_fields.currentText()
+    
+#######################################################################################################################
+
+class RadioButton(QWidget):
+
+    def __init__(self, options: dict):
+        super().__init__()
+
+        self.options = options
+
+        radio_layout = QHBoxLayout()
+        self.radio = []
+        index = 0
+        for key, value in options.items():
+            self.radio.append(QRadioButton(value, self))
+            self.radio[index].value = key
+            self.radio[index].toggled.connect(self.update)
+            radio_layout.addWidget(self.radio[index])
+            index = index + 1
+        self.radio[0].setChecked(True)
+
+        self.setLayout(radio_layout)
+    
+    def update(self):
+        radio_button = self.sender()
+
+        if radio_button.isChecked():
+            print(f"radio button value: {radio_button.value}, text: {radio_button.text()}")
+
+    def selected_option(self) -> tuple:
+        for rb in self.radio:
+            if rb.isChecked():
+                return (rb.value, rb.text())
+
+
