@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dspace_importer\n"
-"POT-Creation-Date: 2023-10-26 15:48-0400\n"
-"PO-Revision-Date: 2023-10-26 16:14-0400\n"
+"POT-Creation-Date: 2023-10-26 17:03-0400\n"
+"PO-Revision-Date: 2023-10-26 17:05-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: main.py\n"
 "X-Poedit-SearchPath-1: wizardpages.py\n"
 
-#: main.py:38
+#: main.py:36
 msgid "app_title"
 msgstr "UWISpace Importer"
 
@@ -85,17 +85,17 @@ msgstr "Browse"
 msgid "excel_page_sheet_label"
 msgstr "Select the sheet to import"
 
-#: wizardpages.py:233
+#: wizardpages.py:234
 msgid "mapping_page_title"
 msgstr "Metadata Mapping"
 
-#: wizardpages.py:234
+#: wizardpages.py:235
 msgid "mapping_page_subtitle"
 msgstr ""
 "Select the metadata field the data in the Excel column will be added to when "
 "importing the item."
 
-#: wizardpages.py:243
+#: wizardpages.py:244
 msgid "mapping_page_instructions"
 msgstr ""
 "When selecting the metadata field, select the schema from the first combo "
@@ -103,32 +103,42 @@ msgstr ""
 "\n"
 "Columns that are not mapped to a metadata field will not be imported."
 
-#: wizardpages.py:247
+#: wizardpages.py:248
 msgid "mapping_page_column_heading"
 msgstr "Excel Column Name"
 
-#: wizardpages.py:249
+#: wizardpages.py:250
 msgid "mapping_page_metadata_heading"
 msgstr "Metadata Field"
 
-#: wizardpages.py:270
+#: wizardpages.py:271
 msgid "mapping_page_title_column_label"
 msgstr "Column with title of the item"
 
-#: wizardpages.py:280
+#: wizardpages.py:281
 msgid "mapping_page_duplicate_column_label"
 msgstr "Column to check for duplicates"
 
-#: wizardpages.py:290
+#: wizardpages.py:291
 msgid "mapping_page_update_existing_label"
 msgstr "Update the metadata for existing items?"
 
-#: wizardpages.py:308
+#: wizardpages.py:311
 msgid "mapping_page_column_schema_mapping_required"
 msgstr ""
 "Please select the metadata field to be used for at least one column of the "
 "Excel file"
 
-#: wizardpages.py:312
+#: wizardpages.py:315
 msgid "mapping_page_title_column_required"
 msgstr "The column with the title of the item is required."
+
+#: wizardpages.py:320
+msgid "mapping_page_duplicate_column_required"
+msgstr "The \"Column to check for duplicates\" is required."
+
+#: wizardpages.py:323
+msgid "mapping_page_duplicate_column_not_mapped"
+msgstr ""
+"The column selected in \"Column to check for duplicates\" has to be mapped "
+"to a metadata field."

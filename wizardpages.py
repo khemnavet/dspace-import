@@ -311,13 +311,23 @@ class MappingPage(DSpaceWizardPages):
             self._show_critical_message_box(_("mapping_page_column_schema_mapping_required"))
             return False
         # title is required
-        if self.title_select.currentIndex == 0:
+        if self.title_select.currentIndex() == 0:
             self._show_critical_message_box(_("mapping_page_title_column_required"))
             return False
+        # if update existing is YES, duplicate column has to be chosen and mapping set
+        if self.update_existing.selected_option()[0] == "YES":
+            if self.duplicate_select.currentIndex() == 0:
+                self._show_critical_message_box(_("mapping_page_duplicate_column_required"))
+                return False
+            if len(self.mapping[self.duplicate_select.currentText()]) == 0:
+                self._show_critical_message_box(_("mapping_page_duplicate_column_not_mapped"))
+                return False
         # save selections
         print(f"selected collection = {self.shared_data.selected_community.name}")
         self.shared_data.column_mapping = self.mapping
         self.shared_data.title_column = self.title_select.currentText()
         self.shared_data.duplicate_column = self.duplicate_select.currentText()
         self.shared_data.update_existing = self.update_existing.selected_option()[0]
+
+        # some background things to happen here - get the items in the collection and build DS to search based on duplicate column mapping
         return super().validatePage()
