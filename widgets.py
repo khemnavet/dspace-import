@@ -70,3 +70,6 @@ class SchemaFieldSelect(QWidget):
             self.schema_fields.clear()
             self.schema_fields.insertItem(0, "")
             self.schema_fields.insertItems(1, schema_fields)
+    
+    def selected_schema_field(self):
+        return self.schema_fields.currentText()
