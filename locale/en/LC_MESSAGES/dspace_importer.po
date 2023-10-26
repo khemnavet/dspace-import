@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dspace_importer\n"
-"POT-Creation-Date: 2023-10-26 14:03-0400\n"
-"PO-Revision-Date: 2023-10-26 14:05-0400\n"
+"POT-Creation-Date: 2023-10-26 15:48-0400\n"
+"PO-Revision-Date: 2023-10-26 16:14-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -119,12 +119,16 @@ msgstr "Column with title of the item"
 msgid "mapping_page_duplicate_column_label"
 msgstr "Column to check for duplicates"
 
-#: wizardpages.py:303
+#: wizardpages.py:290
+msgid "mapping_page_update_existing_label"
+msgstr "Update the metadata for existing items?"
+
+#: wizardpages.py:308
 msgid "mapping_page_column_schema_mapping_required"
 msgstr ""
 "Please select the metadata field to be used for at least one column of the "
 "Excel file"
 
-#: wizardpages.py:307
+#: wizardpages.py:312
 msgid "mapping_page_title_column_required"
 msgstr "The column with the title of the item is required."
