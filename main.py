@@ -28,8 +28,6 @@ if __name__ == "__main__":
 
     # shared data
     shared_data = ImporterData()
-    
-    print(metadata_service.get_schema_fields("dc"))
 
     # start the application and UI
     app = QApplication([app_name])
@@ -48,7 +46,7 @@ if __name__ == "__main__":
     # excel file chooser page
     wizard.addPage(ExcelFileSelectPage(config, lang_i18n, shared_data))
     # mapping page
-    wizard.addPage(MappingPage(config, lang_i18n))
+    wizard.addPage(MappingPage(config, lang_i18n, shared_data))
     wizard.show()
 
     app.exec()

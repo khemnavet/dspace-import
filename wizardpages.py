@@ -166,7 +166,7 @@ class CollectionPage(DSpaceWizardPages):
         if self.collection_select.currentIndex == -1:
             self._show_critical_message_box("The collection to import the data to is required.")
             return False
-        self._shared_data.selected_community = self.collection_select.currentData
+        self._shared_data.selected_community = self.collection_select.currentData()
         return True
 
 #######################################################################################################################
@@ -227,8 +227,9 @@ class ExcelFileSelectPage(DSpaceWizardPages):
 #######################################################################################################################
 
 class MappingPage(DSpaceWizardPages):
-    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
         super().__init__(config, lang_i18n)
+        self.shared_data = shared_data
 
         self.setTitle(_("mapping_page_title"))
         self.setSubTitle(_("mapping_page_subtitle"))
@@ -278,11 +279,11 @@ class MappingPage(DSpaceWizardPages):
         # column to check for duplicates
         duplicate_label = QLabel()
         duplicate_label.setText(_("mapping_page_duplicate_column_label"))
-        duplicate_select = QComboBox()
-        duplicate_select.insertItem(0, "")
-        duplicate_select.insertItems(1, column_headings)
+        self.duplicate_select = QComboBox()
+        self.duplicate_select.insertItem(0, "")
+        self.duplicate_select.insertItems(1, column_headings)
         layout.addWidget(duplicate_label, index, 0)
-        layout.addWidget(duplicate_select, index, 1)
+        layout.addWidget(self.duplicate_select, index, 1)
         index = index + 1
 
         # if to update existing
@@ -300,7 +301,9 @@ class MappingPage(DSpaceWizardPages):
     def validatePage(self) -> bool:
         # validate page, at least one column is mapped to a metadata field
         cols_mapped = 0
+        self.mapping = {}
         for row in self.col_list:
+            self.mapping[row] = self.col_list[row]["schema"].selected_schema_field()
             #print(self.col_list[row]["schema"].selected_schema_field())
             if len(self.col_list[row]["schema"].selected_schema_field()) > 0:
                 cols_mapped = cols_mapped + 1
@@ -311,4 +314,10 @@ class MappingPage(DSpaceWizardPages):
         if self.title_select.currentIndex == 0:
             self._show_critical_message_box(_("mapping_page_title_column_required"))
             return False
+        # save selections
+        print(f"selected collection = {self.shared_data.selected_community.name}")
+        self.shared_data.column_mapping = self.mapping
+        self.shared_data.title_column = self.title_select.currentText()
+        self.shared_data.duplicate_column = self.duplicate_select.currentText()
+        self.shared_data.update_existing = self.update_existing.selected_option()[0]
         return super().validatePage()
