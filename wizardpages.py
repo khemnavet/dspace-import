@@ -10,7 +10,7 @@ from dataobjects import ImporterData, DSO
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
-from widgets import FileBrowser, SchemaFieldSelect
+from widgets import FileBrowser, SchemaFieldSelect, RadioButton
 from excelfileservice import ExcelFileService, ExcelFileException
 from metadataservice import MetadataService
 
@@ -286,6 +286,11 @@ class MappingPage(DSpaceWizardPages):
         index = index + 1
 
         # if to update existing
+        update_existing_label = QLabel()
+        update_existing_label.setText(_("mapping_page_update_existing_label"))
+        self.update_existing = RadioButton({"NO": "No", "YES": "Yes"})
+        layout.addWidget(update_existing_label, index, 0)
+        layout.addWidget(self.update_existing, index, 1)
 
         self.setLayout(layout)
 
