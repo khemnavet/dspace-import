@@ -44,13 +44,48 @@ class ImporterData:
     # method that wants to use a shared variable use with self.lock to acquire a lock for the variable then modify/read the variable
     def __init__(self) -> None:
         self.__selected_community = None
+        self.__title_column = ""
+        self.__column_mapping = {}
+        self.__duplicate_column = ""
+        self.__update_existing = ""
 
     # getters
     @property
-    def selected_community(self):
+    def selected_community(self) -> DSO:
         return self.__selected_community
+
+    @property
+    def title_column(self):
+        return self.__title_column
+    
+    @property
+    def column_mapping(self):
+        return self.__column_mapping
+    
+    @property
+    def duplicate_column(self):
+        return self.__duplicate_column
+    
+    @property
+    def update_existing(self):
+        return self.__update_existing
 
     @selected_community.setter
     def selected_community(self, coll: DSO):
         self.__selected_community = coll
     
+    @title_column.setter
+    def title_column(self, title):
+        self.__title_column = title
+    
+    @column_mapping.setter
+    def column_mapping(self, mapping: dict):
+        self.__column_mapping = mapping
+
+    @duplicate_column.setter
+    def duplicate_column(self, dup):
+        self.__duplicate_column = dup
+    
+    @update_existing.setter
+    def update_existing(self, existing):
+        self.__update_existing = existing
