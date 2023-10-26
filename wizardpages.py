@@ -251,28 +251,28 @@ class MappingPage(DSpaceWizardPages):
         layout.addWidget(metadata_label, 1, 1)
 
         # display the columns
-        col_list = {}
+        self.col_list = {}
         index = 2
         column_headings = excelFileService.get_column_headings()
         for col in column_headings:
-            col_list[col] = {}
-            col_list[col]["col_label"] = QLabel()
-            col_list[col]["col_label"].setText(col)
+            self.col_list[col] = {}
+            self.col_list[col]["col_label"] = QLabel()
+            self.col_list[col]["col_label"].setText(col)
 
-            col_list[col]["schema"] = SchemaFieldSelect(metadataService)
+            self.col_list[col]["schema"] = SchemaFieldSelect(metadataService)
 
-            layout.addWidget(col_list[col]["col_label"], index, 0)
-            layout.addWidget(col_list[col]["schema"], index, 1)
+            layout.addWidget(self.col_list[col]["col_label"], index, 0)
+            layout.addWidget(self.col_list[col]["schema"], index, 1)
             index = index + 1
         
         # specify title column, 
         title_label = QLabel()
         title_label.setText(_("mapping_page_title_column_label"))
-        title_select = QComboBox()
-        title_select.insertItem(0, "")
-        title_select.insertItems(1, column_headings)
+        self.title_select = QComboBox()
+        self.title_select.insertItem(0, "")
+        self.title_select.insertItems(1, column_headings)
         layout.addWidget(title_label, index, 0)
-        layout.addWidget(title_select, index, 1)
+        layout.addWidget(self.title_select, index, 1)
         index = index + 1
 
         # column to check for duplicates
@@ -288,8 +288,22 @@ class MappingPage(DSpaceWizardPages):
         # if to update existing
 
         self.setLayout(layout)
+
+        # register title_label to make it required
+        self.registerField("titleField*", self.title_select)
     
     def validatePage(self) -> bool:
         # validate page, at least one column is mapped to a metadata field
-        # title is required?
+        cols_mapped = 0
+        for row in self.col_list:
+            #print(self.col_list[row]["schema"].selected_schema_field())
+            if len(self.col_list[row]["schema"].selected_schema_field()) > 0:
+                cols_mapped = cols_mapped + 1
+        if cols_mapped == 0:
+            self._show_critical_message_box(_("mapping_page_column_schema_mapping_required"))
+            return False
+        # title is required
+        if self.title_select.currentIndex == 0:
+            self._show_critical_message_box(_("mapping_page_title_column_required"))
+            return False
         return super().validatePage()
