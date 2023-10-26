@@ -92,6 +92,10 @@ class CollectionPage(DSpaceWizardPages):
 
         self.setTitle(_("collection_page_title"))
         self.setSubTitle(_("collection_page_subtitle"))
+
+        # instructions
+        instruction_label = QLabel()
+        instruction_label.setText(_("collection_page_instructions"))
         
         #combo boxes for communities and collections
         community_label = QLabel(text=_("collection_page_community_label"))
@@ -103,10 +107,11 @@ class CollectionPage(DSpaceWizardPages):
 
         # community_select.clear will clear all items from select
         layout = QGridLayout()
-        layout.addWidget(community_label, 0, 0)
-        layout.addWidget(self.community_select, 0, 1)
-        layout.addWidget(collection_label, 1, 0)
-        layout.addWidget(self.collection_select, 1, 1)
+        layout.addWidget(instruction_label, 0, 0, 1, 2)
+        layout.addWidget(community_label, 1, 0)
+        layout.addWidget(self.community_select, 1, 1)
+        layout.addWidget(collection_label, 2, 0)
+        layout.addWidget(self.collection_select, 2, 1)
 
         self.setLayout(layout)
 
@@ -174,6 +179,10 @@ class ExcelFileSelectPage(DSpaceWizardPages):
         self.setTitle(_("excel_page_title"))
         self.setSubTitle(_("excel_page_subtitle"))
 
+        # instructions
+        instruction_label = QLabel()
+        instruction_label.setText(_("excel_page_instructions"))
+
         # file select for excel file
         self.excel_file = FileBrowser(_("excel_page_import_file_label"), "Excel files (*.xlsx)", _("excel_page_file_select_button"))
         self.excel_file.fileSelected.connect(self.excel_file_selected)
@@ -183,9 +192,10 @@ class ExcelFileSelectPage(DSpaceWizardPages):
         self.excel_sheet_select = QComboBox()
 
         layout = QGridLayout()
-        layout.addWidget(self.excel_file, 0, 0, 1, 2)
-        layout.addWidget(excel_sheet_label, 1, 0)
-        layout.addWidget(self.excel_sheet_select, 1, 1)
+        layout.addWidget(instruction_label, 0, 0, 1, 2)
+        layout.addWidget(self.excel_file, 1, 0, 1, 2)
+        layout.addWidget(excel_sheet_label, 2, 0)
+        layout.addWidget(self.excel_sheet_select, 2, 1)
 
         self.setLayout(layout)
         # register the excel sheet select to make it required
