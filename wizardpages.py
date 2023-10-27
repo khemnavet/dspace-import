@@ -6,7 +6,7 @@ from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression
 
 from config import ImporterConfig
-from dataobjects import ImporterData, DSO
+from dataobjects import ImporterData, DSO, YesNo
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
@@ -289,7 +289,7 @@ class MappingPage(DSpaceWizardPages):
         # if to update existing
         update_existing_label = QLabel()
         update_existing_label.setText(_("mapping_page_update_existing_label"))
-        self.update_existing = RadioButton({"NO": "No", "YES": "Yes"})
+        self.update_existing = RadioButton({YesNo.NO: _("No"), YesNo.YES: _("Yes")})
         layout.addWidget(update_existing_label, index, 0)
         layout.addWidget(self.update_existing, index, 1)
 
@@ -315,7 +315,7 @@ class MappingPage(DSpaceWizardPages):
             self._show_critical_message_box(_("mapping_page_title_column_required"))
             return False
         # if update existing is YES, duplicate column has to be chosen and mapping set
-        if self.update_existing.selected_option()[0] == "YES":
+        if self.update_existing.selected_option()[0] == YesNo.YES:
             if self.duplicate_select.currentIndex() == 0:
                 self._show_critical_message_box(_("mapping_page_duplicate_column_required"))
                 return False

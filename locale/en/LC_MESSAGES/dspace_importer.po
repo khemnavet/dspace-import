@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dspace_importer\n"
-"POT-Creation-Date: 2023-10-26 17:03-0400\n"
-"PO-Revision-Date: 2023-10-26 17:05-0400\n"
+"POT-Creation-Date: 2023-10-27 14:57-0400\n"
+"PO-Revision-Date: 2023-10-27 14:57-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -122,6 +122,14 @@ msgstr "Column to check for duplicates"
 #: wizardpages.py:291
 msgid "mapping_page_update_existing_label"
 msgstr "Update the metadata for existing items?"
+
+#: wizardpages.py:292
+msgid "No"
+msgstr "No"
+
+#: wizardpages.py:292
+msgid "Yes"
+msgstr "Yes"
 
 #: wizardpages.py:311
 msgid "mapping_page_column_schema_mapping_required"
