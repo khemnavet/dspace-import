@@ -8,6 +8,10 @@ class YesNo(Enum):
     YES = 1
     NO = 2
 
+class FileBrowseType(Enum):
+    FILE = 1
+    DIR = 2
+
 class DSO(object):
     def __init__(self, uuid, name, parent, type, itemsLoaded=False, collLoaded=False):
         self.id = id(self)

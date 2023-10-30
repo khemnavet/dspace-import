@@ -3,13 +3,15 @@ from PySide6.QtCore import QDir, Signal
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFileDialog, QComboBox, QRadioButton
 
 from metadataservice import MetadataService
+from dataobjects import FileBrowseType
 
 class FileBrowser(QWidget):
     fileSelected = Signal(str, name="fileSelected")
 
-    def __init__(self, title, file_filter, button_title):
+    def __init__(self, browse_type: FileBrowseType, title, file_filter, button_title):
         super().__init__()
         self.file_filter = file_filter
+        self.browse_type = browse_type
         
         self.file_label = QLabel()
         self.file_label.setText(title)
@@ -30,8 +32,11 @@ class FileBrowser(QWidget):
 
     def get_file(self):
         self.file_paths = []
-
-        self.selected_file = QFileDialog.getOpenFileName(self, caption="Choose File", dir=QDir.homePath(), filter=self.file_filter)
+        if self.browse_type == FileBrowseType.FILE:
+            self.selected_file = QFileDialog.getOpenFileName(self, caption="Choose File", dir=QDir.homePath(), filter=self.file_filter)
+        
+        if self.browse_type == FileBrowseType.DIR:
+            self.selected_file = QFileDialog.getExistingDirectory(self, caption="Choose Directory", dir=QDir.homePath())
         # self.selected_file is a tuple (fileName, selectedFilter)
         # if dialog is cancelled, fileName is '', do not emit signal
         #print(self.selected_file)

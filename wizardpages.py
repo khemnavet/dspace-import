@@ -6,7 +6,7 @@ from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression
 
 from config import ImporterConfig
-from dataobjects import ImporterData, DSO, YesNo
+from dataobjects import ImporterData, DSO, YesNo, FileBrowseType
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
@@ -184,7 +184,7 @@ class ExcelFileSelectPage(DSpaceWizardPages):
         instruction_label.setText(_("excel_page_instructions"))
 
         # file select for excel file
-        self.excel_file = FileBrowser(_("excel_page_import_file_label"), "Excel files (*.xlsx)", _("excel_page_file_select_button"))
+        self.excel_file = FileBrowser(FileBrowseType.FILE, _("excel_page_import_file_label"), "Excel files (*.xlsx)", _("excel_page_file_select_button"))
         self.excel_file.fileSelected.connect(self.excel_file_selected)
         # sheet in excel file
         excel_sheet_label = QLabel()
@@ -330,4 +330,19 @@ class MappingPage(DSpaceWizardPages):
         self.shared_data.update_existing = self.update_existing.selected_option()[0]
 
         # some background things to happen here - get the items in the collection and build DS to search based on duplicate column mapping
+        # use a hash table since its exact matching to be done? hash function? size of hash table?
         return super().validatePage()
+    
+#######################################################################################################################
+
+class FilePage(DSpaceWizardPages):
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+        super().__init__(config, lang_i18n)
+        self.shared_data = shared_data
+
+        self.setTitle(_("file_page_title"))
+        self.setSubTitle(_("file_page_subtitle"))
+    
+    def initializePage(self) -> None:
+        # folder picker, extension, matching
+        return super().initializePage()
