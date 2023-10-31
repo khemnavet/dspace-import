@@ -6,7 +6,7 @@ from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression
 
 from config import ImporterConfig
-from dataobjects import ImporterData, DSO, YesNo, FileBrowseType
+from dataobjects import ImporterData, DSO, YesNo, FileBrowseType, ItemFileMatchType
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
@@ -344,5 +344,48 @@ class FilePage(DSpaceWizardPages):
         self.setSubTitle(_("file_page_subtitle"))
     
     def initializePage(self) -> None:
-        # folder picker, extension, matching
-        return super().initializePage()
+        excelFileService = ExcelFileService()
+
+        # instruction label
+        instruction_label = QLabel()
+        instruction_label.setText(_("file_page_instructions"))
+        instruction_label.setWordWrap(True)
+
+        # directory
+        self.dir_selected = FileBrowser(FileBrowseType.DIR, _("file_page_item_dir_label"), "", _("file_page_item_dir_select_button"))
+
+        # file name columns
+        file_name_column_label = QLabel()
+        file_name_column_label.setText(_("file_page_file_name_column_label"))
+        self.file_name_column = QComboBox()
+        self.file_name_column.insertItems(0, excelFileService.get_column_headings())
+
+        # match file name
+        match_file_name_label = QLabel()
+        match_file_name_label.setText(_("file_page_match_file_name_label"))
+        self.match_file_name = RadioButton({ItemFileMatchType.EXACT: _("file_name_match_exact"), ItemFileMatchType.BEGINS: _("file_name_match_begins_with")})
+
+        # extension for files
+        file_name_extension_label = QLabel()
+        file_name_extension_label.setText(_("file_page_file_name_extension_label"))
+        self.file_name_extension = QLineEdit()
+
+        # remove existing files for duplicate
+        remove_existing_files_label = QLabel()
+        remove_existing_files_label.setText(_("file_page_remove_existing_for_duplicate"))
+        self.remove_existing_files = RadioButton({YesNo.NO: _("No"), YesNo.YES: _("Yes")})
+
+        layout = QGridLayout()
+        layout.addWidget(instruction_label, 0, 0, 1, 2)
+        layout.addWidget(self.dir_selected, 1, 0, 1, 2)
+        layout.addWidget(file_name_column_label, 2, 0)
+        layout.addWidget(self.file_name_column, 2, 1)
+        layout.addWidget(match_file_name_label, 3, 0)
+        layout.addWidget(self.match_file_name, 3, 1)
+        layout.addWidget(file_name_extension_label, 4, 0)
+        layout.addWidget(self.file_name_extension, 4, 1)
+        layout.addWidget(remove_existing_files_label, 5, 0)
+        layout.addWidget(self.remove_existing_files, 5, 1)
+        self.setLayout(layout)
+
+        # any required fields to register?

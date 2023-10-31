@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dspace_importer\n"
-"POT-Creation-Date: 2023-10-27 14:57-0400\n"
-"PO-Revision-Date: 2023-10-27 14:57-0400\n"
+"POT-Creation-Date: 2023-10-30 15:56-0400\n"
+"PO-Revision-Date: 2023-10-30 16:10-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4\n"
+"X-Generator: Poedit 3.4.1\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-SearchPath-0: main.py\n"
 "X-Poedit-SearchPath-1: wizardpages.py\n"
@@ -123,11 +123,11 @@ msgstr "Column to check for duplicates"
 msgid "mapping_page_update_existing_label"
 msgstr "Update the metadata for existing items?"
 
-#: wizardpages.py:292
+#: wizardpages.py:292 wizardpages.py:375
 msgid "No"
 msgstr "No"
 
-#: wizardpages.py:292
+#: wizardpages.py:292 wizardpages.py:375
 msgid "Yes"
 msgstr "Yes"
 
@@ -150,3 +150,65 @@ msgid "mapping_page_duplicate_column_not_mapped"
 msgstr ""
 "The column selected in \"Column to check for duplicates\" has to be mapped "
 "to a metadata field."
+
+#: wizardpages.py:343
+msgid "file_page_title"
+msgstr "Item Files"
+
+#: wizardpages.py:344
+msgid "file_page_subtitle"
+msgstr "Select the directory with the item files"
+
+#: wizardpages.py:351
+msgid "file_page_instructions"
+msgstr ""
+"The directory where the files are stored is chosen using \"Item Directory\". "
+"Subdirectories can be included in the file name column of the Excel file. "
+"For example, dir1/file1.pdf will cause the application to look in the dir1 "
+"subdirectory for file1.pdf. If this is left blank, no files will be uploaded "
+"with the items. The Excel file can have rows with the file name column "
+"blank. In this case, the item metadata alone will be imported.\n"
+"\n"
+"The \"How to match item file names?\" radio button indicates how the "
+"application will search for file names. If the \"Exact match\" option is "
+"chosen, the file name as it is entered in the Excel file is used. This will "
+"upload a single file per item. The \"Begins with column value\" option means "
+"that the value entered in the file name column of the Excel file is used to "
+"search for files with names starting with that value. The \"Extension of the "
+"item files\" textbox is required in this case. This option can be used to "
+"upload more than one file for an item. For example, if the file name column "
+"in the Excel file has item_ and the file extension is .pdf, the application "
+"will match files item_1.pdf, item_2.pdf, item_three.pdf, and upload them "
+"with the item."
+
+#: wizardpages.py:354
+msgid "file_page_item_dir_label"
+msgstr "Item Directory"
+
+#: wizardpages.py:354
+msgid "file_page_item_dir_select_button"
+msgstr "Browse"
+
+#: wizardpages.py:358
+msgid "file_page_file_name_column_label"
+msgstr "Column with file name for the item"
+
+#: wizardpages.py:364
+msgid "file_page_match_file_name_label"
+msgstr "How to match item file names?"
+
+#: wizardpages.py:365
+msgid "file_name_match_exact"
+msgstr "Exact Match"
+
+#: wizardpages.py:365
+msgid "file_name_match_begins_with"
+msgstr "Begins with column value"
+
+#: wizardpages.py:369
+msgid "file_page_file_name_extension_label"
+msgstr "Extension of the item files (if not in Excel worksheet)"
+
+#: wizardpages.py:374
+msgid "file_page_remove_existing_for_duplicate"
+msgstr "Remove existing files for duplicate items?"

@@ -33,16 +33,17 @@ class FileBrowser(QWidget):
     def get_file(self):
         self.file_paths = []
         if self.browse_type == FileBrowseType.FILE:
-            self.selected_file = QFileDialog.getOpenFileName(self, caption="Choose File", dir=QDir.homePath(), filter=self.file_filter)
+            sel_file = QFileDialog.getOpenFileName(self, caption="Choose File", dir=QDir.homePath(), filter=self.file_filter)
+            self.selected_file = sel_file[0]
         
         if self.browse_type == FileBrowseType.DIR:
             self.selected_file = QFileDialog.getExistingDirectory(self, caption="Choose Directory", dir=QDir.homePath())
         # self.selected_file is a tuple (fileName, selectedFilter)
         # if dialog is cancelled, fileName is '', do not emit signal
         #print(self.selected_file)
-        if len(self.selected_file[0]) > 0:
+        if len(self.selected_file) > 0:
             #print("save selected file")
-            self.file_paths.append(self.selected_file[0])
+            self.file_paths.append(self.selected_file)
             self.file_display.setText(self.file_paths[0])
             self.fileSelected.emit(self.file_paths[0])
 

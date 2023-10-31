@@ -12,6 +12,10 @@ class FileBrowseType(Enum):
     FILE = 1
     DIR = 2
 
+class ItemFileMatchType(Enum):
+    EXACT = 1
+    BEGINS = 2
+
 class DSO(object):
     def __init__(self, uuid, name, parent, type, itemsLoaded=False, collLoaded=False):
         self.id = id(self)
