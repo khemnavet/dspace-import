@@ -352,7 +352,8 @@ class FilePage(DSpaceWizardPages):
         instruction_label.setWordWrap(True)
 
         # directory
-        self.dir_selected = FileBrowser(FileBrowseType.DIR, _("file_page_item_dir_label"), "", _("file_page_item_dir_select_button"))
+        self.file_dir = FileBrowser(FileBrowseType.DIR, _("file_page_item_dir_label"), "", _("file_page_item_dir_select_button"))
+        self.file_dir.fileSelected.connect(self.dir_selected)
 
         # file name columns
         file_name_column_label = QLabel()
@@ -377,7 +378,7 @@ class FilePage(DSpaceWizardPages):
 
         layout = QGridLayout()
         layout.addWidget(instruction_label, 0, 0, 1, 2)
-        layout.addWidget(self.dir_selected, 1, 0, 1, 2)
+        layout.addWidget(self.file_dir, 1, 0, 1, 2)
         layout.addWidget(file_name_column_label, 2, 0)
         layout.addWidget(self.file_name_column, 2, 1)
         layout.addWidget(match_file_name_label, 3, 0)
@@ -389,3 +390,18 @@ class FilePage(DSpaceWizardPages):
         self.setLayout(layout)
 
         # any required fields to register?
+    
+    def dir_selected(self, path):
+        self.shared_data.item_directory = path
+
+    def validatePage(self) -> bool:
+        # if match_file_name is begins with, file name extension is required
+        if self.match_file_name.selected_option()[0] == ItemFileMatchType.BEGINS and len(self.file_name_extension.text().strip()) == 0:
+            self._show_critical_message_box(f"The field {_('file_page_file_name_extension_label')} is required")
+            return False
+        # save values
+        self.shared_data.file_name_column = self.file_name_column.currentText()
+        self.shared_data.file_name_matching = self.match_file_name.selected_option()[0]
+        self.shared_data.file_extension = self.file_name_extension.text().strip()
+        self.shared_data.remove_existing_files = self.remove_existing_files.selected_option()[0]
+        return True
