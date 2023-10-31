@@ -60,6 +60,11 @@ class ImporterData:
         self.__column_mapping = {}
         self.__duplicate_column = ""
         self.__update_existing = ""
+        self.__item_directory = ""
+        self.__file_name_column = ""
+        self.__match_file_name = ItemFileMatchType.EXACT
+        self.__file_name_extension = ""
+        self.__remove_existing_files = YesNo.NO
 
     # getters
     @property
@@ -81,6 +86,26 @@ class ImporterData:
     @property
     def update_existing(self):
         return self.__update_existing
+    
+    @property
+    def item_directory(self):
+        return self.__item_directory
+
+    @property
+    def file_name_column(self):
+        return self.__file_name_column
+
+    @property
+    def file_name_matching(self):
+        return self.__match_file_name
+    
+    @property
+    def file_extension(self):
+        return self.__file_name_extension
+
+    @property
+    def remove_existing_files(self) -> bool:
+        return self.__remove_existing_files == YesNo.YES
 
     @selected_community.setter
     def selected_community(self, coll: DSO):
@@ -99,5 +124,25 @@ class ImporterData:
         self.__duplicate_column = dup
     
     @update_existing.setter
-    def update_existing(self, existing):
+    def update_existing(self, existing: YesNo):
         self.__update_existing = existing
+    
+    @item_directory.setter
+    def item_directory(self, dir):
+        self.__item_directory = dir
+
+    @file_name_column.setter
+    def file_name_column(self, col_name):
+        self.__file_name_column = col_name
+    
+    @file_name_matching.setter
+    def file_name_matching(self, match: ItemFileMatchType):
+        self.__match_file_name = match
+    
+    @file_extension.setter
+    def file_extension(self, ext):
+        self.__file_name_extension = ext
+    
+    @remove_existing_files.setter
+    def remove_existing_files(self, rem: YesNo):
+        self.__remove_existing_files = rem
