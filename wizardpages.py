@@ -1,12 +1,12 @@
 # classes for the pages in the wizard
 
 from gettext import GNUTranslations
-from PySide6.QtWidgets import QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QPlainTextEdit
+from PySide6.QtWidgets import QWizard, QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QPlainTextEdit
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression
 
 from config import ImporterConfig
-from dataobjects import ImporterData, DSO, YesNo, FileBrowseType, ItemFileMatchType
+from dataobjects import ImporterData, YesNo, FileBrowseType, ItemFileMatchType
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
@@ -428,8 +428,10 @@ class SummaryPage(DSpaceWizardPages):
 
         self.setTitle(_("summary_page_title"))
         # change name of next button to import
+        self.setButtonText(QWizard.NextButton, "Import")
 
         self.summary = QPlainTextEdit()
+        self.summary.setReadOnly(True)
 
         layout = QGridLayout()
         layout.addWidget(self.summary)
@@ -461,3 +463,5 @@ class SummaryPage(DSpaceWizardPages):
     def isComplete(self) -> bool:
         return self.show_summary
         
+#######################################################################################################################
+
