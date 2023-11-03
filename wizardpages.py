@@ -465,3 +465,16 @@ class SummaryPage(DSpaceWizardPages):
         
 #######################################################################################################################
 
+class ImportResultsPage(DSpaceWizardPages):
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+        super().__init__(config, lang_i18n)
+        self.shared_data = shared_data
+
+        self.setTitle(_("import_results_page_title"))
+
+        self.results = QPlainTextEdit()
+
+        layout = QGridLayout()
+        layout.addWidget(self.results)
+
+        self.setLayout(layout)

@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication, QWizard
 from config import ImporterConfig
 from dataobjects import ImporterData
 from metadataservice import MetadataService
-from wizardpages import LoginPage, CollectionPage, ExcelFileSelectPage, MappingPage, FilePage, SummaryPage
+from wizardpages import LoginPage, CollectionPage, ExcelFileSelectPage, MappingPage, FilePage, SummaryPage, ImportResultsPage
 
 if __name__ == "__main__":
     with open("config.toml", "rb") as f:
@@ -51,6 +51,8 @@ if __name__ == "__main__":
     wizard.addPage(FilePage(config, lang_i18n, shared_data))
     # summary page
     wizard.addPage(SummaryPage(config, lang_i18n, shared_data))
+    #results page
+    wizard.addPage(ImportResultsPage(config, lang_i18n, shared_data))
     wizard.show()
 
     app.exec()
