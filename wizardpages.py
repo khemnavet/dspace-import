@@ -1,7 +1,7 @@
 # classes for the pages in the wizard
 
 from gettext import GNUTranslations
-from PySide6.QtWidgets import QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QHBoxLayout
+from PySide6.QtWidgets import QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QPlainTextEdit
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression
 
@@ -13,6 +13,7 @@ from communityservice import CommunityException, CommunityService
 from widgets import FileBrowser, SchemaFieldSelect, RadioButton
 from excelfileservice import ExcelFileService, ExcelFileException
 from metadataservice import MetadataService
+from fileservice import ItemFileService
 
 class DSpaceWizardPages(QWizardPage):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
@@ -29,6 +30,12 @@ class DSpaceWizardPages(QWizardPage):
         msgBox.setText(message)
         msgBox.setIcon(QMessageBox.Critical)
         msgBox.exec()
+    
+    def _no_yes_options(self) -> dict:
+        return {YesNo.NO: _("No"), YesNo.YES: _("Yes")}
+    
+    def _file_match_options(self) -> dict:
+        return {ItemFileMatchType.EXACT: _("file_name_match_exact"), ItemFileMatchType.BEGINS: _("file_name_match_begins_with")}
 
 class LoginPage(DSpaceWizardPages):
 
@@ -85,7 +92,7 @@ class LoginPage(DSpaceWizardPages):
 class CollectionPage(DSpaceWizardPages):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
         super().__init__(config=config, lang_i18n=lang_i18n)
-        self._shared_data = shared_data
+        self.shared_data = shared_data
 
         # to get the communities and collections
         self.community_service = CommunityService(self._config)
@@ -166,7 +173,7 @@ class CollectionPage(DSpaceWizardPages):
         if self.collection_select.currentIndex == -1:
             self._show_critical_message_box("The collection to import the data to is required.")
             return False
-        self._shared_data.selected_community = self.collection_select.currentData()
+        self.shared_data.selected_collection = self.collection_select.currentData()
         return True
 
 #######################################################################################################################
@@ -174,7 +181,7 @@ class CollectionPage(DSpaceWizardPages):
 class ExcelFileSelectPage(DSpaceWizardPages):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
         super().__init__(config, lang_i18n)
-        self._shared_data = shared_data
+        self.shared_data = shared_data
 
         self.setTitle(_("excel_page_title"))
         self.setSubTitle(_("excel_page_subtitle"))
@@ -208,6 +215,7 @@ class ExcelFileSelectPage(DSpaceWizardPages):
         try:
             self.excelService = ExcelFileService()
             self.excelService.set_file(file_name)
+            self.shared_data.item_file = file_name
             # extract sheets and populate the excel_sheet_select widget
             self.excel_sheet_select.clear()
             self.excel_sheet_select.insertItems(0, self.excelService.get_sheet_names())
@@ -219,6 +227,7 @@ class ExcelFileSelectPage(DSpaceWizardPages):
         # selected sheet - get the columns headings of the selected sheet
         try:
             self.excelService.set_column_headings(self.excel_sheet_select.currentText())
+            self.shared_data.item_file_sheet = self.excel_sheet_select.currentText()
         except ExcelFileException as err:
             self._show_critical_message_box(str(err))
             return False
@@ -289,7 +298,7 @@ class MappingPage(DSpaceWizardPages):
         # if to update existing
         update_existing_label = QLabel()
         update_existing_label.setText(_("mapping_page_update_existing_label"))
-        self.update_existing = RadioButton({YesNo.NO: _("No"), YesNo.YES: _("Yes")})
+        self.update_existing = RadioButton(self._no_yes_options())
         layout.addWidget(update_existing_label, index, 0)
         layout.addWidget(self.update_existing, index, 1)
 
@@ -323,7 +332,7 @@ class MappingPage(DSpaceWizardPages):
                 self._show_critical_message_box(_("mapping_page_duplicate_column_not_mapped"))
                 return False
         # save selections
-        print(f"selected collection = {self.shared_data.selected_community.name}")
+        print(f"selected collection = {self.shared_data.selected_collection.name}")
         self.shared_data.column_mapping = self.mapping
         self.shared_data.title_column = self.title_select.currentText()
         self.shared_data.duplicate_column = self.duplicate_select.currentText()
@@ -364,7 +373,7 @@ class FilePage(DSpaceWizardPages):
         # match file name
         match_file_name_label = QLabel()
         match_file_name_label.setText(_("file_page_match_file_name_label"))
-        self.match_file_name = RadioButton({ItemFileMatchType.EXACT: _("file_name_match_exact"), ItemFileMatchType.BEGINS: _("file_name_match_begins_with")})
+        self.match_file_name = RadioButton(self._file_match_options())
 
         # extension for files
         file_name_extension_label = QLabel()
@@ -374,7 +383,7 @@ class FilePage(DSpaceWizardPages):
         # remove existing files for duplicate
         remove_existing_files_label = QLabel()
         remove_existing_files_label.setText(_("file_page_remove_existing_for_duplicate"))
-        self.remove_existing_files = RadioButton({YesNo.NO: _("No"), YesNo.YES: _("Yes")})
+        self.remove_existing_files = RadioButton(self._no_yes_options())
 
         layout = QGridLayout()
         layout.addWidget(instruction_label, 0, 0, 1, 2)
@@ -405,3 +414,50 @@ class FilePage(DSpaceWizardPages):
         self.shared_data.file_extension = self.file_name_extension.text().strip()
         self.shared_data.remove_existing_files = self.remove_existing_files.selected_option()[0]
         return True
+
+#######################################################################################################################
+
+class SummaryPage(DSpaceWizardPages):
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+        super().__init__(config, lang_i18n)
+        self.shared_data = shared_data
+        self.excel_service = ExcelFileService()
+        self.item_file_service = ItemFileService()
+
+        self.show_summary = False
+
+        self.setTitle(_("summary_page_title"))
+        # change name of next button to import
+
+        self.summary = QPlainTextEdit()
+
+        layout = QGridLayout()
+        layout.addWidget(self.summary)
+
+        self.setLayout(layout)
+    
+    def initializePage(self) -> None:
+        # check the item files to ensure all exists
+        summary_data = []
+        i = 0
+        for file_name, item_title in self.excel_service.file_title(self.shared_data.file_name_column, self.shared_data.title_column):
+            print(f"checking file {file_name} for title {item_title}")
+            if file_name is not None and not self.item_file_service.item_file_exists(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
+                summary_data.append(f"File not found for row {i}, (title {item_title})")
+            i = i + 1
+
+        if len(summary_data) == 0:
+            # can import, show summary values
+            self.show_summary = True
+            summary_data.append(_("summary_page_import_into_collection")+" "+self.shared_data.selected_collection.name)
+            summary_data.append(_("summary_page_using_file")+" "+self.shared_data.item_file+", "+_("summary_page_file_sheet")+" "+self.shared_data.item_file_sheet)
+            summary_data.append(_("summary_page_title_column")+" "+self.shared_data.title_column)
+            summary_data.append(_("summary_page_duplicate_column")+" "+self.shared_data.duplicate_column)
+            summary_data.append(_("summary_page_update_existing")+" "+(_("Yes") if self.shared_data.update_existing else _("No")))
+            summary_data.append(_("summary_page_item_directory")+" "+self.shared_data.item_directory)
+        
+        self.summary.setPlainText("\n".join(summary_data))
+
+    def isComplete(self) -> bool:
+        return self.show_summary
+        

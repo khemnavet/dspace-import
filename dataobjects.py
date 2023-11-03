@@ -55,7 +55,9 @@ class ImporterData:
     # may have to add self.lock = Threading.lock to __init__
     # method that wants to use a shared variable use with self.lock to acquire a lock for the variable then modify/read the variable
     def __init__(self) -> None:
-        self.__selected_community = None
+        self.__selected_collection = None
+        self.__item_file = ""
+        self.__item_file_sheet = ""
         self.__title_column = ""
         self.__column_mapping = {}
         self.__duplicate_column = ""
@@ -68,8 +70,16 @@ class ImporterData:
 
     # getters
     @property
-    def selected_community(self) -> DSO:
-        return self.__selected_community
+    def selected_collection(self) -> DSO:
+        return self.__selected_collection
+    
+    @property
+    def item_file(self):
+        return self.__item_file
+    
+    @property
+    def item_file_sheet(self):
+        return self.__item_file_sheet
 
     @property
     def title_column(self):
@@ -84,8 +94,8 @@ class ImporterData:
         return self.__duplicate_column
     
     @property
-    def update_existing(self):
-        return self.__update_existing
+    def update_existing(self) -> bool:
+        return self.__update_existing == YesNo.YES
     
     @property
     def item_directory(self):
@@ -107,9 +117,17 @@ class ImporterData:
     def remove_existing_files(self) -> bool:
         return self.__remove_existing_files == YesNo.YES
 
-    @selected_community.setter
-    def selected_community(self, coll: DSO):
-        self.__selected_community = coll
+    @selected_collection.setter
+    def selected_collection(self, coll: DSO):
+        self.__selected_collection = coll
+    
+    @item_file.setter
+    def item_file(self, file_name):
+        self.__item_file = file_name
+    
+    @item_file_sheet.setter
+    def item_file_sheet(self, sheet_name):
+        self.__item_file_sheet = sheet_name
     
     @title_column.setter
     def title_column(self, title):
@@ -140,8 +158,8 @@ class ImporterData:
         self.__match_file_name = match
     
     @file_extension.setter
-    def file_extension(self, ext):
-        self.__file_name_extension = ext
+    def file_extension(self, ext:str):
+        self.__file_name_extension = "."+ext.strip().lstrip(".") if len(ext.strip()) > 0 else ""
     
     @remove_existing_files.setter
     def remove_existing_files(self, rem: YesNo):

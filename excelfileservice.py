@@ -1,5 +1,5 @@
 from pathlib import Path
-from pandas import ExcelFile, DataFrame
+from pandas import ExcelFile, DataFrame, isna
 
 class ExcelFileException(Exception):
     def __init__(self, msg):
@@ -49,3 +49,17 @@ class ExcelFileService:
         import_columns = list(self.__dataframe.columns.values)
         print(f"in get column headings: {import_columns} from sheet {self.__selected_sheet}")
         return import_columns
+    
+    def reset_file(self):
+        self.__dataframe.reset_index()
+
+    def file_title(self, file_column, title_column):
+        for row in self.__dataframe.iterrows(): # row is a tuple, 0 = index, 1 = data
+            data = row[1]
+            if not isna(data[file_column]) and len((data[file_column]).strip()) > 0:
+                yield (data[file_column], data[title_column])
+            else:
+                yield (None, data[title_column])
+    
+    def num_rows(self):
+        return len(self.__dataframe.index)
