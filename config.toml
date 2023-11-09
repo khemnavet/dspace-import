@@ -2,5 +2,8 @@ appMainTitle = "UWISpace Importer"
 
 locale = "en"
 
+wizardWidth = "1280"
+wizardHeight = "720"
+
 [DSpace]
 dspaceRestURL = "http://localhost:8081/server"

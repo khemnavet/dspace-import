@@ -1,9 +1,9 @@
 # classes for the pages in the wizard
 
 from gettext import GNUTranslations
-from PySide6.QtWidgets import QWizard, QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QPlainTextEdit
+from PySide6.QtWidgets import QWizard, QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QPlainTextEdit, QWidget, QScrollArea
 from PySide6.QtGui import QRegularExpressionValidator
-from PySide6.QtCore import QRegularExpression
+from PySide6.QtCore import QRegularExpression, Qt
 
 from config import ImporterConfig
 from dataobjects import ImporterData, YesNo, FileBrowseType, ItemFileMatchType
@@ -36,6 +36,14 @@ class DSpaceWizardPages(QWizardPage):
     
     def _file_match_options(self) -> dict:
         return {ItemFileMatchType.EXACT: _("file_name_match_exact"), ItemFileMatchType.BEGINS: _("file_name_match_begins_with")}
+    
+    def _scroll_area_width(self) -> int:
+        #self._config.window_width() - (0.05 * self._config.window_width()) 
+        return self._config.window_width() - 25
+    
+    def _scroll_area_height(self) -> int:
+        #self._config.window_height() - (0.25 * self._config.window_height())
+        return self._config.window_height() - 125
 
 class LoginPage(DSpaceWizardPages):
 
@@ -119,8 +127,22 @@ class CollectionPage(DSpaceWizardPages):
         layout.addWidget(self.community_select, 1, 1)
         layout.addWidget(collection_label, 2, 0)
         layout.addWidget(self.collection_select, 2, 1)
+        layout.setRowStretch(3, 1)
 
-        self.setLayout(layout)
+        # widget to hold the controls
+        container = QWidget()
+        container.setLayout(layout)
+        container.resize(self._config.window_width(), self._config.window_height())
+        # scroll area and add container widget
+        scroll = QScrollArea(self)
+        scroll.setWidget(container)
+        scroll.setWidgetResizable(True)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.resize(self._scroll_area_width(), self._scroll_area_height())
+        scroll.update()
+
+        #self.setLayout(layout)
 
         # register fields to make them required
         self.registerField("collection*", self.collection_select)
@@ -203,8 +225,22 @@ class ExcelFileSelectPage(DSpaceWizardPages):
         layout.addWidget(self.excel_file, 1, 0, 1, 2)
         layout.addWidget(excel_sheet_label, 2, 0)
         layout.addWidget(self.excel_sheet_select, 2, 1)
+        layout.setRowStretch(3, 1)
 
-        self.setLayout(layout)
+        # widget to hold the controls
+        container = QWidget()
+        container.setLayout(layout)
+        container.resize(self._config.window_width(), self._config.window_height())
+        # scroll area and add container widget
+        scroll = QScrollArea(self)
+        scroll.setWidget(container)
+        scroll.setWidgetResizable(True)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.resize(self._scroll_area_width(), self._scroll_area_height())
+        scroll.update()
+        
+        #self.setLayout(layout)
         # register the excel sheet select to make it required
         self.registerField("excelSheet*", self.excel_sheet_select)
 
@@ -302,7 +338,18 @@ class MappingPage(DSpaceWizardPages):
         layout.addWidget(update_existing_label, index, 0)
         layout.addWidget(self.update_existing, index, 1)
 
-        self.setLayout(layout)
+        # widget to hold the controls
+        container = QWidget()
+        container.setLayout(layout)
+        container.resize(self._config.window_width(), self._config.window_height())
+        # scroll area and add container widget
+        scroll = QScrollArea(self)
+        scroll.setWidget(container)
+        scroll.setWidgetResizable(True)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.resize(self._scroll_area_width(), self._scroll_area_height())
+        scroll.update()
 
         # register title_label to make it required
         self.registerField("titleField*", self.title_select)
@@ -396,7 +443,22 @@ class FilePage(DSpaceWizardPages):
         layout.addWidget(self.file_name_extension, 4, 1)
         layout.addWidget(remove_existing_files_label, 5, 0)
         layout.addWidget(self.remove_existing_files, 5, 1)
-        self.setLayout(layout)
+        layout.setRowStretch(6, 1)
+
+        # container for the controls
+        container = QWidget()
+        container.setLayout(layout)
+        container.resize(self._config.window_width(), self._config.window_height())
+        # scroll area and add container widget
+        scroll = QScrollArea(self)
+        scroll.setWidget(container)
+        scroll.setWidgetResizable(True)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.resize(self._scroll_area_width(), self._scroll_area_height())
+        scroll.update()
+
+        #self.setLayout(layout)
 
         # any required fields to register?
     

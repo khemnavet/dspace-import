@@ -8,3 +8,9 @@ class ImporterConfig:
     
     def locale(self) -> str:
         return self.__config["locale"]
+    
+    def window_width(self) -> int:
+        return int(self.__config["wizardWidth"])
+    
+    def window_height(self) -> int:
+        return int(self.__config["wizardHeight"])

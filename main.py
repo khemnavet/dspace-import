@@ -38,6 +38,8 @@ if __name__ == "__main__":
         wizard.setWizardStyle(QWizard.MacStyle)
     else:
         wizard.setWizardStyle(QWizard.ModernStyle)
+    
+    wizard.resize(config.window_width(), config.window_height())
     # wizard pages
     # login page
     wizard.addPage(LoginPage(config, lang_i18n))
