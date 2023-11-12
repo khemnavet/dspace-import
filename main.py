@@ -4,15 +4,19 @@ import os
 from sys import platform
 from PySide6.QtWidgets import QApplication, QWizard
 
-from config import ImporterConfig
+from config import ImporterConfig, ConfigException
 from dataobjects import ImporterData
 from metadataservice import MetadataService
 from wizardpages import LoginPage, CollectionPage, ExcelFileSelectPage, MappingPage, FilePage, SummaryPage, ImportResultsPage
 
 if __name__ == "__main__":
-    with open("config.toml", "rb") as f:
-        config = ImporterConfig(tomllib.load(f))
-    #print(config)
+    try:
+        with open("config.toml", "rb") as f:
+            config = ImporterConfig(tomllib.load(f))
+    except ConfigException as err:
+        print(str(err))
+        exit(0)
+    
     print(config.dspace_rest_url())
 
     app_name = "dspace_importer"
