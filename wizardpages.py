@@ -321,14 +321,14 @@ class MappingPage(DSpaceWizardPages):
         layout.addWidget(self.title_select, index, 1)
         index = index + 1
 
-        # column to check for duplicates
-        duplicate_label = QLabel()
-        duplicate_label.setText(_("mapping_page_duplicate_column_label"))
-        self.duplicate_select = QComboBox()
-        self.duplicate_select.insertItem(0, "")
-        self.duplicate_select.insertItems(1, column_headings)
-        layout.addWidget(duplicate_label, index, 0)
-        layout.addWidget(self.duplicate_select, index, 1)
+        # column with the item uuid (optional)
+        item_uuid_label = QLabel()
+        item_uuid_label.setText(_("mapping_page_item_uuid_column_label"))
+        self.item_uuid_select = QComboBox()
+        self.item_uuid_select.insertItem(0, "")
+        self.item_uuid_select.insertItems(1, column_headings)
+        layout.addWidget(item_uuid_label, index, 0)
+        layout.addWidget(self.item_uuid_select, index, 1)
         index = index + 1
 
         # if to update existing
@@ -370,19 +370,16 @@ class MappingPage(DSpaceWizardPages):
         if self.title_select.currentIndex() == 0:
             self._show_critical_message_box(_("mapping_page_title_column_required"))
             return False
-        # if update existing is YES, duplicate column has to be chosen and mapping set
+        # if update existing is YES, item uuid column has to be chosen
         if self.update_existing.selected_option()[0] == YesNo.YES:
-            if self.duplicate_select.currentIndex() == 0:
-                self._show_critical_message_box(_("mapping_page_duplicate_column_required"))
-                return False
-            if len(self.mapping[self.duplicate_select.currentText()]) == 0:
-                self._show_critical_message_box(_("mapping_page_duplicate_column_not_mapped"))
+            if self.item_uuid_select.currentIndex() == 0:
+                self._show_critical_message_box(_("mapping_page_item_uuid_column_required"))
                 return False
         # save selections
         print(f"selected collection = {self.shared_data.selected_collection.name}")
         self.shared_data.column_mapping = self.mapping
         self.shared_data.title_column = self.title_select.currentText()
-        self.shared_data.duplicate_column = self.duplicate_select.currentText()
+        self.shared_data.item_uuid_column = self.item_uuid_select.currentText()
         self.shared_data.update_existing = self.update_existing.selected_option()[0]
 
         # some background things to happen here - get the items in the collection and build DS to search based on duplicate column mapping
@@ -516,7 +513,7 @@ class SummaryPage(DSpaceWizardPages):
             summary_data.append(_("summary_page_import_into_collection")+" "+self.shared_data.selected_collection.name)
             summary_data.append(_("summary_page_using_file")+" "+self.shared_data.item_file+", "+_("summary_page_file_sheet")+" "+self.shared_data.item_file_sheet)
             summary_data.append(_("summary_page_title_column")+" "+self.shared_data.title_column)
-            summary_data.append(_("summary_page_duplicate_column")+" "+self.shared_data.duplicate_column)
+            summary_data.append(_("summary_page_item_uuid_column")+" "+self.shared_data.item_uuid_column)
             summary_data.append(_("summary_page_update_existing")+" "+(_("Yes") if self.shared_data.update_existing else _("No")))
             summary_data.append(_("summary_page_item_directory")+" "+self.shared_data.item_directory)
         

@@ -60,7 +60,7 @@ class ImporterData:
         self.__item_file_sheet = ""
         self.__title_column = ""
         self.__column_mapping = {}
-        self.__duplicate_column = ""
+        self.__item_uuid_column = ""
         self.__update_existing = ""
         self.__item_directory = ""
         self.__file_name_column = ""
@@ -90,8 +90,8 @@ class ImporterData:
         return self.__column_mapping
     
     @property
-    def duplicate_column(self):
-        return self.__duplicate_column
+    def item_uuid_column(self):
+        return self.__item_uuid_column
     
     @property
     def update_existing(self) -> bool:
@@ -137,9 +137,9 @@ class ImporterData:
     def column_mapping(self, mapping: dict):
         self.__column_mapping = mapping
 
-    @duplicate_column.setter
-    def duplicate_column(self, dup):
-        self.__duplicate_column = dup
+    @item_uuid_column.setter
+    def item_uuid_column(self, dup):
+        self.__item_uuid_column = dup
     
     @update_existing.setter
     def update_existing(self, existing: YesNo):
