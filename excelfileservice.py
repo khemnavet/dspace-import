@@ -53,13 +53,17 @@ class ExcelFileService:
     def reset_file(self):
         self.__dataframe.reset_index()
 
-    def file_title(self, file_column, title_column):
+    def file_itemuuiud_title(self, file_column, item_uuid_column, title_column):
         for row in self.__dataframe.iterrows(): # row is a tuple, 0 = index, 1 = data
             data = row[1]
+            file = None
+            itemuuid = None
             if not isna(data[file_column]) and len((data[file_column]).strip()) > 0:
-                yield (data[file_column], data[title_column])
-            else:
-                yield (None, data[title_column])
+                file = data[file_column]
+            if not isna(data[item_uuid_column]) and len((data[item_uuid_column]).strip()) > 0:
+                itemuuid = data[item_uuid_column]
+            
+            yield (file, itemuuid, data[title_column])
     
     def num_rows(self):
         return len(self.__dataframe.index)

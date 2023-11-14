@@ -14,6 +14,7 @@ from widgets import FileBrowser, SchemaFieldSelect, RadioButton
 from excelfileservice import ExcelFileService, ExcelFileException
 from metadataservice import MetadataService
 from fileservice import ItemFileService
+from utils import Utils
 
 class DSpaceWizardPages(QWizardPage):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
@@ -501,10 +502,12 @@ class SummaryPage(DSpaceWizardPages):
         # check the item files to ensure all exists
         summary_data = []
         i = 0
-        for file_name, item_title in self.excel_service.file_title(self.shared_data.file_name_column, self.shared_data.title_column):
+        for file_name, item_uuid, item_title in self.excel_service.file_itemuuiud_title(self.shared_data.file_name_column, self.shared_data.item_uuid_column, self.shared_data.title_column):
             print(f"checking file {file_name} for title {item_title}")
             if file_name is not None and not self.item_file_service.item_file_exists(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
                 summary_data.append(f"File not found for row {i}, (title {item_title})")
+            if item_uuid is not None and not Utils.valid_uuid(item_uuid):
+                summary_data.append(f"Item UUID for row {i}, (title {item_title}) is not a valid format")
             i = i + 1
 
         if len(summary_data) == 0:
