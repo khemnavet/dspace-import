@@ -1,4 +1,4 @@
-from dspacecommunityrequest import DspaceCommunityRequest
+from dspacerequest import DspaceCommunityRequest
 from config import ImporterConfig
 from dataobjects import DSO, DSOTypes
 from dspaceauthservice import DspaceAuthService
