@@ -358,14 +358,12 @@ class MappingPage(DSpaceWizardPages):
     
     def validatePage(self) -> bool:
         # validate page, at least one column is mapped to a metadata field
-        cols_mapped = 0
         self.mapping = {}
         for row in self.col_list:
-            self.mapping[row] = self.col_list[row]["schema"].selected_schema_field()
             #print(self.col_list[row]["schema"].selected_schema_field())
             if len(self.col_list[row]["schema"].selected_schema_field()) > 0:
-                cols_mapped = cols_mapped + 1
-        if cols_mapped == 0:
+                self.mapping[row] = self.col_list[row]["schema"].selected_schema_field()
+        if len(self.mapping) == 0:
             self._show_critical_message_box(_("mapping_page_column_schema_mapping_required"))
             return False
         # title is required
@@ -505,7 +503,7 @@ class SummaryPage(DSpaceWizardPages):
         summary_data = []
         i = 0
         for file_name, item_uuid, item_title in self.excel_service.file_itemuuiud_title(self.shared_data.file_name_column, self.shared_data.item_uuid_column, self.shared_data.title_column):
-            print(f"checking file {file_name} for title {item_title}")
+            #print(f"checking file {file_name} for title {item_title}")
             if file_name is not None and not self.item_file_service.item_file_exists(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
                 summary_data.append(f"File not found for row {i}, (title {item_title})")
             try:
