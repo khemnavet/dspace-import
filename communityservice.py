@@ -56,20 +56,20 @@ class CommunityService:
         result = []
         if community is None:
             # return top communities
-            print("return top communities")
+            #print("return top communities")
             for c_id in self._top_communities:
                 result.append(self._communities_collections[c_id])
         else:
             # may have sub communities cached
             comm_dso = self._communities_collections[community.id]
             if comm_dso.itemsLoaded:
-                print("return cached sub communities")
+                #print("return cached sub communities")
                 # have sub communities to return
                 for c_id in comm_dso.children:
                     result.append(self._communities_collections[c_id])
             else:
                 # request these from server
-                print("get sub communities from server")
+                #print("get sub communities from server")
                 try:
                     curr_page = 0
                     total_pages = 1
@@ -100,12 +100,12 @@ class CommunityService:
         comm_dso = self._communities_collections[community.id]
         if comm_dso.collectionsLoaded:
             # return cached collections
-            print("return cached collections")
+            #print("return cached collections")
             for c_id in comm_dso.collections:
                 result.append(self._communities_collections[c_id])
         else:
             # get the collections from the server
-            print("get collections from server")
+            #print("get collections from server")
             try:
                 curr_page = 0
                 total_pages = 1
