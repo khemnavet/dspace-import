@@ -13,7 +13,7 @@ class ExcelFileService:
 
     def __new__(cls, *args, **kwargs):
         if cls._self is None:
-            print("create new instance of excel file service")
+            #print("create new instance of excel file service")
             cls._self = super().__new__(cls)
         return cls._self
     
@@ -47,7 +47,7 @@ class ExcelFileService:
     
     def get_column_headings(self):
         import_columns = list(self.__dataframe.columns.values)
-        print(f"in get column headings: {import_columns} from sheet {self.__selected_sheet}")
+        #print(f"in get column headings: {import_columns} from sheet {self.__selected_sheet}")
         return import_columns
     
     def reset_file(self):
