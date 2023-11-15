@@ -15,7 +15,6 @@ class ItemService:
     _self = None
     def __new__(cls, *args, **kwargs):
         if cls._self is None:
-            print("create new instance of item service")
             cls._self = super().__new__(cls)
         return cls._self
     
