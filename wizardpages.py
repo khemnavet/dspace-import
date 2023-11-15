@@ -15,6 +15,7 @@ from excelfileservice import ExcelFileService, ExcelFileException
 from metadataservice import MetadataService
 from fileservice import ItemFileService
 from utils import Utils
+from itemservice import ItemService, ItemException
 
 class DSpaceWizardPages(QWizardPage):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
@@ -483,6 +484,7 @@ class SummaryPage(DSpaceWizardPages):
         self.shared_data = shared_data
         self.excel_service = ExcelFileService()
         self.item_file_service = ItemFileService()
+        self.item_service = ItemService(config)
 
         self.show_summary = False
 
@@ -506,8 +508,13 @@ class SummaryPage(DSpaceWizardPages):
             print(f"checking file {file_name} for title {item_title}")
             if file_name is not None and not self.item_file_service.item_file_exists(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
                 summary_data.append(f"File not found for row {i}, (title {item_title})")
-            if item_uuid is not None and not Utils.valid_uuid(item_uuid):
-                summary_data.append(f"Item UUID for row {i}, (title {item_title}) is not a valid format")
+            try:
+                if item_uuid is not None and not Utils.valid_uuid(item_uuid):
+                    summary_data.append(f"Item UUID for row {i} (title {item_title}) is not a valid format")
+                elif item_uuid is not None and self.item_service.owning_collection(item_uuid) != self.shared_data.selected_collection.uuid:
+                    summary_data.append(f"Item UUID for row {i} (title {item_title}) is not in collection {self.shared_data.selected_collection.name}")
+            except ItemException as err:
+                summary_data.append(f"Item UUID for row {i} (title {item_title}) error getting owning collection {err}")
             i = i + 1
 
         if len(summary_data) == 0:
