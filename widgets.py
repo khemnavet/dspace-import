@@ -103,8 +103,8 @@ class RadioButton(QWidget):
     def update(self):
         radio_button = self.sender()
 
-        if radio_button.isChecked():
-            print(f"radio button value: {radio_button.value}, text: {radio_button.text()}")
+        #if radio_button.isChecked():
+        #    print(f"radio button value: {radio_button.value}, text: {radio_button.text()}")
 
     def selected_option(self) -> tuple:
         for rb in self.radio:
