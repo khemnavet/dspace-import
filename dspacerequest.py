@@ -62,3 +62,22 @@ class DspaceCommunityRequest:
         if req.status_code == requests.codes.ok:
             return req.json()
         req.raise_for_status()
+
+class DspaceItemRequest:
+    _self = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._self is None:
+            cls._self = super().__new__(cls)
+        return cls._self
+    
+    def __init__(self, dspaceRestURL: str, jwt, cookie):
+        self.__dspaceRestURL = dspaceRestURL
+        self.__bearer_jwt = jwt
+        self.__cookie = cookie
+    
+    def item_owning_collection(self, item_uuid):
+        req = requests.get(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}/owningCollection", headers={"Accept":"application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
+        if req.status_code == requests.codes.ok:
+            return req.json()
+        req.raise_for_status()
