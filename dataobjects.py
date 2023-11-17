@@ -67,6 +67,7 @@ class ImporterData:
         self.__match_file_name = ItemFileMatchType.EXACT
         self.__file_name_extension = ""
         self.__remove_existing_files = YesNo.NO
+        self.__primary_bitstream_column = ""
 
     # getters
     @property
@@ -116,6 +117,10 @@ class ImporterData:
     @property
     def remove_existing_files(self) -> bool:
         return self.__remove_existing_files == YesNo.YES
+    
+    @property
+    def primary_bitstream_column(self):
+        return self.__primary_bitstream_column
 
     @selected_collection.setter
     def selected_collection(self, coll: DSO):
@@ -164,3 +169,7 @@ class ImporterData:
     @remove_existing_files.setter
     def remove_existing_files(self, rem: YesNo):
         self.__remove_existing_files = rem
+    
+    @primary_bitstream_column.setter
+    def primary_bitstream_column(self, col_name):
+        self.__primary_bitstream_column = col_name

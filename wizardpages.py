@@ -333,6 +333,16 @@ class MappingPage(DSpaceWizardPages):
         layout.addWidget(self.item_uuid_select, index, 1)
         index = index + 1
 
+        # column with primary bitstream file name (optional)
+        primary_bitstream_label = QLabel()
+        primary_bitstream_label.setText(_("mapping_page_primary_bitstream_label"))
+        self.primary_bitstream_select = QComboBox()
+        self.primary_bitstream_select.insertItem(0, "")
+        self.primary_bitstream_select.insertItems(1, column_headings)
+        layout.addWidget(primary_bitstream_label, index, 0)
+        layout.addWidget(self.primary_bitstream_select, index, 1)
+        index = index + 1
+
         # if to update existing
         update_existing_label = QLabel()
         update_existing_label.setText(_("mapping_page_update_existing_label"))
@@ -381,9 +391,8 @@ class MappingPage(DSpaceWizardPages):
         self.shared_data.title_column = self.title_select.currentText()
         self.shared_data.item_uuid_column = self.item_uuid_select.currentText()
         self.shared_data.update_existing = self.update_existing.selected_option()[0]
-
-        # some background things to happen here - get the items in the collection and build DS to search based on duplicate column mapping
-        # use a hash table since its exact matching to be done? hash function? size of hash table?
+        self.shared_data.primary_bitstream_column = self.primary_bitstream_select.currentText()
+        
         return super().validatePage()
     
 #######################################################################################################################
