@@ -28,7 +28,7 @@ class ExcelFileService:
             self.__excel_file_obj = ExcelFile(import_file)
         except Exception as e:
             print(f"Error creating excel file object: {str(e)}")
-            raise ExcelFileException(str(e))
+            raise ExcelFileException(f"Error creating excel file object: {str(e)}")
     
     def get_sheet_names(self) -> list:
         return self.__excel_file_obj.sheet_names
@@ -43,7 +43,7 @@ class ExcelFileService:
             #print(self.__dataframe.info())
         except Exception as e:
             print(f"Error getting columns from excel file object: {str(e)}")
-            raise ExcelFileException(str(e))
+            raise ExcelFileException(f"Error getting columns from excel file object: {str(e)}")
     
     def get_column_headings(self):
         import_columns = list(self.__dataframe.columns.values)

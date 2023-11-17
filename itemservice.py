@@ -30,6 +30,6 @@ class ItemService:
             return owning_coll_json["uuid"]
         except HTTPError as err:
             print(f"Exception getting owning collection for item {item_uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
-            raise ItemException(err.response.reason)
+            raise ItemException(f"Error getting owning collection for item {item_uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
 
 #

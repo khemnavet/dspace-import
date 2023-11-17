@@ -50,7 +50,7 @@ class CommunityService:
                     self.__add_top_community(dsObject.id)
         except HTTPError as err:
             print(f"Exception when getting top communities. Error code {err.response.status_code}, reason {err.response.reason}")
-            raise CommunityException(err.response.reason)
+            raise CommunityException(f"Error when getting top communities. Error code {err.response.status_code}, reason {err.response.reason}")
         
     def get_subcommunities(self, community: DSO):
         result = []
@@ -88,7 +88,7 @@ class CommunityService:
                     comm_dso.itemsLoaded = True
                 except HTTPError as err:
                     print(f"Exception getting sub communities for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
-                    raise CommunityException(err.response.reason)
+                    raise CommunityException(f"Error getting sub communities for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
                 
         return result
         
@@ -123,5 +123,5 @@ class CommunityService:
                 comm_dso.collectionsLoaded = True
             except HTTPError as err:
                 print(f"Exception getting collections for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
-                raise CommunityException(err.response.reason)
+                raise CommunityException(f"Error getting collections for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
         return result

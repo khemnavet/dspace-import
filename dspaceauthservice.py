@@ -56,7 +56,7 @@ class DspaceAuthService:
 
         except HTTPError as err:
             print(f"Exception during logon. Error code {err.response.status_code}, reason {err.response.reason}")
-            raise AuthException(err.response.reason)
+            raise AuthException(f"Error during logon. Error code {err.response.status_code}, reason {err.response.reason}")
 
     # may have to use locks to access these variables - cookie_jar and jwt
     def get_auth_cookies(self):
