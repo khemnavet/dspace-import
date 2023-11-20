@@ -1,4 +1,6 @@
-from enum import Enum
+from enum import Enum, auto
+from json import dumps
+from typing import Any
 
 class DSOTypes(Enum):
     COMMUNITY = 1
@@ -15,6 +17,15 @@ class FileBrowseType(Enum):
 class ItemFileMatchType(Enum):
     EXACT = 1
     BEGINS = 2
+
+class AutoName(Enum):
+    @staticmethod
+    def _generate_next_value_(name: str, start: int, count: int, last_values: list[Any]) -> Any:
+        return name
+    
+class BundleType(AutoName):
+    ORIGINAL = auto()
+    THUMBNAIL = auto()
 
 class DSO(object):
     def __init__(self, uuid, name, parent, type, itemsLoaded=False, collLoaded=False):
