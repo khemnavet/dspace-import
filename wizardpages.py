@@ -372,7 +372,9 @@ class MappingPage(DSpaceWizardPages):
         for row in self.col_list:
             #print(self.col_list[row]["schema"].selected_schema_field())
             if len(self.col_list[row]["schema"].selected_schema_field()) > 0:
-                self.mapping[row] = self.col_list[row]["schema"].selected_schema_field()
+                if not self.col_list[row]["schema"].selected_schema_field() in self.mapping:
+                    self.mapping[self.col_list[row]["schema"].selected_schema_field()] = []
+                self.mapping[self.col_list[row]["schema"].selected_schema_field()].append(row) # mapping[metadata_field] = list of columns
         if len(self.mapping) == 0:
             self._show_critical_message_box(_("mapping_page_column_schema_mapping_required"))
             return False
