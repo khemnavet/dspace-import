@@ -67,3 +67,14 @@ class ExcelFileService:
     
     def num_rows(self):
         return len(self.__dataframe.index)
+    
+    def item_metadata(self, row_num, metadata_mapping: dict):
+        result = {}
+        row = self.__dataframe.iloc[[row_num]]
+        for metadata_field, columns in metadata_mapping.items():
+            result[metadata_field] = []
+            place = 0
+            for col in columns:
+                result[metadata_field].append({"value": row[col], "language": None, "authority": None, "confidence": -1, "place": place})
+                place = place + 1
+        return result

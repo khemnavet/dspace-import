@@ -184,3 +184,157 @@ class ImporterData:
     @primary_bitstream_column.setter
     def primary_bitstream_column(self, col_name):
         self.__primary_bitstream_column = col_name
+
+#############################################################################################################################################
+
+class Item:
+    def __init__(self, item_id = "", uuid = "", name = "", handle = "", metadata = {}) -> None:
+        self.__item_id = item_id
+        self.__uuid = uuid
+        self.__name = name
+        self.__handle = handle
+        self.__metadata = metadata
+        self.__inArchive = True
+        self.__discoverable = True
+        self.__withdrawn = False
+        self.__type = "item"
+
+    @property
+    def item_id(self):
+        return self.__item_id
+    
+    @property
+    def uuid(self):
+        return self.__uuid
+    
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def handle(self):
+        return self.__handle
+    
+    @property
+    def metadata(self):
+        return self.__metadata
+    
+    @property
+    def inArchive(self):
+        return self.__inArchive
+
+    @property
+    def discoverable(self):
+        return self.__discoverable
+    
+    @property
+    def withdrawn(self):
+        return self.__withdrawn
+    
+    @item_id.setter
+    def item_id(self, itemid):
+        self.__item_id = itemid
+    
+    @uuid.setter
+    def uuid(self, item_uuid):
+        self.__uuid = item_uuid
+    
+    @name.setter
+    def name(self, item_name):
+        self.__name = item_name
+    
+    @handle.setter
+    def handle(self, item_handle):
+        self.__handle = item_handle
+
+    @metadata.setter
+    def metadata(self, item_metadata: dict):
+        self.__metadata = item_metadata
+    
+    @inArchive.setter
+    def inArchive(self, in_archive):
+        self.__inArchive = in_archive
+    
+    @discoverable.setter
+    def discoverable(self, item_discoverable):
+        self.__discoverable = item_discoverable
+    
+    @withdrawn.setter
+    def withdrawn(self, item_withdrawn):
+        self.__withdrawn = item_withdrawn
+    
+    def to_json_str(self) -> str:
+        item_json = {}
+        if len(self.__item_id) > 0:
+            item_json["id:"] = self.__item_id
+        if len(self.__uuid) > 0:
+            item_json["name"] = self.__uuid
+        item_json["name"] = self.__name
+        if len(self.__handle) > 0:
+            item_json["handle"] = self.__handle
+        item_json["metadata"] = self.__metadata
+        item_json["inArchive"] = self.__inArchive
+        item_json["discoverable"] = self.__discoverable
+        item_json["withdrawn"] = self.__withdrawn
+        item_json["type"] = self.__type
+
+        return dumps(item_json)
+
+#############################################################################################################################################
+
+class Bundle:
+    def __init__(self, bundle_type: BundleType, uuid = "") -> None:
+        self.__uuid = uuid
+        self.__name = bundle_type.name
+    
+    @property
+    def uuid(self):
+        return self.__uuid
+
+    @property
+    def name(self):
+        return self.__name
+    
+    @uuid.setter
+    def uuid(self, bundle_uuid):
+        self.__uuid = bundle_uuid
+    
+    @name.setter
+    def name(self, bundle_name: BundleType):
+        self.__name = bundle_name.name
+    
+    def to_json_str(self) -> str:
+        return dumps({"name": self.__name, "metadata": {}})
+
+#############################################################################################################################################
+
+class Bitstream:
+    def __init__(self, bitstream_id = "", uuid = "", name = "") -> None:
+        self.__id = bitstream_id
+        self.__uuid = uuid
+        self.__name = name
+        self.__type = "bitstream"
+    
+    @property
+    def bitstream_id(self):
+        return self.__id
+
+    @property
+    def uuid(self):
+        return self.__uuid
+
+    @property
+    def name(self):
+        return self.__name
+    
+    @bitstream_id.setter
+    def bitstream_id(self, new_id):
+        self.__id = new_id
+    
+    @uuid.setter
+    def uuid(self, new_uuid):
+        self.__uuid = new_uuid
+    
+    @name.setter
+    def name(self, new_name):
+        self.__name = new_name

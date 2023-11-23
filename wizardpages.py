@@ -1,9 +1,10 @@
 # classes for the pages in the wizard
 
 from gettext import GNUTranslations
+from typing import Optional
 from PySide6.QtWidgets import QWizard, QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QPlainTextEdit, QWidget, QScrollArea
 from PySide6.QtGui import QRegularExpressionValidator
-from PySide6.QtCore import QRegularExpression, Qt
+from PySide6.QtCore import QRegularExpression, Qt, QObject, QThread, Signal
 
 from config import ImporterConfig
 from dataobjects import ImporterData, YesNo, FileBrowseType, ItemFileMatchType
@@ -548,6 +549,10 @@ class ImportResultsPage(DSpaceWizardPages):
         super().__init__(config, lang_i18n)
         self.shared_data = shared_data
 
+        self.processing_completed = False
+
+        self.isCommitPage(True)
+
         self.setTitle(_("import_results_page_title"))
 
         self.results = QPlainTextEdit()
@@ -556,3 +561,20 @@ class ImportResultsPage(DSpaceWizardPages):
         layout.addWidget(self.results)
 
         self.setLayout(layout)
+    
+    def initializePage(self) -> None:
+        # check if user did not go back and import again? isCommitPage = True
+        return super().initializePage()
+    
+    def isComplete(self) -> bool:
+        return self.processing_completed
+    
+
+class Worker(QObject):
+    finished = Signal(str, name="workerFinished")
+    progress = Signal(str, name="workerUpdate")
+
+    # shared data to be passed to this thread
+
+    def run(self):
+        pass
