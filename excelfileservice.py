@@ -53,17 +53,19 @@ class ExcelFileService:
     def reset_file(self):
         self.__dataframe.reset_index()
 
+    def __row_column_value(self, row, column):
+        if isna(row[column]) or len((row[column]).strip()) == 0:
+            return None
+        return row[column]
+
     def file_itemuuiud_title(self, file_column, item_uuid_column, title_column):
         for row in self.__dataframe.iterrows(): # row is a tuple, 0 = index, 1 = data
+            index = row[0]
             data = row[1]
-            file = None
-            itemuuid = None
-            if not isna(data[file_column]) and len((data[file_column]).strip()) > 0:
-                file = data[file_column]
-            if not isna(data[item_uuid_column]) and len((data[item_uuid_column]).strip()) > 0:
-                itemuuid = data[item_uuid_column]
+            file = self.__row_column_value(data, file_column)
+            itemuuid = self.__row_column_value(data, item_uuid_column)
             
-            yield (file, itemuuid, data[title_column])
+            yield (index, file, itemuuid, data[title_column])
     
     def num_rows(self):
         return len(self.__dataframe.index)
@@ -72,9 +74,13 @@ class ExcelFileService:
         result = {}
         row = self.__dataframe.iloc[[row_num]]
         for metadata_field, columns in metadata_mapping.items():
-            result[metadata_field] = []
+            row_metadata = []
             place = 0
             for col in columns:
-                result[metadata_field].append({"value": row[col], "language": None, "authority": None, "confidence": -1, "place": place})
-                place = place + 1
+                col_value = self.__row_column_value(row, col)
+                if col_value is not None:
+                    row_metadata.append({"value": row[col], "language": None, "authority": None, "confidence": -1, "place": place})
+                    place = place + 1
+            if len(row_metadata) > 0:
+                result[metadata_field] = list(row_metadata) 
         return result
