@@ -7,7 +7,7 @@ from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression, Qt, QObject, QThread, Signal
 
 from config import ImporterConfig
-from dataobjects import ImporterData, YesNo, FileBrowseType, ItemFileMatchType
+from dataobjects import ImporterData, YesNo, FileBrowseType, ItemFileMatchType, BundleType, Item, Bundle
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
@@ -17,6 +17,8 @@ from metadataservice import MetadataService
 from fileservice import ItemFileService
 from utils import Utils
 from itemservice import ItemService, ItemException
+from bundleservice import BundleService, BundleException
+from bitstreamservice import BitstreamService, BitstreamException
 
 class DSpaceWizardPages(QWizardPage):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
@@ -572,7 +574,64 @@ class Worker(QObject):
     finished = Signal(str, name="workerFinished")
     progress = Signal(str, name="workerUpdate")
 
-    # shared data to be passed to this thread
+    def __init__(self, shared_data: ImporterData, config: ImporterConfig) -> None:
+
+        self.shared_data = shared_data
+        self.excel_service = ExcelFileService()
+        self.item_service = ItemService(config)
+        self.bundle_service = BundleService(config)
+        self.bitstream_service = BitstreamService(config)
+        self.file_service = ItemFileService()
+        super().__init__()
+
+    
+    def __remove_bundle_bitstreams(self, bundle):
+        if bundle is not None:
+            if self.bundle_service.bundle_has_primary_bitstream(bundle):
+                self.bundle_service.remove_primary_bitstream(bundle)
+            bitstreams = self.bundle_service.bundle_bitstreams(bundle)
+            for bitstream in bitstreams:
+                self.bitstream_service.remove_bitstream(bitstream)
 
     def run(self):
-        pass
+        for row_index, file_name, item_uuid, item_title in self.excel_service.file_itemuuiud_title(self.shared_data.file_name_column, self.shared_data.item_uuid_column, self.shared_data.title_column):
+            item_updated = False
+            try:
+                if item_uuid is not None and self.shared_data.update_existing:
+                    item = self.item_service.get_item(item_uuid)
+                    if self.shared_data.remove_existing_files:
+                        original, thumbnail = self.item_service.bundle(item, [BundleType.ORIGINAL, BundleType.THUMBNAIL])
+                        self.__remove_bundle_bitstreams(original)
+                        self.__remove_bundle_bitstreams(thumbnail)
+                    else:
+                        original = self.item_service.bundle(item, [BundleType.ORIGINAL])
+                    
+                    item.metadata = self.excel_service.item_metadata(row_index, self.shared_data.column_mapping)
+                    item.name = item_title
+                    self.item_service.update_item(item)
+                    item_updated = True
+                elif item_uuid is None: # do nothing if item_uuid is set and update_existing is No
+                    item = self.item_service.create_item(Item(name=item_title, metadata=self.excel_service.item_metadata(row_index, self.shared_data.column_mapping)), self.shared_data.selected_collection)
+                    original = self.bundle_service.create_bundle(Bundle(bundle_type=BundleType.ORIGINAL), item)
+                    item_updated = True
+                
+                if len(self.shared_data.primary_bitstream_column) > 0:
+                    primary_file = self.excel_service.primary_bitstream_value(row_index, self.shared_data.primary_bitstream_column)
+                else:
+                    primary_file = None
+
+                if item_updated and file_name is not None:
+                    # bitstreams
+                    for file in self.file_service.item_files(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
+                        bitstream = self.bitstream_service.create_bitstream(original, file)
+                        if primary_file is not None and file == primary_file:
+                            self.bundle_service.bundle_add_primary_bitstream(original, bitstream)
+
+            except ItemException as err:
+                self.progress.emit(f"Error processing row {row_index} (title {item_title}). {err}")
+            except BundleException as err1:
+                self.progress.emit(f"Error processing bundles for row {row_index} (title {item_title}). {err1}")
+            except BitstreamException as err2:
+                self.progress.emit(f"Error processing bitstreams for row {row_index} (title {item_title}). {err2}")
+        
+        self.finished.emit("Finished import")
