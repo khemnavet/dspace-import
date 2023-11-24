@@ -34,7 +34,7 @@ class ItemService:
             raise ItemException(f"Error getting owning collection for item {item_uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
     
     def _populate_item(self, item_json) -> Item:
-        return Item(item_id=item_json["id"], uuid=item_json["uuid"], name=item_json["name"], handle=item_json["handle"], metadata=item_json["metadata"])
+        return Item(item_id=item_json["id"], uuid=item_json["uuid"], name=item_json["name"], handle=item_json["handle"], metadata=item_json["metadata"], in_archive=item_json["inArchive"], discoverable=item_json["discoverable"], withdrawn=item_json["withdrawn"])
 
     def get_item(self, item_uuid) -> Item:
         try:

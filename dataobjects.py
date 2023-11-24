@@ -188,15 +188,15 @@ class ImporterData:
 #############################################################################################################################################
 
 class Item:
-    def __init__(self, item_id = "", uuid = "", name = "", handle = "", metadata = {}) -> None:
+    def __init__(self, item_id = "", uuid = "", name = "", handle = "", metadata = {}, in_archive = True, discoverable = True, withdrawn = True) -> None:
         self.__item_id = item_id
         self.__uuid = uuid
         self.__name = name
         self.__handle = handle
         self.__metadata = metadata
-        self.__inArchive = True
-        self.__discoverable = True
-        self.__withdrawn = False
+        self.__inArchive = in_archive
+        self.__discoverable = discoverable
+        self.__withdrawn = withdrawn
         self.__type = "item"
 
     @property
