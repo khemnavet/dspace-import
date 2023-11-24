@@ -4,7 +4,7 @@ import mimetypes
 
 class DspaceRequest:
 
-    def __ok_response(req: requests.Response):
+    def __ok_response(self, req: requests.Response):
         if req.status_code == requests.codes.ok:
             return req.json()
         req.raise_for_status()
