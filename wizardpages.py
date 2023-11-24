@@ -509,6 +509,8 @@ class SummaryPage(DSpaceWizardPages):
         layout.addWidget(self.summary)
 
         self.setLayout(layout)
+
+        self.setCommitPage(True)
     
     def initializePage(self) -> None:
         # check the item files to ensure all exists
@@ -550,8 +552,6 @@ class ImportResultsPage(DSpaceWizardPages):
         self.shared_data = shared_data
 
         self.processing_completed = False
-
-        self.isCommitPage(True)
 
         self.setTitle(_("import_results_page_title"))
 
