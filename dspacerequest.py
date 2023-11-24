@@ -2,7 +2,28 @@ import requests
 from pathlib import Path
 import mimetypes
 
-class PublicDspaceRequest:
+class DspaceRequest:
+
+    def __ok_response(req: requests.Response):
+        if req.status_code == requests.codes.ok:
+            return req.json()
+        req.raise_for_status()
+
+    def dspace_get_no_cookie(self, url, req_headers):
+        return self.__ok_response(requests.get(url, headers=req_headers))
+        
+    def dspace_get(self, url, req_headers, req_cookies):
+        return self.__ok_response(requests.get(url, headers=req_headers, cookies=req_cookies))
+    
+    def dspace_create_post(self, url, req_headers, req_cookies, req_data):
+        req = requests.post(url, headers=req_headers, cookies=req_cookies, data=req_data)
+        if req.status_code == requests.codes.created:
+            return req.json()
+        req.raise_for_status()
+
+
+
+class PublicDspaceRequest(DspaceRequest):
     _self = None
 
     def __new__(cls, *args, **kwargs):
@@ -14,27 +35,12 @@ class PublicDspaceRequest:
         self.__dspaceRestURL = dspaceRestURL
 
     def get_metadata_schemas(self):
-        try:
-            # print("get metadata schemas")
-            req = requests.get(self.__dspaceRestURL + "/api/core/metadataschemas", headers={"Accept":"application/json"})
-            if req.status_code == requests.codes.ok:
-                #print(req.text)
-                return req.json()
-            req.raise_for_status()
-        except:
-            raise
+        return self.dspace_get_no_cookie(f"{self.__dspaceRestURL}/api/core/metadataschemas", {"Accept":"application/json"})
     
     def get_metadata_schema_fields(self, prefix, page):
-        try:
-            # print(f"get metadata fields for {prefix}")
-            req = requests.get(self.__dspaceRestURL + "/api/core/metadatafields/search/bySchema", params={"schema": prefix, "page": page}, headers={"Accept": "application/json"})
-            if req.status_code == requests.codes.ok:
-                return req.json()
-            req.raise_for_status()
-        except:
-            raise
+        return self.dspace_get_no_cookie(f"{self.__dspaceRestURL}/api/core/metadatafields/search/bySchema?schema={prefix}&page={page}", {"Accept": "application/json"})
 
-class DspaceCommunityRequest:
+class DspaceCommunityRequest(DspaceRequest):
     _self = None
 
     def __new__(cls, *args, **kwargs):
@@ -48,24 +54,15 @@ class DspaceCommunityRequest:
         self.__cookie = cookie
 
     def top_communities(self): #return json
-        req = requests.get(self.__dspaceRestURL + "/api/core/communities/search/top", headers={"Accept":"application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
-        if req.status_code == requests.codes.ok:
-            return req.json()
-        req.raise_for_status()
+        return self.dspace_get(f"{self.__dspaceRestURL}/api/core/communities/search/top", {"Accept":"application/json", "Authorization": self.__bearer_jwt}, self.__cookie)
 
     def sub_communities(self, community_uuid, page_number = 0):
-        req = requests.get(f"{self.__dspaceRestURL}/api/core/communities/{community_uuid}/subcommunities?page={page_number}", headers={"Accept":"application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
-        if req.status_code == requests.codes.ok:
-            return req.json()
-        req.raise_for_status()
+        return self.dspace_get(f"{self.__dspaceRestURL}/api/core/communities/{community_uuid}/subcommunities?page={page_number}", {"Accept":"application/json", "Authorization": self.__bearer_jwt}, self.__cookie)
     
     def sub_collections(self, community_uuid, page_number = 0):
-        req = requests.get(f"{self.__dspaceRestURL}/api/core/communities/{community_uuid}/collections?page={page_number}", headers={"Accept":"application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
-        if req.status_code == requests.codes.ok:
-            return req.json()
-        req.raise_for_status()
+        return self.dspace_get(f"{self.__dspaceRestURL}/api/core/communities/{community_uuid}/collections?page={page_number}", {"Accept":"application/json", "Authorization": self.__bearer_jwt}, self.__cookie)
 
-class DspaceItemRequest:
+class DspaceItemRequest(DspaceRequest):
     _self = None
 
     def __new__(cls, *args, **kwargs):
@@ -80,30 +77,18 @@ class DspaceItemRequest:
         self.__csrf_token = csrf_token
 
     def get_item(self, item_uuid):
-        req = requests.get(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}", headers={"Accept": "application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
-        if req.status_code == requests.codes.ok:
-            return req.json()
-        req.raise_for_status()
+        return self.dspace_get(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}", {"Accept": "application/json", "Authorization": self.__bearer_jwt}, self.__cookie)
     
     def item_owning_collection(self, item_uuid):
-        req = requests.get(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}/owningCollection", headers={"Accept":"application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
-        if req.status_code == requests.codes.ok:
-            return req.json()
-        req.raise_for_status()
+        return self.dspace_get(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}/owningCollection", {"Accept":"application/json", "Authorization": self.__bearer_jwt}, self.__cookie)
 
     def item_bundles(self, item_uuid):
-        req = requests.get(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}/bundles", headers={"Accept": "application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
-        if req.status_code == requests.codes.ok:
-            return req.json()
-        req.raise_for_status()
+        return self.dspace_get(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}/bundles", {"Accept": "application/json", "Authorization": self.__bearer_jwt}, self.__cookie)
     
     def new_item(self, item_json, owning_collection_uuid):
-        req = requests.post(f"{self.__dspaceRestURL}/api/core/items?owningCollection={owning_collection_uuid}", headers={"Authorization": self.__bearer_jwt, "X-XSRF-TOKEN": self.__csrf_token, 'Content-Type': 'application/json', 'Accept': 'application/json'}, cookies=self.__cookie, data=item_json)
-        if req.status_code == requests.codes.created:
-            return req.json()
-        req.raise_for_status()
+        return self.dspace_create_post(f"{self.__dspaceRestURL}/api/core/items?owningCollection={owning_collection_uuid}", {"Authorization": self.__bearer_jwt, "X-XSRF-TOKEN": self.__csrf_token, 'Content-Type': 'application/json', 'Accept': 'application/json'}, self.__cookie, item_json)
 
-class DspaceBundleRequest:
+class DspaceBundleRequest(DspaceRequest):
     _self = None
 
     def __new__(cls, *args, **kwargs):
@@ -122,22 +107,13 @@ class DspaceBundleRequest:
         return req.status_code == requests.codes.ok
     
     def delete_primary_bitstream_flag(self, bundle_uuid):
-        req = requests.delete(f"{self.__dspaceRestURL}/api/core/bundles/{bundle_uuid}/primaryBitstream", headers={"Authorization": self.__bearer_jwt, "X-XSRF-TOKEN": self.__csrf_token}, cookies=self.__cookie)
-        if req.status_code == requests.codes.no_content:
-            return True
-        req.raise_for_status()
+        return self.dspace_get(f"{self.__dspaceRestURL}/api/core/bundles/{bundle_uuid}/primaryBitstream", {"Authorization": self.__bearer_jwt, "X-XSRF-TOKEN": self.__csrf_token}, self.__cookie)
     
     def get_bitstreams(self, bundle_uuid, page):
-        req = requests.get(f"{self.__dspaceRestURL}/api/core/bundles/{bundle_uuid}/bitstreams?page={page}", headers={"Accept": "application/json", "Authorization": self.__bearer_jwt}, cookies=self.__cookie)
-        if req.status_code == requests.codes.ok:
-            return req.json()
-        req.raise_for_status()
+        return self.dspace_get(f"{self.__dspaceRestURL}/api/core/bundles/{bundle_uuid}/bitstreams?page={page}", {"Accept": "application/json", "Authorization": self.__bearer_jwt}, self.__cookie)
     
     def new_bundle(self, bundle_json, item_uuid):
-        req = requests.post(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}/bundles", headers={"Authorization": self.__bearer_jwt, "X-XSRF-TOKEN": self.__csrf_token, "Content-Type": "application/json", "Accept": "application/json"}, cookies=self.__cookie, data=bundle_json)
-        if req.status_code == requests.codes.created:
-            return req.json()
-        req.raise_for_status()
+        return self.dspace_create_post(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}/bundles", {"Authorization": self.__bearer_jwt, "X-XSRF-TOKEN": self.__csrf_token, "Content-Type": "application/json", "Accept": "application/json"}, self.__cookie, bundle_json)
     
     def add_primary_bitstream(self, bundle_uuid, bitstream_uuid):
         req = requests.post(f"{self.__dspaceRestURL}/api/core/bundles/{bundle_uuid}/primaryBitstream", headers={"Authorization": self.__bearer_jwt, "X-XSRF-TOKEN": self.__csrf_token, "Content-Type": "text/uri-list"}, cookies=self.__cookie, data=f"{self.__dspaceRestURL}/api/core/bitstreams/{bitstream_uuid}")
