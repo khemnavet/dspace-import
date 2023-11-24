@@ -70,6 +70,10 @@ class ExcelFileService:
     def num_rows(self):
         return len(self.__dataframe.index)
     
+    def primary_bitstream_value(self, row_num, primary_bitstream_column):
+        row = self.__dataframe.iloc[[row_num]]
+        return self.__row_column_value(row, primary_bitstream_column)
+    
     def item_metadata(self, row_num, metadata_mapping: dict):
         result = {}
         row = self.__dataframe.iloc[[row_num]]
