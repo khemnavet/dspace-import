@@ -87,6 +87,12 @@ class DspaceItemRequest(DspaceRequest):
     
     def new_item(self, item_json, owning_collection_uuid):
         return self.dspace_create_post(f"{self.__dspaceRestURL}/api/core/items?owningCollection={owning_collection_uuid}", {"Authorization": self.__bearer_jwt, "X-XSRF-TOKEN": self.__csrf_token, 'Content-Type': 'application/json', 'Accept': 'application/json'}, self.__cookie, item_json)
+    
+    def put_item(self, item_uuid, item_json):
+        req = requests.put(f"{self.__dspaceRestURL}/api/core/items/{item_uuid}", headers={"Authorization": self.__bearer_jwt, "X-XSRF-TOKEN": self.__csrf_token, "Content-Type": "application/json", "Accept": "application/json"}, cookies=self.__cookie, data=item_json)
+        if req.status_code == requests.codes.ok:
+            return req.json()
+        req.raise_for_status()
 
 class DspaceBundleRequest(DspaceRequest):
     _self = None

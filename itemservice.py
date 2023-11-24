@@ -73,5 +73,12 @@ class ItemService:
             print(f"Exception creating item {item.name}. Error code {err.response.status_code}, reason {err.response.reason}")
             raise ItemException(f"Error creating item {item.name}. Error code {err.response.status_code}, reason {err.response.reason}")
 
+    def update_item(self, item: Item) -> Item:
+        try:
+            return self._populate_item(self._item_request.put_item(item.uuid, item.to_json_str()))
+        
+        except HTTPError as err:
+            print(f"Exception updating item {item.uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
+            raise ItemException(f"Error updating item {item.uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
 
 #
