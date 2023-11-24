@@ -515,19 +515,17 @@ class SummaryPage(DSpaceWizardPages):
     def initializePage(self) -> None:
         # check the item files to ensure all exists
         summary_data = []
-        i = 0
-        for file_name, item_uuid, item_title in self.excel_service.file_itemuuiud_title(self.shared_data.file_name_column, self.shared_data.item_uuid_column, self.shared_data.title_column):
+        for row_index, file_name, item_uuid, item_title in self.excel_service.file_itemuuiud_title(self.shared_data.file_name_column, self.shared_data.item_uuid_column, self.shared_data.title_column):
             #print(f"checking file {file_name} for title {item_title}")
             if file_name is not None and not self.item_file_service.item_file_exists(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
-                summary_data.append(f"File not found for row {i}, (title {item_title})")
+                summary_data.append(f"File not found for row {row_index}, (title {item_title})")
             try:
                 if item_uuid is not None and not Utils.valid_uuid(item_uuid):
-                    summary_data.append(f"Item UUID for row {i} (title {item_title}) is not a valid format")
+                    summary_data.append(f"Item UUID for row {row_index} (title {item_title}) is not a valid format")
                 elif item_uuid is not None and self.item_service.owning_collection(item_uuid) != self.shared_data.selected_collection.uuid:
-                    summary_data.append(f"Item UUID for row {i} (title {item_title}) is not in collection {self.shared_data.selected_collection.name}")
+                    summary_data.append(f"Item UUID for row {row_index} (title {item_title}) is not in collection {self.shared_data.selected_collection.name}")
             except ItemException as err:
-                summary_data.append(f"Item UUID for row {i} (title {item_title}) error getting owning collection {err}")
-            i = i + 1
+                summary_data.append(f"Item UUID for row {row_index} (title {item_title}) error getting owning collection {err}")
 
         if len(summary_data) == 0:
             # can import, show summary values
