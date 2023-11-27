@@ -626,6 +626,7 @@ class Worker(QObject):
                         bitstream = self.bitstream_service.create_bitstream(original, file)
                         if primary_file is not None and file == primary_file:
                             self.bundle_service.bundle_add_primary_bitstream(original, bitstream)
+                self.progress.emit(f"Imported row {row_index} (title {item_title}) successfully.")
 
             except ItemException as err:
                 self.progress.emit(f"Error processing row {row_index} (title {item_title}). {err}")
