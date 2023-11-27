@@ -1,7 +1,6 @@
 from config import ImporterConfig
-from dspaceauthservice import DspaceAuthService
 from dspacerequest import DspaceBundleRequest
-from dataobjects import Bundle, Bitstream, Item
+from dataobjects import Bundle, Bitstream, Item, AuthData
 from requests import HTTPError
 
 class BundleException(Exception):
@@ -19,16 +18,15 @@ class BundleService:
             cls._self = super().__new__(cls)
         return cls._self
     
-    def __init__(self, config: ImporterConfig) -> None:
-        auth_service = DspaceAuthService(config)
-        self._bundle_request = DspaceBundleRequest(config.dspace_rest_url(), auth_service.get_bearer_jwt(), auth_service.get_auth_cookies(), auth_service.get_csrf_token())
+    def __init__(self, config: ImporterConfig, auth_data: AuthData) -> None:
+        self._bundle_request = DspaceBundleRequest(config.dspace_rest_url(), auth_data)
     
     def bundle_has_primary_bitstream(self, bundle: Bundle):
         return self._bundle_request.has_primary_bitstream(bundle.uuid)
     
     def remove_primary_bitstream(self, bundle: Bundle):
         try:
-            _ = self._bundle_request.delete_primary_bitstream_flag(bundle.uuid)
+            resp = self._bundle_request.delete_primary_bitstream_flag(bundle.uuid)
         except HTTPError as err:
             print(f"Exception removing primary bitstream flag for bundle {bundle.uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
             raise BundleException(f"Error removing primary bitstream flag for bundle {bundle.name}. Error code {err.response.status_code}, reason {err.response.reason}")

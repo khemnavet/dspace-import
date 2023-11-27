@@ -5,7 +5,7 @@ from sys import platform
 from PySide6.QtWidgets import QApplication, QWizard
 
 from config import ImporterConfig, ConfigException
-from dataobjects import ImporterData
+from dataobjects import ImporterData, AuthData
 from metadataservice import MetadataService
 from wizardpages import LoginPage, CollectionPage, ExcelFileSelectPage, MappingPage, FilePage, SummaryPage, ImportResultsPage
 
@@ -26,12 +26,13 @@ if __name__ == "__main__":
     lang_i18n.install()
     #_ = lang_i18n.gettext
 
-    # get the metadata schemas and fields for each
-    metadata_service = MetadataService(config)
-    metadata_service.populate_metadata_schemas()
-
     # shared data
     shared_data = ImporterData()
+    auth_data = AuthData()
+
+    # get the metadata schemas and fields for each
+    metadata_service = MetadataService(config, auth_data)
+    shared_data.set_metadata_schemas(metadata_service.populate_metadata_schemas())
 
     # start the application and UI
     app = QApplication([app_name])
@@ -46,9 +47,9 @@ if __name__ == "__main__":
     wizard.resize(config.window_width(), config.window_height())
     # wizard pages
     # login page
-    wizard.addPage(LoginPage(config, lang_i18n))
+    wizard.addPage(LoginPage(config, lang_i18n, auth_data))
     # collection select page
-    wizard.addPage(CollectionPage(config, lang_i18n, shared_data))
+    wizard.addPage(CollectionPage(config, lang_i18n, auth_data, shared_data))
     # excel file chooser page
     wizard.addPage(ExcelFileSelectPage(config, lang_i18n, shared_data))
     # mapping page
@@ -56,9 +57,9 @@ if __name__ == "__main__":
     # file page
     wizard.addPage(FilePage(config, lang_i18n, shared_data))
     # summary page
-    wizard.addPage(SummaryPage(config, lang_i18n, shared_data))
+    wizard.addPage(SummaryPage(config, lang_i18n, auth_data, shared_data))
     #results page
-    wizard.addPage(ImportResultsPage(config, lang_i18n, shared_data))
+    wizard.addPage(ImportResultsPage(config, lang_i18n, auth_data, shared_data))
     wizard.show()
 
     app.exec()

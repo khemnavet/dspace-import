@@ -6,6 +6,7 @@ from requests import HTTPError
 
 from config import ImporterConfig
 from dspaceauthrequest import DspaceAuthRequest
+from dataobjects import AuthData
 
 class AuthException(Exception):
     def __init__(self, msg):
@@ -23,24 +24,17 @@ class DspaceAuthService:
         return cls._self
         
 
-    def __init__(self, config: ImporterConfig) -> None:
+    def __init__(self, config: ImporterConfig, authData: AuthData) -> None:
         self.__dspace_auth = DspaceAuthRequest(config.dspace_rest_url())
-        self.__jwt = ''
-        self.__cookie_jar = None
-        self.__CSRF_token = ''
-        self.__jwt_decoded = {"header": "", "payload":"", "signature":""}
+        self.__auth_data = authData
 
     # may have to use locks to set these variables
     def __save_cookie_csrf(self, response):
-        self.__cookie_jar = response.cookies
-        self.__CSRF_token = response.headers["DSPACE-XSRF-TOKEN"]
+        self.__auth_data.auth_cookie = response.cookies
+        self.__auth_data.csrf_token = response.headers["DSPACE-XSRF-TOKEN"]
     
     def __save_jwt(self, response):
-        self.__jwt = response.headers["Authorization"].split(" ")[1]
-        token_comps = self.__jwt.split(".")
-        self.__jwt_decoded["header"] = json.loads(base64.urlsafe_b64decode(token_comps[0]).decode(encoding="utf-8"))
-        self.__jwt_decoded["signature"] = token_comps[2]
-        self.__jwt_decoded["payload"] = json.loads(base64.urlsafe_b64decode(token_comps[1]).decode(encoding="utf-8"))
+        self.__auth_data.bearer_jwt = response.headers["Authorization"].split(" ")[1]
     
     def logon(self, username, password) -> bool:
         try:
@@ -50,20 +44,10 @@ class DspaceAuthService:
             #print(self.__shared_data.cookie_jar)
             #print(self.__shared_data.csrf_token)
             # login
-            response = self.__dspace_auth.password_logon(username, password, self.__cookie_jar, self.__CSRF_token)
+            response = self.__dspace_auth.password_logon(username, password, self.__auth_data.auth_cookie, self.__auth_data.csrf_token)
             self.__save_cookie_csrf(response)
             self.__save_jwt(response)
 
         except HTTPError as err:
             print(f"Exception during logon. Error code {err.response.status_code}, reason {err.response.reason}")
             raise AuthException(f"Error during logon. Error code {err.response.status_code}, reason {err.response.reason}")
-
-    # may have to use locks to access these variables - cookie_jar and jwt
-    def get_auth_cookies(self):
-        return self.__cookie_jar
-    
-    def get_bearer_jwt(self):
-        return "Bearer " + self.__jwt
-    
-    def get_csrf_token(self):
-        return self.__CSRF_token

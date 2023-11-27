@@ -7,7 +7,7 @@ from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression, Qt, QObject, QThread, Signal
 
 from config import ImporterConfig
-from dataobjects import ImporterData, YesNo, FileBrowseType, ItemFileMatchType, BundleType, Item, Bundle
+from dataobjects import ImporterData, AuthData, YesNo, FileBrowseType, ItemFileMatchType, BundleType, Item, Bundle
 from dspaceauthservice import AuthException, DspaceAuthService
 
 from communityservice import CommunityException, CommunityService
@@ -52,8 +52,9 @@ class DSpaceWizardPages(QWizardPage):
 
 class LoginPage(DSpaceWizardPages):
 
-    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, auth_data: AuthData) -> None:
         super().__init__(config=config, lang_i18n=lang_i18n)
+        self._auth_data = auth_data
         self.setTitle(_("login_page_title"))
         self.setSubTitle(_("login_page_subtitle"))
 
@@ -91,7 +92,7 @@ class LoginPage(DSpaceWizardPages):
         is_valid = False
         if len(self.username_edit.text()) > 0 and len(self.password_edit.text()) > 0:
             try:
-                auth_service = DspaceAuthService(self._config)
+                auth_service = DspaceAuthService(self._config, self._auth_data)
                 auth_service.logon(self.username_edit.text(), self.password_edit.text())
                 is_valid = True
             except AuthException:
@@ -103,12 +104,12 @@ class LoginPage(DSpaceWizardPages):
 #######################################################################################################################
 
 class CollectionPage(DSpaceWizardPages):
-    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, auth_data: AuthData, shared_data: ImporterData) -> None:
         super().__init__(config=config, lang_i18n=lang_i18n)
         self.shared_data = shared_data
 
         # to get the communities and collections
-        self.community_service = CommunityService(self._config)
+        self.community_service = CommunityService(self._config, auth_data)
 
         self.setTitle(_("collection_page_title"))
         self.setSubTitle(_("collection_page_subtitle"))
@@ -286,7 +287,6 @@ class MappingPage(DSpaceWizardPages):
 
     def initializePage(self) -> None:
         excelFileService = ExcelFileService()
-        metadataService = MetadataService(self._config)
 
         # table layout for the mapping
         layout = QGridLayout()
@@ -310,7 +310,7 @@ class MappingPage(DSpaceWizardPages):
             self.col_list[col]["col_label"] = QLabel()
             self.col_list[col]["col_label"].setText(col)
 
-            self.col_list[col]["schema"] = SchemaFieldSelect(metadataService)
+            self.col_list[col]["schema"] = SchemaFieldSelect(self.shared_data)
 
             layout.addWidget(self.col_list[col]["col_label"], index, 0)
             layout.addWidget(self.col_list[col]["schema"], index, 1)
@@ -491,12 +491,12 @@ class FilePage(DSpaceWizardPages):
 #######################################################################################################################
 
 class SummaryPage(DSpaceWizardPages):
-    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, auth_data: AuthData, shared_data: ImporterData) -> None:
         super().__init__(config, lang_i18n)
         self.shared_data = shared_data
         self.excel_service = ExcelFileService()
         self.item_file_service = ItemFileService()
-        self.item_service = ItemService(config)
+        self.item_service = ItemService(config, auth_data)
 
         self.show_summary = False
 
@@ -547,9 +547,10 @@ class SummaryPage(DSpaceWizardPages):
 #######################################################################################################################
 
 class ImportResultsPage(DSpaceWizardPages):
-    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, shared_data: ImporterData) -> None:
+    def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations, auth_data: AuthData, shared_data: ImporterData) -> None:
         super().__init__(config, lang_i18n)
         self.shared_data = shared_data
+        self.auth_data = auth_data
 
         self.processing_completed = False
 
@@ -563,7 +564,6 @@ class ImportResultsPage(DSpaceWizardPages):
         self.setLayout(layout)
     
     def initializePage(self) -> None:
-        # check if user did not go back and import again? isCommitPage = True
         return super().initializePage()
     
     def isComplete(self) -> bool:
@@ -574,13 +574,13 @@ class Worker(QObject):
     finished = Signal(str, name="workerFinished")
     progress = Signal(str, name="workerUpdate")
 
-    def __init__(self, shared_data: ImporterData, config: ImporterConfig) -> None:
+    def __init__(self, shared_data: ImporterData, config: ImporterConfig, auth_data: AuthData) -> None:
 
         self.shared_data = shared_data
         self.excel_service = ExcelFileService()
-        self.item_service = ItemService(config)
-        self.bundle_service = BundleService(config)
-        self.bitstream_service = BitstreamService(config)
+        self.item_service = ItemService(config,auth_data)
+        self.bundle_service = BundleService(config, auth_data)
+        self.bitstream_service = BitstreamService(config, auth_data)
         self.file_service = ItemFileService()
         super().__init__()
 

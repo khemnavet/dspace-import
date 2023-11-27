@@ -1,7 +1,6 @@
 from dspacerequest import DspaceCommunityRequest
 from config import ImporterConfig
-from dataobjects import DSO, DSOTypes
-from dspaceauthservice import DspaceAuthService
+from dataobjects import DSO, DSOTypes, AuthData
 from requests import HTTPError
 
 class CommunityException(Exception):
@@ -21,9 +20,8 @@ class CommunityService:
             cls._self = super().__new__(cls)
         return cls._self
     
-    def __init__(self, config: ImporterConfig) -> None:
-        auth_service = DspaceAuthService(config)
-        self.__community_request = DspaceCommunityRequest(config.dspace_rest_url(), auth_service.get_bearer_jwt(), auth_service.get_auth_cookies())
+    def __init__(self, config: ImporterConfig, auth_data: AuthData) -> None:
+        self.__community_request = DspaceCommunityRequest(config.dspace_rest_url(), auth_data)
     
     def __add_community_and_collections(self, community: DSO):
         self._communities_collections[community.id] = community

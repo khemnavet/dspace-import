@@ -1,6 +1,8 @@
 from enum import Enum, auto
 from json import dumps
 from typing import Any
+import base64
+import json
 
 class DSOTypes(Enum):
     COMMUNITY = 1
@@ -79,6 +81,7 @@ class ImporterData:
         self.__file_name_extension = ""
         self.__remove_existing_files = YesNo.NO
         self.__primary_bitstream_column = ""
+        self.__metadata_schemas = {}
 
     # getters
     @property
@@ -184,6 +187,63 @@ class ImporterData:
     @primary_bitstream_column.setter
     def primary_bitstream_column(self, col_name):
         self.__primary_bitstream_column = col_name
+    
+    def set_metadata_schemas(self, schemas):
+        self.__metadata_schemas = schemas
+    
+    def get_schemas(self) -> list:
+        return list(self.__metadata_schemas)
+    
+    def get_schema_fields(self, prefix) -> list:
+        fields = []
+        for name in self.__metadata_schemas[prefix].exact_name():
+            fields.append(name)
+        return fields
+
+#############################################################################################################################################
+
+class AuthData:
+    _self = None
+
+    def __new__(cls):
+        if cls._self is None:
+            cls._self = super().__new__(cls)
+        return cls._self
+    
+    def __init__(self) -> None:
+        self.__jwt = ''
+        self.__cookie_jar = None
+        self.__CSRF_token = ''
+        self.__jwt_decoded = {"header": "", "payload":"", "signature":""}
+
+    @property
+    def bearer_jwt(self):
+        return "Bearer " + self.__jwt
+    
+    @property
+    def csrf_token(self):
+        return self.__CSRF_token
+    
+    @property
+    def auth_cookie(self):
+        return self.__cookie_jar
+    
+    @bearer_jwt.setter
+    def bearer_jwt(self, token):
+        self.__jwt = token
+        token_comps = self.__jwt.split(".")
+        self.__jwt_decoded["header"] = json.loads(base64.urlsafe_b64decode(token_comps[0]).decode(encoding="utf-8"))
+        self.__jwt_decoded["signature"] = token_comps[2]
+        self.__jwt_decoded["payload"] = json.loads(base64.urlsafe_b64decode(token_comps[1]).decode(encoding="utf-8"))
+    
+    @csrf_token.setter
+    def csrf_token(self, token):
+        self.__CSRF_token = token
+    
+    @auth_cookie.setter
+    def auth_cookie(self, cookie):
+        self.__cookie_jar = cookie
+    
 
 #############################################################################################################################################
 

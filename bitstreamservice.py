@@ -1,7 +1,6 @@
 from config import ImporterConfig
-from dspaceauthservice import DspaceAuthService
 from dspacerequest import DspaceBitstreamRequest
-from dataobjects import Bitstream, Bundle
+from dataobjects import Bitstream, Bundle, AuthData
 from requests import HTTPError
 from pathlib import Path
 
@@ -20,9 +19,8 @@ class BitstreamService:
             cls._self = super().__new__(cls)
         return cls._self
     
-    def __init__(self, config: ImporterConfig) -> None:
-        auth_service = DspaceAuthService(config)
-        self._bitstream_request = DspaceBitstreamRequest(config.dspace_rest_url(), auth_service.get_bearer_jwt(), auth_service.get_auth_cookies())
+    def __init__(self, config: ImporterConfig, auth_data: AuthData) -> None:
+        self._bitstream_request = DspaceBitstreamRequest(config.dspace_rest_url(), auth_data)
     
     def remove_bitstream(self, bitstream: Bitstream):
         try:

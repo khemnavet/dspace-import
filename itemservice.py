@@ -1,7 +1,7 @@
 from config import ImporterConfig
 from dspaceauthservice import DspaceAuthService
 from dspacerequest import DspaceItemRequest
-from dataobjects import BundleType, Item, Bundle, DSO
+from dataobjects import BundleType, Item, Bundle, DSO, AuthData
 from requests import HTTPError
 
 class ItemException(Exception):
@@ -19,9 +19,8 @@ class ItemService:
             cls._self = super().__new__(cls)
         return cls._self
     
-    def __init__(self, config: ImporterConfig) -> None:
-        auth_service = DspaceAuthService(config)
-        self._item_request = DspaceItemRequest(config.dspace_rest_url(), auth_service.get_bearer_jwt(), auth_service.get_auth_cookies(), auth_service.get_csrf_token())
+    def __init__(self, config: ImporterConfig, auth_data: AuthData) -> None:
+        self._item_request = DspaceItemRequest(config.dspace_rest_url(), auth_data)
 
     def owning_collection(self, item_uuid: str):
         try:
