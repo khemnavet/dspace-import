@@ -63,7 +63,7 @@ class ExcelFileService:
             index = row[0]
             data = row[1]
             file = self.__row_column_value(data, file_column)
-            itemuuid = self.__row_column_value(data, item_uuid_column)
+            itemuuid = self.__row_column_value(data, item_uuid_column) if len(item_uuid_column) > 0 else None
             
             yield (index, file, itemuuid, data[title_column])
     
