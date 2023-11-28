@@ -56,7 +56,7 @@ class ExcelFileService:
     def __row_column_value(self, row, column):
         if isna(row[column]) or len((row[column]).strip()) == 0:
             return None
-        return row[column]
+        return (row[column]).strip()
 
     def file_itemuuiud_title(self, file_column, item_uuid_column, title_column):
         for row in self.__dataframe.iterrows(): # row is a tuple, 0 = index, 1 = data
@@ -71,19 +71,19 @@ class ExcelFileService:
         return len(self.__dataframe.index)
     
     def primary_bitstream_value(self, row_num, primary_bitstream_column):
-        row = self.__dataframe.iloc[[row_num]]
+        row = self.__dataframe.iloc[row_num]
         return self.__row_column_value(row, primary_bitstream_column)
     
     def item_metadata(self, row_num, metadata_mapping: dict):
         result = {}
-        row = self.__dataframe.iloc[[row_num]]
+        row = self.__dataframe.iloc[row_num]
         for metadata_field, columns in metadata_mapping.items():
             row_metadata = []
             place = 0
             for col in columns:
                 col_value = self.__row_column_value(row, col)
                 if col_value is not None:
-                    row_metadata.append({"value": row[col], "language": None, "authority": None, "confidence": -1, "place": place})
+                    row_metadata.append({"value": col_value, "language": None, "authority": None, "confidence": -1, "place": place})
                     place = place + 1
             if len(row_metadata) > 0:
                 result[metadata_field] = list(row_metadata) 
