@@ -19,7 +19,6 @@ class DspaceRequest:
         resp = self.auth_status()
         if "DSPACE-XSRF-TOKEN" in resp.headers:
             self.authData.csrf_token = resp.headers["DSPACE-XSRF-TOKEN"]
-            print(f"update csrf token {self.authData.csrf_token}")
         if "Authorization" in resp.headers:
             self.authData.bearer_jwt = resp.headers["Authorization"].split(" ")[1]
         self.authData.auth_cookie = resp.cookies
@@ -108,7 +107,6 @@ class DspaceItemRequest(DspaceRequest):
         return self.dspace_get(f"{self.dspaceRestURL}/api/core/items/{item_uuid}/bundles", {"Accept": "application/json", "Authorization": self.authData.bearer_jwt}, self.authData.auth_cookie)
     
     def new_item(self, item_json, owning_collection_uuid):
-        print(f"create item - {item_json}")
         return self.dspace_create_post(f"{self.dspaceRestURL}/api/core/items?owningCollection={owning_collection_uuid}", {"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token, 'Content-Type': 'application/json', 'Accept': 'application/json'}, self.authData.auth_cookie, item_json)
     
     def put_item(self, item_uuid, item_json):
@@ -137,7 +135,6 @@ class DspaceBundleRequest(DspaceRequest):
         return self.dspace_get(f"{self.dspaceRestURL}/api/core/bundles/{bundle_uuid}/bitstreams?page={page}", {"Accept": "application/json", "Authorization": self.authData.bearer_jwt}, self.authData.auth_cookie)
     
     def new_bundle(self, bundle_json, item_uuid):
-        print(f"create bundle - {bundle_json}")
         return self.dspace_create_post(f"{self.dspaceRestURL}/api/core/items/{item_uuid}/bundles", {"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token, "Content-Type": "application/json", "Accept": "application/json"}, self.authData.auth_cookie, bundle_json)
     
     def add_primary_bitstream(self, bundle_uuid, bitstream_uuid):
