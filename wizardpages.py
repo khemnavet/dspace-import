@@ -1,7 +1,6 @@
 # classes for the pages in the wizard
 
 from gettext import GNUTranslations
-from typing import Optional
 from PySide6.QtWidgets import QWizard, QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QPlainTextEdit, QWidget, QScrollArea
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtCore import QRegularExpression, Qt, QObject, QThread, Signal
@@ -13,7 +12,6 @@ from dspaceauthservice import AuthException, DspaceAuthService
 from communityservice import CommunityException, CommunityService
 from widgets import FileBrowser, SchemaFieldSelect, RadioButton
 from excelfileservice import ExcelFileService, ExcelFileException
-from metadataservice import MetadataService
 from fileservice import ItemFileService
 from utils import Utils
 from itemservice import ItemService, ItemException
@@ -519,7 +517,7 @@ class SummaryPage(DSpaceWizardPages):
         summary_data = []
         for row_index, file_name, item_uuid, item_title in self.excel_service.file_itemuuiud_title(self.shared_data.file_name_column, self.shared_data.item_uuid_column, self.shared_data.title_column):
             #print(f"checking file {file_name} for title {item_title}")
-            if file_name is not None and not self.item_file_service.item_file_exists(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
+            if file_name is not None and len(self.shared_data.item_directory) > 0 and not self.item_file_service.item_file_exists(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
                 summary_data.append(f"File not found for row {row_index}, (title {item_title})")
             try:
                 if item_uuid is not None and not Utils.valid_uuid(item_uuid):
@@ -564,8 +562,26 @@ class ImportResultsPage(DSpaceWizardPages):
         self.setLayout(layout)
     
     def initializePage(self) -> None:
-        return super().initializePage()
-    
+        self.worker_thread = QThread()
+        self.worker = Worker(self.shared_data, self._config, self.auth_data)
+        self.worker.moveToThread(self.worker_thread)
+
+        # connect signals and slots
+        self.worker_thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.worker_thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.worker_thread.finished.connect(self.worker_thread.deleteLater)
+        self.worker.progress.connect(self.report_progress)
+
+        self.worker_thread.finished.connect(self.set_completed)
+        self.worker_thread.start()
+        
+    def report_progress(self, str):
+        self.results.appendPlainText(str + "\n")
+
+    def set_completed(self):
+        self.processing_completed = True
+
     def isComplete(self) -> bool:
         return self.processing_completed
     
@@ -595,6 +611,7 @@ class Worker(QObject):
 
     def run(self):
         for row_index, file_name, item_uuid, item_title in self.excel_service.file_itemuuiud_title(self.shared_data.file_name_column, self.shared_data.item_uuid_column, self.shared_data.title_column):
+            print(f"processing row {row_index}")
             item_updated = False
             try:
                 if item_uuid is not None and self.shared_data.update_existing:
@@ -620,11 +637,11 @@ class Worker(QObject):
                 else:
                     primary_file = None
 
-                if item_updated and file_name is not None:
+                if item_updated and file_name is not None and len(self.shared_data.item_directory) > 0:
                     # bitstreams
                     for file in self.file_service.item_files(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
                         bitstream = self.bitstream_service.create_bitstream(original, file)
-                        if primary_file is not None and file == primary_file:
+                        if primary_file is not None and file.name == primary_file+self.shared_data.file_extension:
                             self.bundle_service.bundle_add_primary_bitstream(original, bitstream)
                 self.progress.emit(f"Imported row {row_index} (title {item_title}) successfully.")
 
@@ -635,4 +652,5 @@ class Worker(QObject):
             except BitstreamException as err2:
                 self.progress.emit(f"Error processing bitstreams for row {row_index} (title {item_title}). {err2}")
         
+        print("finished")
         self.finished.emit("Finished import")
