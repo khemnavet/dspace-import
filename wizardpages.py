@@ -574,6 +574,7 @@ class ImportResultsPage(DSpaceWizardPages):
         self.worker.progress.connect(self.report_progress)
 
         self.worker_thread.finished.connect(self.set_completed)
+        self.worker.finished.connect(self.set_completed)
         self.worker_thread.start()
         
     def report_progress(self, str):
@@ -581,14 +582,15 @@ class ImportResultsPage(DSpaceWizardPages):
 
     def set_completed(self):
         self.processing_completed = True
+        self.completeChanged.emit()
 
     def isComplete(self) -> bool:
         return self.processing_completed
     
 
 class Worker(QObject):
-    finished = Signal(str, name="workerFinished")
-    progress = Signal(str, name="workerUpdate")
+    finished = Signal(str, name="finished")
+    progress = Signal(str, name="progress")
 
     def __init__(self, shared_data: ImporterData, config: ImporterConfig, auth_data: AuthData) -> None:
 
