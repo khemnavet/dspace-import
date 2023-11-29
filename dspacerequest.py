@@ -138,7 +138,7 @@ class DspaceBundleRequest(DspaceRequest):
         return self.dspace_create_post(f"{self.dspaceRestURL}/api/core/items/{item_uuid}/bundles", {"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token, "Content-Type": "application/json", "Accept": "application/json"}, self.authData.auth_cookie, bundle_json)
     
     def add_primary_bitstream(self, bundle_uuid, bitstream_uuid):
-        req = requests.post(f"{self.dspaceRestURL}/api/core/bundles/{bundle_uuid}/primaryBitstream", headers={"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token, "Content-Type": "text/uri-list"}, cookies=self.authData.auth_cookie, data=f"{self.__dspaceRestURL}/api/core/bitstreams/{bitstream_uuid}")
+        req = requests.post(f"{self.dspaceRestURL}/api/core/bundles/{bundle_uuid}/primaryBitstream", headers={"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token, "Content-Type": "text/uri-list"}, cookies=self.authData.auth_cookie, data=f"{self.dspaceRestURL}/api/core/bitstreams/{bitstream_uuid}")
         return self.success_true(req, requests.codes.created)
 
 class DspaceBitstreamRequest(DspaceRequest):
