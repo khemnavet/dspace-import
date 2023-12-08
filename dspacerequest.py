@@ -113,6 +113,11 @@ class DspaceItemRequest(DspaceRequest):
         req = requests.put(f"{self.dspaceRestURL}/api/core/items/{item_uuid}", headers={"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token, "Content-Type": "application/json", "Accept": "application/json"}, cookies=self.authData.auth_cookie, data=item_json)
         return self.ok_response(req)
 
+    def patch_item(self, item_uuid, patch_json):
+        req = requests.patch(f"{self.dspaceRestURL}/api/core/items/{item_uuid}", headers={"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token, "Content-Type": "application/json", "Accept": "application/json"}, cookies=self.authData.auth_cookie, data=patch_json)
+        return self.ok_response(req)
+
+
 class DspaceBundleRequest(DspaceRequest):
     _self = None
 
