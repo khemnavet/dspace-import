@@ -75,6 +75,7 @@ class ImporterData:
         self.__column_mapping = {}
         self.__item_uuid_column = ""
         self.__update_existing = ""
+        self.__remove_extra_metadata = ""
         self.__item_directory = ""
         self.__file_name_column = ""
         self.__match_file_name = ItemFileMatchType.EXACT
@@ -111,6 +112,10 @@ class ImporterData:
     @property
     def update_existing(self) -> bool:
         return self.__update_existing == YesNo.YES
+    
+    @property
+    def remove_extra_metadata(self) -> bool:
+        return self.__remove_extra_metadata == YesNo.YES
     
     @property
     def item_directory(self):
@@ -163,6 +168,10 @@ class ImporterData:
     @update_existing.setter
     def update_existing(self, existing: YesNo):
         self.__update_existing = existing
+    
+    @remove_extra_metadata.setter
+    def remove_extra_metadata(self, extra: YesNo):
+        self.__remove_extra_metadata = extra
     
     @item_directory.setter
     def item_directory(self, dir):

@@ -350,6 +350,14 @@ class MappingPage(DSpaceWizardPages):
         self.update_existing = RadioButton(self._no_yes_options())
         layout.addWidget(update_existing_label, index, 0)
         layout.addWidget(self.update_existing, index, 1)
+        index = index + 1
+
+        # if to remove metadata in dspace not in excel file
+        remove_extra_existing_label = QLabel()
+        remove_extra_existing_label.setText(_("mapping_page_remove_extra_existing_metadata_label"))
+        self.remove_extra_metadata = RadioButton(self._no_yes_options())
+        layout.addWidget(remove_extra_existing_label, index, 0)
+        layout.addWidget(self.remove_extra_metadata, index, 1)
 
         # widget to hold the controls
         container = QWidget()
@@ -383,8 +391,8 @@ class MappingPage(DSpaceWizardPages):
         if self.title_select.currentIndex() == 0:
             self._show_critical_message_box(_("mapping_page_title_column_required"))
             return False
-        # if update existing is YES, item uuid column has to be chosen
-        if self.update_existing.selected_option()[0] == YesNo.YES:
+        # if update existing is YES or remove extra metadata is YES, item uuid column has to be chosen
+        if self.update_existing.selected_option()[0] == YesNo.YES or self.remove_extra_metadata.selected_option()[0] == YesNo.YES:
             if self.item_uuid_select.currentIndex() == 0:
                 self._show_critical_message_box(_("mapping_page_item_uuid_column_required"))
                 return False
@@ -395,6 +403,7 @@ class MappingPage(DSpaceWizardPages):
         self.shared_data.item_uuid_column = self.item_uuid_select.currentText()
         self.shared_data.update_existing = self.update_existing.selected_option()[0]
         self.shared_data.primary_bitstream_column = self.primary_bitstream_select.currentText()
+        self.shared_data.remove_extra_metadata = self.remove_extra_metadata.selected_option()[0]
         
         return super().validatePage()
     
@@ -535,6 +544,7 @@ class SummaryPage(DSpaceWizardPages):
             summary_data.append(_("summary_page_title_column")+" "+self.shared_data.title_column)
             summary_data.append(_("summary_page_item_uuid_column")+" "+self.shared_data.item_uuid_column)
             summary_data.append(_("summary_page_update_existing")+" "+(_("Yes") if self.shared_data.update_existing else _("No")))
+            summary_data.append(_("summary_page_remove_extra_metadata")+" "+(_("Yes") if self.shared_data.update_existing else _("No")))
             summary_data.append(_("summary_page_item_directory")+" "+self.shared_data.item_directory)
         
         self.summary.setPlainText("\n".join(summary_data))
