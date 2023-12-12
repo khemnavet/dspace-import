@@ -134,7 +134,8 @@ class DspaceBundleRequest(DspaceRequest):
         return req.status_code == requests.codes.ok
     
     def delete_primary_bitstream_flag(self, bundle_uuid):
-        return self.dspace_get(f"{self.dspaceRestURL}/api/core/bundles/{bundle_uuid}/primaryBitstream", {"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token}, self.authData.auth_cookie)
+        req = requests.delete(f"{self.dspaceRestURL}/api/core/bundles/{bundle_uuid}/primaryBitstream", headers={"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token}, cookies=self.authData.auth_cookie)
+        return self.success_true(req, requests.codes.no_content)
     
     def get_bitstreams(self, bundle_uuid, page):
         return self.dspace_get(f"{self.dspaceRestURL}/api/core/bundles/{bundle_uuid}/bitstreams?page={page}", {"Accept": "application/json", "Authorization": self.authData.bearer_jwt}, self.authData.auth_cookie)
