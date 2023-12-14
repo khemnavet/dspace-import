@@ -1,4 +1,5 @@
 # classes for the pages in the wizard
+import math
 
 from gettext import GNUTranslations
 from PySide6.QtWidgets import QWizard, QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QPlainTextEdit, QWidget, QScrollArea
@@ -612,11 +613,13 @@ class Worker(QObject):
         self.file_service = ItemFileService()
         super().__init__()
 
+    def __remove_primary_bitstream(self, bundle: Bundle):
+        if self.bundle_service.bundle_has_primary_bitstream(bundle):
+            self.bundle_service.remove_primary_bitstream(bundle)
     
     def __remove_bundle_bitstreams(self, bundle):
         if bundle is not None:
-            if self.bundle_service.bundle_has_primary_bitstream(bundle):
-                self.bundle_service.remove_primary_bitstream(bundle)
+            self.__remove_primary_bitstream(bundle)
             bitstreams = self.bundle_service.bundle_bitstreams(bundle)
             for bitstream in bitstreams:
                 self.bitstream_service.remove_bitstream(bitstream)
@@ -624,36 +627,40 @@ class Worker(QObject):
     def run(self):
         for row_index, file_name, item_uuid, item_title in self.excel_service.file_itemuuiud_title(self.shared_data.file_name_column, self.shared_data.item_uuid_column, self.shared_data.title_column):
             print(f"processing row {row_index}")
-            item_updated = False
             try:
-                if item_uuid is not None and self.shared_data.update_existing:
+                if item_uuid is not None:
                     item = self.item_service.get_item(item_uuid)
                     if self.shared_data.remove_existing_files:
                         original, thumbnail = self.item_service.bundle(item, [BundleType.ORIGINAL, BundleType.THUMBNAIL])
                         self.__remove_bundle_bitstreams(original)
                         self.__remove_bundle_bitstreams(thumbnail)
                     else:
-                        original = self.item_service.bundle(item, [BundleType.ORIGINAL])
+                        original = self.item_service.bundle(item, [BundleType.ORIGINAL])[0]
                     
-                    item.metadata = self.excel_service.item_metadata(row_index, self.shared_data.column_mapping)
-                    item.name = item_title
-                    self.item_service.update_item(item)
-                    item_updated = True
-                elif item_uuid is None: # do nothing if item_uuid is set and update_existing is No
+                    if self.shared_data.update_existing:
+                        item.metadata = self.excel_service.item_metadata(row_index, self.shared_data.column_mapping)
+                        item.name = item_title
+                        print(f"updating item {item_title}")
+                        item.set_patch_operations(self.shared_data.remove_extra_metadata)
+                        self.item_service.update_item(item)
+                else: 
+                    print(f"adding item {item_title}")
                     item = self.item_service.create_item(Item(name=item_title, metadata=self.excel_service.item_metadata(row_index, self.shared_data.column_mapping)), self.shared_data.selected_collection)
-                    original = self.bundle_service.create_bundle(Bundle(bundle_type=BundleType.ORIGINAL), item)
-                    item_updated = True
+                    original = None
                 
                 if len(self.shared_data.primary_bitstream_column) > 0:
                     primary_file = self.excel_service.primary_bitstream_value(row_index, self.shared_data.primary_bitstream_column)
                 else:
                     primary_file = None
 
-                if item_updated and file_name is not None and len(self.shared_data.item_directory) > 0:
+                if file_name is not None and len(self.shared_data.item_directory) > 0:
+                    if original is None:
+                        original = self.bundle_service.create_bundle(Bundle(bundle_type=BundleType.ORIGINAL), item)
                     # bitstreams
                     for file in self.file_service.item_files(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
                         bitstream = self.bitstream_service.create_bitstream(original, file)
                         if primary_file is not None and file.name == primary_file+self.shared_data.file_extension:
+                            self.__remove_primary_bitstream(original)
                             self.bundle_service.bundle_add_primary_bitstream(original, bitstream)
                 self.progress.emit(f"Imported row {row_index} (title {item_title}) successfully.")
 

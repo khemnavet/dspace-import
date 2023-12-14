@@ -33,7 +33,7 @@ class ItemService:
             raise ItemException(f"Error getting owning collection for item {item_uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
     
     def _populate_item(self, item_json) -> Item:
-        return Item(item_id=item_json["id"], uuid=item_json["uuid"], name=item_json["name"], handle=item_json["handle"], metadata=item_json["metadata"], in_archive=item_json["inArchive"], discoverable=item_json["discoverable"], withdrawn=item_json["withdrawn"])
+        return Item(item_id=item_json["id"], uuid=item_json["uuid"], name=item_json["name"], handle=item_json["handle"], existing_metadata=item_json["metadata"], in_archive=item_json["inArchive"], discoverable=item_json["discoverable"], withdrawn=item_json["withdrawn"])
 
     def get_item(self, item_uuid) -> Item:
         try:
@@ -47,7 +47,7 @@ class ItemService:
         result = None
         for bundle in item_bundles["_embedded"]["bundles"]:
             if bundle["name"] == bundle_type.name:
-                result = Bundle(uuid=bundle["uuid"], bundle_type=bundle["name"])
+                result = Bundle(uuid=bundle["uuid"], bundle_type=bundle_type)
                 break
         return result
 
@@ -74,7 +74,7 @@ class ItemService:
 
     def update_item(self, item: Item) -> Item:
         try:
-            return self._populate_item(self._item_request.put_item(item.uuid, item.to_json_str()))
+            return self._populate_item(self._item_request.patch_item(item.uuid, item.to_patch_str()))
         
         except HTTPError as err:
             print(f"Exception updating item {item.uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
