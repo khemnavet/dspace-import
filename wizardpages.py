@@ -353,6 +353,14 @@ class MappingPage(DSpaceWizardPages):
         layout.addWidget(self.update_existing, index, 1)
         index = index + 1
 
+        #  if to update the item's metadata to match the metadata in the excel file
+        metadata_to_match_label = QLabel()
+        metadata_to_match_label.setText(_("mapping_page_existing_metadata_to_match_label"))
+        self.metadata_to_match = RadioButton(self._no_yes_options())
+        layout.addWidget(metadata_to_match_label, index, 0)
+        layout.addWidget(self.metadata_to_match, index, 1)
+        index = index + 1
+
         # if to remove metadata in dspace not in excel file
         remove_extra_existing_label = QLabel()
         remove_extra_existing_label.setText(_("mapping_page_remove_extra_existing_metadata_label"))
@@ -405,6 +413,7 @@ class MappingPage(DSpaceWizardPages):
         self.shared_data.update_existing = self.update_existing.selected_option()[0]
         self.shared_data.primary_bitstream_column = self.primary_bitstream_select.currentText()
         self.shared_data.remove_extra_metadata = self.remove_extra_metadata.selected_option()[0]
+        self.shared_data.metadata_to_match = self.metadata_to_match.selected_option()[0]
         
         return super().validatePage()
     
@@ -545,7 +554,8 @@ class SummaryPage(DSpaceWizardPages):
             summary_data.append(_("summary_page_title_column")+" "+self.shared_data.title_column)
             summary_data.append(_("summary_page_item_uuid_column")+" "+self.shared_data.item_uuid_column)
             summary_data.append(_("summary_page_update_existing")+" "+(_("Yes") if self.shared_data.update_existing else _("No")))
-            summary_data.append(_("summary_page_remove_extra_metadata")+" "+(_("Yes") if self.shared_data.update_existing else _("No")))
+            summary_data.append(_("summary_page_metadata_to_match")+" "+(_("Yes") if self.shared_data.metadata_to_match else _("No")))
+            summary_data.append(_("summary_page_remove_extra_metadata")+" "+(_("Yes") if self.shared_data.remove_extra_metadata else _("No")))
             summary_data.append(_("summary_page_item_directory")+" "+self.shared_data.item_directory)
         
         self.summary.setPlainText("\n".join(summary_data))
@@ -641,7 +651,7 @@ class Worker(QObject):
                         item.metadata = self.excel_service.item_metadata(row_index, self.shared_data.column_mapping)
                         item.name = item_title
                         print(f"updating item {item_title}")
-                        item.set_patch_operations(self.shared_data.remove_extra_metadata)
+                        item.set_patch_operations(self.shared_data.remove_extra_metadata, self.shared_data.metadata_to_match)
                         self.item_service.update_item(item)
                 else: 
                     print(f"adding item {item_title}")
