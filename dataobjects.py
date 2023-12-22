@@ -76,6 +76,7 @@ class ImporterData:
         self.__item_uuid_column = ""
         self.__update_existing = ""
         self.__remove_extra_metadata = ""
+        self.__metadata_to_match = ""
         self.__item_directory = ""
         self.__file_name_column = ""
         self.__match_file_name = ItemFileMatchType.EXACT
@@ -116,6 +117,10 @@ class ImporterData:
     @property
     def remove_extra_metadata(self) -> bool:
         return self.__remove_extra_metadata == YesNo.YES
+    
+    @property
+    def metadata_to_match(self) -> bool:
+        return self.__metadata_to_match == YesNo.YES
     
     @property
     def item_directory(self):
@@ -172,6 +177,10 @@ class ImporterData:
     @remove_extra_metadata.setter
     def remove_extra_metadata(self, extra: YesNo):
         self.__remove_extra_metadata = extra
+    
+    @metadata_to_match.setter
+    def metadata_to_match(self, to_match: YesNo):
+        self.__metadata_to_match = to_match
     
     @item_directory.setter
     def item_directory(self, dir):
@@ -341,7 +350,7 @@ class Item:
     def withdrawn(self, item_withdrawn):
         self.__withdrawn = item_withdrawn
     
-    def set_patch_operations(self, match_excel_row: bool):
+    def set_patch_operations(self, remove_extra_metadata: bool, metadata_to_match: bool):
         patch_ops = []
         existing_keys = self.__existing_metadata.keys()
         excel_keys = self.__metadata.keys()
@@ -349,10 +358,11 @@ class Item:
         for metadata_field in excel_keys - existing_keys: # in excel but not on database:
             patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field, "value": self.__metadata[metadata_field]})
 
-        if match_excel_row:
-            for metadata_field in existing_keys - excel_keys: # on database but not in excel
-                for metadata_value in self.__existing_metadata[metadata_field]:
-                    patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field+"/"+str(metadata_value["place"])})
+        if metadata_to_match:
+            if remove_extra_metadata:
+                for metadata_field in existing_keys - excel_keys: # on database but not in excel
+                    for metadata_value in self.__existing_metadata[metadata_field]:
+                        patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field+"/"+str(metadata_value["place"])})
         
             for metadata_field in existing_keys & excel_keys: # intersection - same metadata fields
                 for i in range(min(len(self.__existing_metadata[metadata_field]), len(self.__metadata[metadata_field]))):
