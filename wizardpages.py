@@ -57,6 +57,8 @@ class LoginPage(DSpaceWizardPages):
         self.setTitle(_("login_page_title"))
         self.setSubTitle(_("login_page_subtitle"))
 
+        service_label = QLabel(text=" ".join([_("login_page_service_url"), config.dspace_rest_url()]))
+
         username_label = QLabel(text=_("login_page_username_label"))
         self.username_edit = QLineEdit()
 
@@ -71,10 +73,11 @@ class LoginPage(DSpaceWizardPages):
         self.password_edit.setEchoMode(QLineEdit.Password)
 
         layout = QGridLayout()
-        layout.addWidget(username_label, 0, 0)
-        layout.addWidget(self.username_edit, 0, 1)
-        layout.addWidget(password_label, 1, 0)
-        layout.addWidget(self.password_edit, 1, 1)
+        layout.addWidget(service_label, 0, 0, 1, 2)
+        layout.addWidget(username_label, 1, 0)
+        layout.addWidget(self.username_edit, 1, 1)
+        layout.addWidget(password_label, 2, 0)
+        layout.addWidget(self.password_edit, 2, 1)
 
         self.setLayout(layout)
 

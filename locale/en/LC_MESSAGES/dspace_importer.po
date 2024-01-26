@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dspace_importer\n"
-"POT-Creation-Date: 2023-12-20 16:12-0400\n"
-"PO-Revision-Date: 2023-12-20 16:15-0400\n"
+"POT-Creation-Date: 2024-01-26 14:01-0400\n"
+"PO-Revision-Date: 2024-01-26 14:02-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -10,20 +10,20 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4.1\n"
+"X-Generator: Poedit 3.4.2\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-SearchPath-0: main.py\n"
 "X-Poedit-SearchPath-1: wizardpages.py\n"
 
-#: main.py:41
+#: main.py:53
 msgid "app_title"
 msgstr "UWISpace Importer"
 
-#: wizardpages.py:39 wizardpages.py:556 wizardpages.py:557 wizardpages.py:558
+#: wizardpages.py:39 wizardpages.py:559 wizardpages.py:560 wizardpages.py:561
 msgid "No"
 msgstr "No"
 
-#: wizardpages.py:39 wizardpages.py:556 wizardpages.py:557 wizardpages.py:558
+#: wizardpages.py:39 wizardpages.py:559 wizardpages.py:560 wizardpages.py:561
 msgid "Yes"
 msgstr "Yes"
 
@@ -44,22 +44,26 @@ msgid "login_page_subtitle"
 msgstr "Enter your email address and password to logon to UWISpace"
 
 #: wizardpages.py:60
+msgid "login_page_service_url"
+msgstr "DSpace server url:"
+
+#: wizardpages.py:62
 msgid "login_page_username_label"
 msgstr "Username"
 
-#: wizardpages.py:69
+#: wizardpages.py:71
 msgid "login_page_password_label"
 msgstr "Password"
 
-#: wizardpages.py:113
+#: wizardpages.py:116
 msgid "collection_page_title"
 msgstr "Collection"
 
-#: wizardpages.py:114
+#: wizardpages.py:117
 msgid "collection_page_subtitle"
 msgstr "The collection to import data to"
 
-#: wizardpages.py:118
+#: wizardpages.py:121
 msgid "collection_page_instructions"
 msgstr ""
 "Navigate to the collection to import the data to by starting from the top "
@@ -69,49 +73,49 @@ msgstr ""
 "To go to the parent community, select the \"Back\" option under the "
 "community name."
 
-#: wizardpages.py:121
+#: wizardpages.py:124
 msgid "collection_page_community_label"
 msgstr "Community"
 
-#: wizardpages.py:125
+#: wizardpages.py:128
 msgid "collection_page_collection_label"
 msgstr "Collection"
 
-#: wizardpages.py:213
+#: wizardpages.py:216
 msgid "excel_page_title"
 msgstr "Excel File to Import"
 
-#: wizardpages.py:214
+#: wizardpages.py:217
 msgid "excel_page_subtitle"
 msgstr "Select the Excel file to import."
 
-#: wizardpages.py:218
+#: wizardpages.py:221
 msgid "excel_page_instructions"
 msgstr "The first row of the file must have the column names."
 
-#: wizardpages.py:221
+#: wizardpages.py:224
 msgid "excel_page_import_file_label"
 msgstr "Excel File"
 
-#: wizardpages.py:221
+#: wizardpages.py:224
 msgid "excel_page_file_select_button"
 msgstr "Browse"
 
-#: wizardpages.py:225
+#: wizardpages.py:228
 msgid "excel_page_sheet_label"
 msgstr "Select the sheet to import"
 
-#: wizardpages.py:284
+#: wizardpages.py:287
 msgid "mapping_page_title"
 msgstr "Metadata Mapping"
 
-#: wizardpages.py:285
+#: wizardpages.py:288
 msgid "mapping_page_subtitle"
 msgstr ""
 "Select the metadata field the data in the Excel column will be added to when "
 "importing the item."
 
-#: wizardpages.py:293
+#: wizardpages.py:296
 msgid "mapping_page_instructions"
 msgstr ""
 "When selecting the metadata field, select the schema from the first combo "
@@ -126,61 +130,61 @@ msgstr ""
 "with the file name to be used as the primary bit stream for the item. This "
 "is optional."
 
-#: wizardpages.py:297
+#: wizardpages.py:300
 msgid "mapping_page_column_heading"
 msgstr "Excel Column Name"
 
-#: wizardpages.py:299
+#: wizardpages.py:302
 msgid "mapping_page_metadata_heading"
 msgstr "Metadata Field"
 
-#: wizardpages.py:320
+#: wizardpages.py:323
 msgid "mapping_page_title_column_label"
 msgstr "Column with title of the item"
 
-#: wizardpages.py:330
+#: wizardpages.py:333
 msgid "mapping_page_item_uuid_column_label"
 msgstr "Column with the UUID of the item"
 
-#: wizardpages.py:340
+#: wizardpages.py:343
 msgid "mapping_page_primary_bitstream_label"
 msgstr "Column with the file name for the primary bitstream"
 
-#: wizardpages.py:350
+#: wizardpages.py:353
 msgid "mapping_page_update_existing_label"
 msgstr "Update the metadata for existing items?"
 
-#: wizardpages.py:358
+#: wizardpages.py:361
 msgid "mapping_page_existing_metadata_to_match_label"
 msgstr "Update metadata of item to match data in Excel?"
 
-#: wizardpages.py:366
+#: wizardpages.py:369
 msgid "mapping_page_remove_extra_existing_metadata_label"
 msgstr "Remove metadata of item that is not in Excel file?"
 
-#: wizardpages.py:397
+#: wizardpages.py:400
 msgid "mapping_page_column_schema_mapping_required"
 msgstr ""
 "Please select the metadata field to be used for at least one column of the "
 "Excel file"
 
-#: wizardpages.py:401
+#: wizardpages.py:404
 msgid "mapping_page_title_column_required"
 msgstr "The column with the title of the item is required."
 
-#: wizardpages.py:406
+#: wizardpages.py:409
 msgid "mapping_page_item_uuid_column_required"
 msgstr "The column with the UUID of the item is required."
 
-#: wizardpages.py:427
+#: wizardpages.py:430
 msgid "file_page_title"
 msgstr "Item Files"
 
-#: wizardpages.py:428
+#: wizardpages.py:431
 msgid "file_page_subtitle"
 msgstr "Select the directory with the item files"
 
-#: wizardpages.py:435
+#: wizardpages.py:438
 msgid "file_page_instructions"
 msgstr ""
 "The directory where the files are stored is chosen using \"Item Directory\". "
@@ -202,71 +206,71 @@ msgstr ""
 "will match files item_1.pdf, item_2.pdf, item_three.pdf, and upload them "
 "with the item."
 
-#: wizardpages.py:439
+#: wizardpages.py:442
 msgid "file_page_item_dir_label"
 msgstr "Item Directory"
 
-#: wizardpages.py:439
+#: wizardpages.py:442
 msgid "file_page_item_dir_select_button"
 msgstr "Browse"
 
-#: wizardpages.py:444
+#: wizardpages.py:447
 msgid "file_page_file_name_column_label"
 msgstr "Column with file name for the item"
 
-#: wizardpages.py:450
+#: wizardpages.py:453
 msgid "file_page_match_file_name_label"
 msgstr "How to match item file names?"
 
-#: wizardpages.py:455
+#: wizardpages.py:458
 msgid "file_page_file_name_extension_label"
 msgstr "Extension of the item files (if not in Excel worksheet)"
 
-#: wizardpages.py:460
+#: wizardpages.py:463
 msgid "file_page_remove_existing_for_duplicate"
 msgstr "Remove files for existing items?"
 
-#: wizardpages.py:520
+#: wizardpages.py:523
 msgid "summary_page_title"
 msgstr "Summary"
 
-#: wizardpages.py:552
+#: wizardpages.py:555
 msgid "summary_page_import_into_collection"
 msgstr "Importing items to collection"
 
-#: wizardpages.py:553
+#: wizardpages.py:556
 msgid "summary_page_using_file"
 msgstr "Excel file with items"
 
-#: wizardpages.py:553
+#: wizardpages.py:556
 msgid "summary_page_file_sheet"
 msgstr "Sheet "
 
-#: wizardpages.py:554
+#: wizardpages.py:557
 msgid "summary_page_title_column"
 msgstr "Title column"
 
-#: wizardpages.py:555
+#: wizardpages.py:558
 msgid "summary_page_item_uuid_column"
 msgstr "Item UUID column"
 
-#: wizardpages.py:556
+#: wizardpages.py:559
 msgid "summary_page_update_existing"
 msgstr "Update the metadata for existing items?"
 
-#: wizardpages.py:557
+#: wizardpages.py:560
 msgid "summary_page_metadata_to_match"
 msgstr "Update metadata of item to match data in Excel?"
 
-#: wizardpages.py:558
+#: wizardpages.py:561
 msgid "summary_page_remove_extra_metadata"
 msgstr "Remove metadata of item that is not in Excel file?"
 
-#: wizardpages.py:559
+#: wizardpages.py:562
 msgid "summary_page_item_directory"
 msgstr "Directory containing files for items"
 
-#: wizardpages.py:576
+#: wizardpages.py:579
 msgid "import_results_page_title"
 msgstr "Import Results"
 
