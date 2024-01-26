@@ -1,6 +1,10 @@
 # Virtual environment
 .venv/
 
+# pyinstaller build and dist
+build/
+dist/
+
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc

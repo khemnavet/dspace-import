@@ -233,6 +233,9 @@ class AuthData:
         self.__cookie_jar = None
         self.__CSRF_token = ''
         self.__jwt_decoded = {"header": "", "payload":"", "signature":""}
+    
+    def __b64_padding(self, token_len) -> str:
+        return '='*(4 - (token_len % 4))
 
     @property
     def bearer_jwt(self):
@@ -252,7 +255,7 @@ class AuthData:
         token_comps = self.__jwt.split(".")
         self.__jwt_decoded["header"] = json.loads(base64.urlsafe_b64decode(token_comps[0]).decode(encoding="utf-8"))
         self.__jwt_decoded["signature"] = token_comps[2]
-        self.__jwt_decoded["payload"] = json.loads(base64.urlsafe_b64decode(token_comps[1]).decode(encoding="utf-8"))
+        self.__jwt_decoded["payload"] = json.loads(base64.urlsafe_b64decode(f"{token_comps[1]}{self.__b64_padding(len(token_comps[1]))}").decode(encoding="utf-8"))
     
     @csrf_token.setter
     def csrf_token(self, token):

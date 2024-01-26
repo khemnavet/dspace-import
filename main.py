@@ -1,7 +1,7 @@
 import tomllib
 import gettext
 import os
-from sys import platform
+import sys
 from PySide6.QtWidgets import QApplication, QWizard
 
 from config import ImporterConfig, ConfigException
@@ -9,9 +9,19 @@ from dataobjects import ImporterData, AuthData
 from metadataservice import MetadataService
 from wizardpages import LoginPage, CollectionPage, ExcelFileSelectPage, MappingPage, FilePage, SummaryPage, ImportResultsPage
 
+# https://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
+def resource(relative_path):
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 if __name__ == "__main__":
     try:
-        with open("config.toml", "rb") as f:
+        with open(resource("config.toml"), "rb") as f:
             config = ImporterConfig(tomllib.load(f))
     except ConfigException as err:
         print(str(err))
@@ -20,7 +30,10 @@ if __name__ == "__main__":
     print(config.dspace_rest_url())
 
     app_name = "dspace_importer"
-    locale_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'locale')
+    #locale_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'locale')
+    locale_dir = resource('locale')
+    print(locale_dir)
+    print(config.locale())
 
     lang_i18n = gettext.translation(app_name, locale_dir, fallback=False, languages=[config.locale()])
     lang_i18n.install()
@@ -39,7 +52,7 @@ if __name__ == "__main__":
 
     wizard = QWizard()
     wizard.setWindowTitle(_("app_title"))
-    if platform == "darwin":
+    if sys.platform == "darwin":
         wizard.setWizardStyle(QWizard.MacStyle)
     else:
         wizard.setWizardStyle(QWizard.ModernStyle)
