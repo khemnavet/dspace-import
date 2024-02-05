@@ -156,32 +156,35 @@ class CollectionPage(DSpaceWizardPages):
         self.registerField("collection*", self.collection_select)
     
     def change_community(self, index):
-        if index > 0: # 0 index is blank
-            curr_dso = self.community_select.itemData(index)
-            # get the sub communities
-            sub_comm_list = self.community_service.get_subcommunities(curr_dso) # list of DSO
-            self.community_select.clear()
-            if curr_dso is None:
-                self.community_select.insertItem(0, "")
-                index = 1
-            else:
-                self.community_select.insertItem(0, curr_dso.name)
-                if curr_dso.parent is None:
-                    self.community_select.insertItem(1, "Back", userData=None)
+        try:
+            if index > 0: # 0 index is blank
+                curr_dso = self.community_select.itemData(index)
+                # get the sub communities
+                sub_comm_list = self.community_service.get_subcommunities(curr_dso) # list of DSO
+                self.community_select.clear()
+                if curr_dso is None:
+                    self.community_select.insertItem(0, "")
+                    index = 1
                 else:
-                    self.community_select.insertItem(1, "Back", userData=self.community_service.get_community_dso(curr_dso.parent))
-                index = 2
-            for sub_comm in sub_comm_list:
-                self.community_select.insertItem(index, sub_comm.name, userData=sub_comm)
-                index = index + 1
+                    self.community_select.insertItem(0, curr_dso.name)
+                    if curr_dso.parent is None:
+                        self.community_select.insertItem(1, "Back", userData=None)
+                    else:
+                        self.community_select.insertItem(1, "Back", userData=self.community_service.get_community_dso(curr_dso.parent))
+                    index = 2
+                for sub_comm in sub_comm_list:
+                    self.community_select.insertItem(index, sub_comm.name, userData=sub_comm)
+                    index = index + 1
 
-            # populate the collections
-            coll_list = self.community_service.get_collections(curr_dso) # list of DSO
-            self.collection_select.clear()
-            index = 0
-            for coll in coll_list:
-                self.collection_select.insertItem(index, coll.name, userData=coll)
-                index = index + 1
+                # populate the collections
+                coll_list = self.community_service.get_collections(curr_dso) # list of DSO
+                self.collection_select.clear()
+                index = 0
+                for coll in coll_list:
+                    self.collection_select.insertItem(index, coll.name, userData=coll)
+                    index = index + 1
+        except CommunityException as err:
+            self._show_critical_message_box(str(err))
 
 
     def initializePage(self) -> None:
@@ -683,6 +686,8 @@ class Worker(QObject):
                 self.progress.emit(f"Error processing bundles for row {row_index} (title {item_title}). {err1}")
             except BitstreamException as err2:
                 self.progress.emit(f"Error processing bitstreams for row {row_index} (title {item_title}). {err2}")
+            except Exception as err3:
+                self.progress.emit(f"Error processing row {row_index} (title {item_title}). {str(err3)}")
         
         print("finished")
         self.finished.emit("Finished import")

@@ -51,3 +51,6 @@ class DspaceAuthService:
         except HTTPError as err:
             print(f"Exception during logon. Error code {err.response.status_code}, reason {err.response.reason}")
             raise AuthException(f"Error during logon. Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception during logon. {str(err1)}")
+            raise AuthException(f"Exception during logon. {str(err1)}")

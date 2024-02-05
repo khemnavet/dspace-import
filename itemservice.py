@@ -31,6 +31,9 @@ class ItemService:
         except HTTPError as err:
             print(f"Exception getting owning collection for item {item_uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
             raise ItemException(f"Error getting owning collection for item {item_uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception getting owning collection for item {item_uuid}. Error: {str(err1)}")
+            raise ItemException(f"Error getting owning collection for item {item_uuid}. Error: {str(err1)}")
     
     def _populate_item(self, item_json) -> Item:
         return Item(item_id=item_json["id"], uuid=item_json["uuid"], name=item_json["name"], handle=item_json["handle"], existing_metadata=item_json["metadata"], in_archive=item_json["inArchive"], discoverable=item_json["discoverable"], withdrawn=item_json["withdrawn"])
@@ -41,6 +44,9 @@ class ItemService:
         except HTTPError as err:
             print(f"Exception getting item for uuid {item_uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
             raise ItemException(f"Error getting item for uuid {item_uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception getting item for uuid {item_uuid}. Error: {str(err1)}")
+            raise ItemException(f"Error getting item for uuid {item_uuid}. Error: {str(err1)}")
 
 
     def _find_bundle(self, item_bundles, bundle_type: BundleType):
@@ -63,6 +69,9 @@ class ItemService:
         except HTTPError as err:
             print(f"Exception getting bundles for item {item.uuid} {item.name}. Error code {err.response.status_code}, reason {err.response.reason}")
             raise ItemException(f"Error getting bundles for item {item. uuid} {item.name}. Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception getting bundles for item {item.uuid} {item.name}. Error: {str(err1)}")
+            raise ItemException(f"Error getting bundles for item {item.uuid} {item.name}. Error: {str(err1)}")
     
     def create_item(self, item: Item, owning_collection: DSO) -> Item:
         try:
@@ -71,6 +80,9 @@ class ItemService:
         except HTTPError as err:
             print(f"Exception creating item {item.name}. Error code {err.response.status_code}, reason {err.response.reason}")
             raise ItemException(f"Error creating item {item.name}. Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception creating item {item.name}. Error: {str(err1)}")
+            raise ItemException(f"Error creating item {item.name}. Error: {str(err1)}")
 
     def update_item(self, item: Item) -> Item:
         try:
@@ -79,5 +91,8 @@ class ItemService:
         except HTTPError as err:
             print(f"Exception updating item {item.uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
             raise ItemException(f"Error updating item {item.uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception updating item {item.uuid}. Error: {str(err1)}")
+            raise ItemException(f"Error updating item {item.uuid}. Error: {str(err1)}")
 
 #

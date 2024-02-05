@@ -38,9 +38,8 @@ class ExcelFileService:
             self.__selected_sheet = sheet_name
             #print(sheet_name)
             self.__dataframe = self.__excel_file_obj.parse(sheet_name=sheet_name, header=0)
-            # self.__import_columns = list(self.__dataframe.columns.values)
-            #print(list(self.__dataframe.columns.values))
-            #print(self.__dataframe.info())
+            # convert all data in the dataframe to string
+            self.__dataframe = self.__dataframe.map(str)
         except Exception as e:
             print(f"Error getting columns from excel file object: {str(e)}")
             raise ExcelFileException(f"Error getting columns from excel file object: {str(e)}")
