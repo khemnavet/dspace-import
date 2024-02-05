@@ -28,6 +28,9 @@ class BitstreamService:
         except HTTPError as err:
             print(f"Exception removing bitstream {bitstream.uuid} ({bitstream.name}). Error code {err.response.status_code}, reason {err.response.reason}")
             raise BitstreamException(f"Error removing bitstream {bitstream.uuid} ({bitstream.name}). Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception removing bitstream {bitstream.uuid} ({bitstream.name}). Error: {str(err1)}")
+            raise BitstreamException(f"Error removing bitstream {bitstream.uuid} ({bitstream.name}). Error: {str(err1)}")
     
     def _populate_bitstream(self, bitstream_json) -> Bitstream:
         return Bitstream(bitstream_json["id"], bitstream_json["uuid"], bitstream_json["name"])
@@ -38,4 +41,7 @@ class BitstreamService:
         except HTTPError as err:
             print(f"Exception creating bitstream for bundle {bundle.name} ({bundle.uuid}). Error code {err.response.status_code}, reason {err.response.reason}")
             raise BitstreamException(f"Error creating bitstream for bundle {bundle.name} ({bundle.uuid}). Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception creating bitstream for bundle {bundle.name} ({bundle.uuid}). Error: {str(err1)}")
+            raise BitstreamException(f"Exception creating bitstream for bundle {bundle.name} ({bundle.uuid}). Error: {str(err1)}")
     

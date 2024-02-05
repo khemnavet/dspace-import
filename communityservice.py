@@ -49,6 +49,9 @@ class CommunityService:
         except HTTPError as err:
             print(f"Exception when getting top communities. Error code {err.response.status_code}, reason {err.response.reason}")
             raise CommunityException(f"Error when getting top communities. Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception when getting top communities. {str(err1)}")
+            raise CommunityException(f"Error when getting top communities. {str(err1)}")
         
     def get_subcommunities(self, community: DSO):
         result = []
@@ -87,6 +90,9 @@ class CommunityService:
                 except HTTPError as err:
                     print(f"Exception getting sub communities for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
                     raise CommunityException(f"Error getting sub communities for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
+                except Exception as err1:
+                    print(f"Exception getting sub communities for {community.name}. Error: {str(err1)}")
+                    raise CommunityException(f"Error getting sub communities for {community.name}. Error: {str(err1)}")
                 
         return result
         
@@ -122,4 +128,7 @@ class CommunityService:
             except HTTPError as err:
                 print(f"Exception getting collections for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
                 raise CommunityException(f"Error getting collections for {community.name}. Error code {err.response.status_code}, reason {err.response.reason}")
+            except Exception as err1:
+                print(f"Exception getting collections for {community.name}. Error: {str(err1)}")
+                raise CommunityException(f"Error getting collections for {community.name}. Error: {str(err1)}")
         return result

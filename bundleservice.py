@@ -30,6 +30,9 @@ class BundleService:
         except HTTPError as err:
             print(f"Exception removing primary bitstream flag for bundle {bundle.uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
             raise BundleException(f"Error removing primary bitstream flag for bundle {bundle.name}. Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception removing primary bitstream flag for bundle {bundle.uuid}. Error: {str(err1)}")
+            raise BundleException(f"Error removing primary bitstream flag for bundle {bundle.name}. Error: {str(err1)}")
     
     def _populate_bitstream(self, bitstream):
         return Bitstream(bitstream_id=bitstream["id"], uuid=bitstream["uuid"], name=bitstream["name"])
@@ -50,6 +53,9 @@ class BundleService:
         except HTTPError as err:
             print(f"Exception getting bitstreams for bundle {bundle.uuid}. Error code {err.response.status_code}, reason {err.response.reason}")
             raise BundleException(f"Exception getting bitstreams for bundle {bundle.name}. Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception getting bitstreams for bundle {bundle.uuid}. Error: {str(err1)}")
+            raise BundleException(f"Error getting bitstreams for bundle {bundle.uuid}. Error: {str(err1)}")
     
     def create_bundle(self, bundle: Bundle, item: Item) -> Bundle:
         try:
@@ -60,6 +66,9 @@ class BundleService:
         except HTTPError as err:
             print(f"Exception creating bundle {bundle.name} for item {item.name} ({item.uuid}). Error code {err.response.status_code}, reason {err.response.reason}")
             raise BundleException(f"Error creating bundle {bundle.name} for item {item.name} ({item.uuid}). Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception creating bundle {bundle.name} for item {item.name} ({item.uuid}). Error: {str(err1)}")
+            raise BundleException(f"Error creating bundle {bundle.name} for item {item.name} ({item.uuid}). Error: {str(err1)}")
     
     def bundle_add_primary_bitstream(self, bundle: Bundle, bitstream: Bitstream):
         try:
@@ -67,3 +76,6 @@ class BundleService:
         except HTTPError as err:
             print(f"Exception setting primary bitstream for bundle {bundle.name} ({bundle.uuid}) to {bitstream.name} ({bitstream.uuid}). Error code {err.response.status_code}, reason {err.response.reason}")
             raise BundleException(f"Error setting primary bitstream for bundle {bundle.name} ({bundle.uuid}) to {bitstream.name} ({bitstream.uuid}). Error code {err.response.status_code}, reason {err.response.reason}")
+        except Exception as err1:
+            print(f"Exception setting primary bitstream for bundle {bundle.name} ({bundle.uuid}) to {bitstream.name} ({bitstream.uuid}). Error: {str(err1)}")
+            raise BundleException(f"Exception setting primary bitstream for bundle {bundle.name} ({bundle.uuid}) to {bitstream.name} ({bitstream.uuid}). Error: {str(err1)}")
