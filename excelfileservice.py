@@ -1,5 +1,5 @@
 from pathlib import Path
-from pandas import ExcelFile, DataFrame, isna
+from pandas import ExcelFile, DataFrame, isna, isnull
 
 class ExcelFileException(Exception):
     def __init__(self, msg):
@@ -39,7 +39,7 @@ class ExcelFileService:
             #print(sheet_name)
             self.__dataframe = self.__excel_file_obj.parse(sheet_name=sheet_name, header=0)
             # convert all data in the dataframe to string
-            self.__dataframe = self.__dataframe.map(str)
+            # self.__dataframe = self.__dataframe.map(str)
         except Exception as e:
             print(f"Error getting columns from excel file object: {str(e)}")
             raise ExcelFileException(f"Error getting columns from excel file object: {str(e)}")
@@ -53,9 +53,13 @@ class ExcelFileService:
         self.__dataframe.reset_index()
 
     def __row_column_value(self, row, column):
-        if isna(row[column]) or len((row[column]).strip()) == 0:
+        # print(f"in __row_column_value, row = {row}, column = {column}, value = {row[column]}")
+        if isnull(row[column]):
             return None
-        return (row[column]).strip()
+        str_value = (str(row[column])).strip()
+        if len(str_value) == 0:
+            return None
+        return str_value
 
     def file_itemuuiud_title(self, file_column, item_uuid_column, title_column):
         for row in self.__dataframe.iterrows(): # row is a tuple, 0 = index, 1 = data
