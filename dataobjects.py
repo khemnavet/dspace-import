@@ -389,11 +389,9 @@ class Item:
         else:
             #print("metadata fields common between database and excel")
             for metadata_field in existing_keys & excel_keys: # intersection - same metadata fields
-                last_position = len(existing_keys)
                 for i in range(len(self.__metadata[metadata_field])):
                     #print(f"add metadata, field: {metadata_field}, position: {last_position}, value: {self.__metadata[metadata_field][i]}")
-                    patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/"+str(last_position), "value": self.__metadata[metadata_field][i]})
-                    last_position = last_position + 1
+                    patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/-", "value": self.__metadata[metadata_field][i]})
         
         print(patch_ops)
         self.__patch_operations = patch_ops
