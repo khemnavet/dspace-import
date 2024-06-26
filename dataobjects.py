@@ -357,12 +357,18 @@ class Item:
         patch_ops = []
         existing_keys = self.__existing_metadata.keys()
         excel_keys = self.__metadata.keys()
+        #print(f"existing keys: {existing_keys}")
+        #print(f"excel keys: {excel_keys}")
 
+        #print("fields in excel file but not on database")
         for metadata_field in excel_keys - existing_keys: # in excel but not on database:
-            patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field, "value": self.__metadata[metadata_field]})
+            #print(f"op - add, field: {metadata_field}, value: {self.__metadata[metadata_field]}")
+            for metadata_value in self.__metadata[metadata_field]:
+                patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/-", "value": metadata_value})
 
         if metadata_to_match:
             if remove_extra_metadata:
+                #print("metadata to match and remove extra metadata")
                 for metadata_field in existing_keys - excel_keys: # on database but not in excel
                     for metadata_value in self.__existing_metadata[metadata_field]:
                         patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field+"/"+str(metadata_value["place"])})
@@ -370,23 +376,26 @@ class Item:
             for metadata_field in existing_keys & excel_keys: # intersection - same metadata fields
                 for i in range(min(len(self.__existing_metadata[metadata_field]), len(self.__metadata[metadata_field]))):
                     # replace
-                    patch_ops.append({"op": "replace", "path": "/metadata/"+metadata_field+"/"+str(i), "value": self.__metadata[metadata_field][i]})
+                    patch_ops.append({"op": "replace", "path": "/metadata/"+metadata_field+"/"+str(self.__existing_metadata[metadata_field][i]["place"]), "value": self.__metadata[metadata_field][i]})
                 
                 for i in range(len(self.__existing_metadata[metadata_field]), len(self.__metadata[metadata_field])):
                     # add
-                    patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/"+str(i), "value": self.__metadata[metadata_field][i]})
+                    patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/-", "value": self.__metadata[metadata_field][i]})
                 
                 for i in range(len(self.__metadata[metadata_field]), len(self.__existing_metadata[metadata_field])):
                     # remove
-                    patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field+"/"+str(i)})
+                    patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field+"/"+str(self.__existing_metadata[metadata_field][i]["place"])})
         
         else:
+            #print("metadata fields common between database and excel")
             for metadata_field in existing_keys & excel_keys: # intersection - same metadata fields
                 last_position = len(existing_keys)
-                for i in range(len(excel_keys)):
+                for i in range(len(self.__metadata[metadata_field])):
+                    #print(f"add metadata, field: {metadata_field}, position: {last_position}, value: {self.__metadata[metadata_field][i]}")
                     patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/"+str(last_position), "value": self.__metadata[metadata_field][i]})
                     last_position = last_position + 1
         
+        print(patch_ops)
         self.__patch_operations = patch_ops
 
     def to_json_str(self) -> str:
