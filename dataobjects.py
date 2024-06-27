@@ -370,21 +370,13 @@ class Item:
             if remove_extra_metadata:
                 #print("metadata to match and remove extra metadata")
                 for metadata_field in existing_keys - excel_keys: # on database but not in excel
-                    for metadata_value in self.__existing_metadata[metadata_field]:
-                        patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field+"/"+str(metadata_value["place"])})
+                    patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field})
         
             for metadata_field in existing_keys & excel_keys: # intersection - same metadata fields
-                for i in range(min(len(self.__existing_metadata[metadata_field]), len(self.__metadata[metadata_field]))):
-                    # replace
-                    patch_ops.append({"op": "replace", "path": "/metadata/"+metadata_field+"/"+str(self.__existing_metadata[metadata_field][i]["place"]), "value": self.__metadata[metadata_field][i]})
-                
-                for i in range(len(self.__existing_metadata[metadata_field]), len(self.__metadata[metadata_field])):
-                    # add
+                #remove the field and add with new value(s)
+                patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field})
+                for i in range(len(self.__metadata[metadata_field])):
                     patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/-", "value": self.__metadata[metadata_field][i]})
-                
-                for i in range(len(self.__metadata[metadata_field]), len(self.__existing_metadata[metadata_field])):
-                    # remove
-                    patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field+"/"+str(self.__existing_metadata[metadata_field][i]["place"])})
         
         else:
             #print("metadata fields common between database and excel")
@@ -393,7 +385,7 @@ class Item:
                     #print(f"add metadata, field: {metadata_field}, position: {last_position}, value: {self.__metadata[metadata_field][i]}")
                     patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/-", "value": self.__metadata[metadata_field][i]})
         
-        print(patch_ops)
+        #print(patch_ops)
         self.__patch_operations = patch_ops
 
     def to_json_str(self) -> str:
