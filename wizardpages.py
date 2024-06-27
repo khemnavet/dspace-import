@@ -1,5 +1,6 @@
 # classes for the pages in the wizard
 import math
+import sys, traceback
 
 from gettext import GNUTranslations
 from PySide6.QtWidgets import QWizard, QWizardPage, QLabel, QLineEdit, QGridLayout, QMessageBox, QComboBox, QPlainTextEdit, QWidget, QScrollArea
@@ -627,6 +628,7 @@ class Worker(QObject):
         self.bundle_service = BundleService(config, auth_data)
         self.bitstream_service = BitstreamService(config, auth_data)
         self.file_service = ItemFileService()
+        self.exclude_metadata = config.exclude_metadata()
         super().__init__()
 
     def __remove_primary_bitstream(self, bundle: Bundle):
@@ -657,7 +659,7 @@ class Worker(QObject):
                         item.metadata = self.excel_service.item_metadata(row_index, self.shared_data.column_mapping)
                         item.name = item_title
                         print(f"updating item {item_title}")
-                        item.set_patch_operations(self.shared_data.remove_extra_metadata, self.shared_data.metadata_to_match)
+                        item.set_patch_operations(self.shared_data.remove_extra_metadata, self.shared_data.metadata_to_match, self.exclude_metadata)
                         self.item_service.update_item(item)
                 else: 
                     print(f"adding item {item_title}")
@@ -681,13 +683,18 @@ class Worker(QObject):
                 self.progress.emit(f"Imported row {row_index} (title {item_title}) successfully.")
 
             except ItemException as err:
-                self.progress.emit(f"Error processing row {row_index} (title {item_title}). {err}")
+                traceback.print_exc(file=sys.stdout)
+                self.progress.emit(f"Error processing row {row_index} (title {item_title}). (Item Exception) {err}")
             except BundleException as err1:
-                self.progress.emit(f"Error processing bundles for row {row_index} (title {item_title}). {err1}")
+                traceback.print_exc(file=sys.stdout)
+                self.progress.emit(f"Error processing bundles for row {row_index} (title {item_title}). (Bundle Exception) {err1}")
             except BitstreamException as err2:
-                self.progress.emit(f"Error processing bitstreams for row {row_index} (title {item_title}). {err2}")
+                traceback.print_exc(file=sys.stdout)
+                self.progress.emit(f"Error processing bitstreams for row {row_index} (title {item_title}). (Bitstream Exception) {err2}")
             except Exception as err3:
-                self.progress.emit(f"Error processing row {row_index} (title {item_title}). {str(err3)}")
+                traceback.print_exc(file=sys.stdout)
+                self.progress.emit(f"Error processing row {row_index} (title {item_title}). (Other Exception) {str(err3)}")
         
         print("finished")
+        self.progress.emit("Finished import")
         self.finished.emit("Finished import")

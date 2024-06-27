@@ -353,9 +353,9 @@ class Item:
     def withdrawn(self, item_withdrawn):
         self.__withdrawn = item_withdrawn
     
-    def set_patch_operations(self, remove_extra_metadata: bool, metadata_to_match: bool):
+    def set_patch_operations(self, remove_extra_metadata: bool, metadata_to_match: bool, metadata_not_to_remove: list):
         patch_ops = []
-        existing_keys = self.__existing_metadata.keys()
+        existing_keys = {key for key in self.__existing_metadata.keys() if key not in metadata_not_to_remove}
         excel_keys = self.__metadata.keys()
         #print(f"existing keys: {existing_keys}")
         #print(f"excel keys: {excel_keys}")

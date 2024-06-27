@@ -7,3 +7,6 @@ wizardHeight = "720"
 
 [DSpace]
 dspaceRestURL = "http://localhost:8081/server"
+
+# metadata fields not to be removed when item metadata is updated - comma delimited list
+metadataNotRemoveUpdate = "dc.identifier.uri, dc.description.provenance, dc.date.available, dc.date.accessioned"
