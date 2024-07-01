@@ -8,11 +8,13 @@ class ConfigException(Exception):
 class ImporterConfig:
     WIZARD_WIDTH = "wizardWidth"
     WIZARD_HEIGHT = "wizardHeight"
+    METADATA_NOT_REMOVE = "metadataNotRemoveUpdate"
 
     def __init__(self, config) -> None:
         self.__config = config
         self._validate_positive_integer(self.WIZARD_WIDTH)
         self._validate_positive_integer(self.WIZARD_HEIGHT)
+        self.metadata_not_remove = [m.strip() for m in self.__config["DSpace"]["metadataNotRemoveUpdate"].split(",")]
 
     def _validate_positive_integer(self, setting):
         if not self._is_integer(self.__config[setting]):
@@ -40,3 +42,6 @@ class ImporterConfig:
     
     def window_height(self) -> int:
         return int(self.__config[self.WIZARD_HEIGHT])
+    
+    def exclude_metadata(self) -> list:
+        return self.metadata_not_remove
