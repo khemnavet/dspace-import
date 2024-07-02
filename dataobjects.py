@@ -233,6 +233,7 @@ class AuthData:
         self.__cookie_jar = None
         self.__CSRF_token = ''
         self.__jwt_decoded = {"header": "", "payload":"", "signature":""}
+        self.__username = ''
     
     def __b64_padding(self, token_len) -> str:
         return '='*(4 - (token_len % 4))
@@ -249,6 +250,10 @@ class AuthData:
     def auth_cookie(self):
         return self.__cookie_jar
     
+    @property
+    def username(self):
+        return self.__username
+    
     @bearer_jwt.setter
     def bearer_jwt(self, token):
         self.__jwt = token
@@ -264,6 +269,10 @@ class AuthData:
     @auth_cookie.setter
     def auth_cookie(self, cookie):
         self.__cookie_jar = cookie
+    
+    @username.setter
+    def username(self, user):
+        self.__username = user
     
 
 #############################################################################################################################################

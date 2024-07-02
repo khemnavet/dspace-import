@@ -36,6 +36,9 @@ class DspaceAuthService:
     def __save_jwt(self, response):
         self.__auth_data.bearer_jwt = response.headers["Authorization"].split(" ")[1]
     
+    def __save_username(self, username):
+        self.__auth_data.username = username
+    
     def logon(self, username, password) -> bool:
         try:
             # get the CSRF token and cookie
@@ -47,6 +50,7 @@ class DspaceAuthService:
             response = self.__dspace_auth.password_logon(username, password, self.__auth_data.auth_cookie, self.__auth_data.csrf_token)
             self.__save_cookie_csrf(response)
             self.__save_jwt(response)
+            self.__save_username(username)
 
         except HTTPError as err:
             print(f"Exception during logon. Error code {err.response.status_code}, reason {err.response.reason}")
