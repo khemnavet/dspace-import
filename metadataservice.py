@@ -2,6 +2,7 @@ from dspacerequest import PublicDspaceRequest
 from config import ImporterConfig
 from metadata import MetadataSchema, MetadataField
 from dataobjects import AuthData
+from datetime import datetime, timezone
 
 class MetadataService:
     _self = None
@@ -14,6 +15,7 @@ class MetadataService:
         return cls._self
     
     def __init__(self, config: ImporterConfig, auth_data: AuthData):
+        self.__auth_data = auth_data
         self.__public_dspace_request = PublicDspaceRequest(config.dspace_rest_url(), auth_data)
     
     def populate_metadata_schemas(self) -> dict:
@@ -37,3 +39,6 @@ class MetadataService:
                         metadata_schemas[schema["prefix"]].add(MetadataField(field["id"], field["element"], field["qualifier"]))
                 curr_page = curr_page + 1
         return metadata_schemas
+    
+    def provenance_metadata_value(self, template: str) -> str:
+        return template.replace("{s}", self.__auth_data.username).replace("{t}", datetime.now(timezone.utc).isoformat()+" UTC")
