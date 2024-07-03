@@ -1,5 +1,6 @@
 from pathlib import Path
-from pandas import ExcelFile, DataFrame, isna, isnull
+from pandas import ExcelFile
+from utils import Utils
 
 class ExcelFileException(Exception):
     def __init__(self, msg):
@@ -52,30 +53,26 @@ class ExcelFileService:
     def reset_file(self):
         self.__dataframe.reset_index()
 
-    def __row_column_value(self, row, column):
-        # print(f"in __row_column_value, row = {row}, column = {column}, value = {row[column]}")
-        if isnull(row[column]):
-            return None
-        str_value = (str(row[column])).strip()
-        if len(str_value) == 0:
-            return None
-        return str_value
-
     def file_itemuuiud_title(self, file_column, item_uuid_column, title_column):
         for row in self.__dataframe.iterrows(): # row is a tuple, 0 = index, 1 = data
             index = row[0]
             data = row[1]
-            file = self.__row_column_value(data, file_column)
-            itemuuid = self.__row_column_value(data, item_uuid_column) if len(item_uuid_column) > 0 else None
+            file = Utils.row_column_value(data, file_column)
+            itemuuid = Utils.row_column_value(data, item_uuid_column) if len(item_uuid_column) > 0 else None
             
             yield (index, file, itemuuid, data[title_column])
     
     def num_rows(self):
         return len(self.__dataframe.index)
     
+    def get_row(self, row_num):
+        if row_num > len(self.__dataframe.index):
+            return {}
+        return self.__dataframe.iloc[row_num]
+    
     def primary_bitstream_value(self, row_num, primary_bitstream_column):
         row = self.__dataframe.iloc[row_num]
-        return self.__row_column_value(row, primary_bitstream_column)
+        return Utils.row_column_value(row, primary_bitstream_column)
     
     def item_metadata(self, row_num, metadata_mapping: dict):
         result = {}
@@ -84,7 +81,7 @@ class ExcelFileService:
             row_metadata = []
             place = 0
             for col in columns:
-                col_value = self.__row_column_value(row, col)
+                col_value = Utils.row_column_value(row, col)
                 if col_value is not None:
                     row_metadata.append({"value": col_value, "language": None, "authority": None, "confidence": -1, "place": place})
                     place = place + 1

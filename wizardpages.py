@@ -19,6 +19,7 @@ from utils import Utils
 from itemservice import ItemService, ItemException
 from bundleservice import BundleService, BundleException
 from bitstreamservice import BitstreamService, BitstreamException
+from metadataservice import MetadataService
 
 class DSpaceWizardPages(QWizardPage):
     def __init__(self, config: ImporterConfig, lang_i18n: GNUTranslations) -> None:
@@ -628,6 +629,7 @@ class Worker(QObject):
         self.bundle_service = BundleService(config, auth_data)
         self.bitstream_service = BitstreamService(config, auth_data)
         self.file_service = ItemFileService()
+        self.metadata_service = MetadataService(config, auth_data)
         self.exclude_metadata = config.exclude_metadata()
         super().__init__()
 
@@ -656,14 +658,14 @@ class Worker(QObject):
                         original = self.item_service.bundle(item, [BundleType.ORIGINAL])[0]
                     
                     if self.shared_data.update_existing:
-                        item.metadata = self.excel_service.item_metadata(row_index, self.shared_data.column_mapping)
+                        item.metadata = self.metadata_service.item_metadata(self.excel_service.get_row(row_index), self.shared_data.column_mapping)
                         item.name = item_title
                         print(f"updating item {item_title}")
-                        item.set_patch_operations(self.shared_data.remove_extra_metadata, self.shared_data.metadata_to_match, self.exclude_metadata)
+                        item.patch_operations = self.metadata_service.item_patch_operations(item, self.shared_data.remove_extra_metadata, self.shared_data.metadata_to_match, self.exclude_metadata)
                         self.item_service.update_item(item)
                 else: 
                     print(f"adding item {item_title}")
-                    item = self.item_service.create_item(Item(name=item_title, metadata=self.excel_service.item_metadata(row_index, self.shared_data.column_mapping)), self.shared_data.selected_collection)
+                    item = self.item_service.create_item(Item(name=item_title, metadata=self.metadata_service.item_metadata_with_provenance(self.excel_service.get_row(row_index), self.shared_data.column_mapping)), self.shared_data.selected_collection)
                     original = None
                 
                 if len(self.shared_data.primary_bitstream_column) > 0:

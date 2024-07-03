@@ -233,6 +233,7 @@ class AuthData:
         self.__cookie_jar = None
         self.__CSRF_token = ''
         self.__jwt_decoded = {"header": "", "payload":"", "signature":""}
+        self.__username = ''
     
     def __b64_padding(self, token_len) -> str:
         return '='*(4 - (token_len % 4))
@@ -248,6 +249,10 @@ class AuthData:
     @property
     def auth_cookie(self):
         return self.__cookie_jar
+    
+    @property
+    def username(self):
+        return self.__username
     
     @bearer_jwt.setter
     def bearer_jwt(self, token):
@@ -265,6 +270,10 @@ class AuthData:
     def auth_cookie(self, cookie):
         self.__cookie_jar = cookie
     
+    @username.setter
+    def username(self, user):
+        self.__username = user
+    
 
 #############################################################################################################################################
 
@@ -280,6 +289,7 @@ class Item:
         self.__discoverable = discoverable
         self.__withdrawn = withdrawn
         self.__type = "item"
+        self.__patch_operations = []
 
     @property
     def item_id(self):
@@ -317,6 +327,10 @@ class Item:
     def withdrawn(self):
         return self.__withdrawn
     
+    @property
+    def patch_operations(self):
+        return self.__patch_operations
+
     @item_id.setter
     def item_id(self, itemid):
         self.__item_id = itemid
@@ -353,39 +367,8 @@ class Item:
     def withdrawn(self, item_withdrawn):
         self.__withdrawn = item_withdrawn
     
-    def set_patch_operations(self, remove_extra_metadata: bool, metadata_to_match: bool, metadata_not_to_remove: list):
-        patch_ops = []
-        existing_keys = {key for key in self.__existing_metadata.keys() if key not in metadata_not_to_remove}
-        excel_keys = self.__metadata.keys()
-        #print(f"existing keys: {existing_keys}")
-        #print(f"excel keys: {excel_keys}")
-
-        #print("fields in excel file but not on database")
-        for metadata_field in excel_keys - existing_keys: # in excel but not on database:
-            #print(f"op - add, field: {metadata_field}, value: {self.__metadata[metadata_field]}")
-            for metadata_value in self.__metadata[metadata_field]:
-                patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/-", "value": metadata_value})
-
-        if metadata_to_match:
-            if remove_extra_metadata:
-                #print("metadata to match and remove extra metadata")
-                for metadata_field in existing_keys - excel_keys: # on database but not in excel
-                    patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field})
-        
-            for metadata_field in existing_keys & excel_keys: # intersection - same metadata fields
-                #remove the field and add with new value(s)
-                patch_ops.append({"op": "remove", "path": "/metadata/"+metadata_field})
-                for i in range(len(self.__metadata[metadata_field])):
-                    patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/-", "value": self.__metadata[metadata_field][i]})
-        
-        else:
-            #print("metadata fields common between database and excel")
-            for metadata_field in existing_keys & excel_keys: # intersection - same metadata fields
-                for i in range(len(self.__metadata[metadata_field])):
-                    #print(f"add metadata, field: {metadata_field}, position: {last_position}, value: {self.__metadata[metadata_field][i]}")
-                    patch_ops.append({"op": "add", "path": "/metadata/"+metadata_field+"/-", "value": self.__metadata[metadata_field][i]})
-        
-        #print(patch_ops)
+    @patch_operations.setter
+    def patch_operations(self, patch_ops):
         self.__patch_operations = patch_ops
 
     def to_json_str(self) -> str:
@@ -393,7 +376,7 @@ class Item:
         if len(self.__item_id) > 0:
             item_json["id:"] = self.__item_id
         if len(self.__uuid) > 0:
-            item_json["name"] = self.__uuid
+            item_json["uuid"] = self.__uuid
         item_json["name"] = self.__name
         if len(self.__handle) > 0:
             item_json["handle"] = self.__handle
