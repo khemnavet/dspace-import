@@ -14,6 +14,6 @@ metadataNotRemoveUpdate = "dc.identifier.uri, dc.description.provenance, dc.date
 # set provenance.enabled to true to activate this option, false to deactivate
 # provenance value for insert and update, use place holders for current user - {u}, current timestamp - {t}
 provenance.enabled = "true"
-provenance.metadata.field = "dc.description.provenance"
+provenance.metadata-field = "dc.description.provenance"
 provenance.add = "Added to DSpace by {u} on {t} using batch upload"
 provenance.update = "Updated by {u} on {t} using batch upload"

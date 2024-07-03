@@ -47,14 +47,14 @@ class ImporterConfig:
         return self.metadata_not_remove
     
     def is_provenance_enabled(self) -> bool:
-        return self.__config["DSpace"]["provenance.enabled"] == "true"
+        return self.__config["DSpace"]["provenance"]["enabled"] == "true"
     
     def provenance_metadata_field(self) -> str:
-        return self.__config["DSpace"]["provenance.metadata.field"]
+        return self.__config["DSpace"]["provenance"]["metadata-field"]
     
     def provenance_add_value(self) -> str:
-        return self.__config["DSpace"]["provenance.add"]
+        return self.__config["DSpace"]["provenance"]["add"]
     
     def provenance_update_value(self) -> str:
-        return self.__config["DSpace"]["provenance.update"]
+        return self.__config["DSpace"]["provenance"]["update"]
     
