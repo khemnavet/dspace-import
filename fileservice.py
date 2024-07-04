@@ -14,10 +14,19 @@ class ItemFileService:
     
     def item_files(self, file_name: str, file_name_matching: ItemFileMatchType, file_extension: str, item_directory: str) -> list:
         item_dir = Path(item_directory)
+        files = []
 
         if file_name_matching == ItemFileMatchType.EXACT:
-            file = item_dir/(file_name.strip()+file_extension)
-            return [file] if file.exists() else []
+            # file_name may be multiple files with optional description for each
+            # file1.ext|file1 description;file2.ext|file2 description
+            for file_desc in file_name.strip().split(";"):
+                fd = (file_desc+"|").split("|")
+                file = item_dir/(fd[0].strip()+file_extension)
+                if file.exists():
+                    files.append({"file": file, "description": fd[1].strip()})
         
         if file_name_matching == ItemFileMatchType.BEGINS:
-            return list(item_dir.glob(file_name+"*"+file_extension))
+            for file in list(item_dir.glob(file_name+"*"+file_extension)):
+                files.append({"file":file, "description": ""})
+
+        return files

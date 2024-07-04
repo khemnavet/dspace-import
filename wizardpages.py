@@ -646,7 +646,7 @@ class Worker(QObject):
 
     def run(self):
         for row_index, file_name, item_uuid, item_title in self.excel_service.file_itemuuiud_title(self.shared_data.file_name_column, self.shared_data.item_uuid_column, self.shared_data.title_column):
-            print(f"processing row {row_index}")
+            print(f"processing row {row_index}, title {item_title}, item uuid {item_uuid}")
             try:
                 if item_uuid is not None:
                     item = self.item_service.get_item(item_uuid)
@@ -678,8 +678,9 @@ class Worker(QObject):
                         original = self.bundle_service.create_bundle(Bundle(bundle_type=BundleType.ORIGINAL), item)
                     # bitstreams
                     for file in self.file_service.item_files(file_name, self.shared_data.file_name_matching, self.shared_data.file_extension, self.shared_data.item_directory):
-                        bitstream = self.bitstream_service.create_bitstream(original, file)
-                        if primary_file is not None and file.name == primary_file+self.shared_data.file_extension:
+                        # file is a list of dict("file", "description")
+                        bitstream = self.bitstream_service.create_bitstream(original, file["file"], self.metadata_service.file_metadata(file["file"].name, file["description"]))
+                        if primary_file is not None and file["file"].name == primary_file+self.shared_data.file_extension:
                             self.__remove_primary_bitstream(original)
                             self.bundle_service.bundle_add_primary_bitstream(original, bitstream)
                 self.progress.emit(f"Imported row {row_index} (title {item_title}) successfully.")

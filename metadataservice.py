@@ -102,3 +102,9 @@ class MetadataService:
 
         #print(patch_ops)
         return patch_ops
+
+    def file_metadata(self, file_name: str, file_description: str) -> dict:
+        metadata = {"name": file_name}
+        if len(file_description) > 0:
+            metadata["metadata"] = {"dc.description": [{"value": file_description, "language": None, "authority": None, "confidence": -1, "place": 0}]}
+        return metadata

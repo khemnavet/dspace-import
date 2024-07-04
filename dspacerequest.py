@@ -1,5 +1,6 @@
 from dataobjects import AuthData
 import requests
+from requests_toolbelt import MultipartEncoder
 from pathlib import Path
 import mimetypes
 
@@ -162,7 +163,12 @@ class DspaceBitstreamRequest(DspaceRequest):
         req = requests.delete(f"{self.dspaceRestURL}/api/core/bitstreams/{bitstream_uuid}", headers={"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token}, cookies=self.authData.auth_cookie)
         return self.success_true(req, requests.codes.no_content)
 
-    def new_bitstream(self, bundle_uuid, file: Path):
-        files = [('file', (file.name, open(file, "rb"), mimetypes.types_map[file.suffix.lower()]))]
-        req = requests.post(f"{self.dspaceRestURL}/api/core/bundles/{bundle_uuid}/bitstreams", headers={"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token, "Accept": "application/json"}, cookies=self.authData.auth_cookie, data={}, files=files)
+    def new_bitstream(self, bundle_uuid, file: Path, file_metadata_json):
+        m_encoder = MultipartEncoder(
+            fields={
+                'properties': file_metadata_json,
+                'file': (file.name, open(file, "rb"), mimetypes.types_map[file.suffix.lower()])
+            }
+        )
+        req = requests.post(f"{self.dspaceRestURL}/api/core/bundles/{bundle_uuid}/bitstreams", headers={"Authorization": self.authData.bearer_jwt, "X-XSRF-TOKEN": self.authData.csrf_token, "Accept": "application/json", "Content-Type": m_encoder.content_type}, cookies=self.authData.auth_cookie, data=m_encoder)
         return self.success(req, requests.codes.created)
