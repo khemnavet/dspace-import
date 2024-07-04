@@ -3,6 +3,7 @@ from dspacerequest import DspaceBitstreamRequest
 from dataobjects import Bitstream, Bundle, AuthData
 from requests import HTTPError
 from pathlib import Path
+from json import dumps
 
 class BitstreamException(Exception):
     def __init__(self, msg):
@@ -35,9 +36,9 @@ class BitstreamService:
     def _populate_bitstream(self, bitstream_json) -> Bitstream:
         return Bitstream(bitstream_json["id"], bitstream_json["uuid"], bitstream_json["name"])
     
-    def create_bitstream(self, bundle: Bundle, file: Path) -> Bitstream:
+    def create_bitstream(self, bundle: Bundle, file: Path, file_metadata: dict) -> Bitstream:
         try:
-            return self._populate_bitstream(self._bitstream_request.new_bitstream(bundle.uuid, file))
+            return self._populate_bitstream(self._bitstream_request.new_bitstream(bundle.uuid, file, dumps(file_metadata)))
         except HTTPError as err:
             print(f"Exception creating bitstream for bundle {bundle.name} ({bundle.uuid}). Error code {err.response.status_code}, reason {err.response.reason}")
             raise BitstreamException(f"Error creating bitstream for bundle {bundle.name} ({bundle.uuid}). Error code {err.response.status_code}, reason {err.response.reason}")
