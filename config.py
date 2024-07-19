@@ -8,7 +8,6 @@ class ConfigException(Exception):
 class ImporterConfig:
     WIZARD_WIDTH = "wizardWidth"
     WIZARD_HEIGHT = "wizardHeight"
-    METADATA_NOT_REMOVE = "metadataNotRemoveUpdate"
 
     def __init__(self, config) -> None:
         self.__config = config
