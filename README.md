@@ -37,7 +37,6 @@ The configuration values are stored in the file `config.toml`. The configuration
 
     | Key | Description |
     | --- | --- |
-    | `appMainTitle` | The name that appears on the title bar of the application. |
     | `locale` | The language the UI components are displayed in. Currently `en` is supported. | 
     | `wizardWidth` | The width of the GUI window. | 
     | `wizardHeight` | The height of the GUI window. | 
@@ -45,7 +44,7 @@ The configuration values are stored in the file `config.toml`. The configuration
     | `metadataNotRemoveUpdate` | A comma delimited list of metadata fields not to be changed or removed when an item is updated by the application. The following are set `dc.identifier.uri, dc.description.provenance, dc.date.available, dc.date.accessioned` |
     | `provenance.enabled` | A flag to indicate if to add provenance metadata when items are uploaded or updated. The key is set to `true` to enable. |
     | `provenance.metadata-field` | The metadata field that would be used to store the provenance information |
-    | `provenance.add` | The value of the provenance metadata field when items are added. The following placeholders can be used: <ul><li>{u} - This is replaced by the email address of the user logged on to the application.</li><li>{t} - This is replaced by the current timestamp (UTC).</li></ul>  
+    | `provenance.add` | The value of the provenance metadata field when items are added. The following placeholders can be used: <ul><li>{u} - This is replaced by the email address of the user logged on to the application.</li><li>{t} - This is replaced by the current timestamp (UTC).</li></ul>  |
 
     Edit the values to match the environment.
 8. Start the application.  
