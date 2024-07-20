@@ -408,8 +408,8 @@ class MappingPage(DSpaceWizardPages):
         if self.title_select.currentIndex() == 0:
             self._show_critical_message_box(_("mapping_page_title_column_required"))
             return False
-        # if update existing is YES or remove extra metadata is YES, item uuid column has to be chosen
-        if self.update_existing.selected_option()[0] == YesNo.YES or self.remove_extra_metadata.selected_option()[0] == YesNo.YES:
+        # if update existing is YES, item uuid column has to be chosen
+        if self.update_existing.selected_option()[0] == YesNo.YES:
             if self.item_uuid_select.currentIndex() == 0:
                 self._show_critical_message_box(_("mapping_page_item_uuid_column_required"))
                 return False
