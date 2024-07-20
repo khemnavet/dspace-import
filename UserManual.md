@@ -86,3 +86,25 @@ The `Next >` button is activated when a collection is selected. When clicked, th
 
 The Excel file is chosen from the file system using the `Browse` button. When the Excel file is chosen, the names of the worksheets in the file are shown in the `Select the sheet to import` select. The `Next >` button is activated when the worksheet is chosen. When clicked, the form to map the columns in the Excel worksheet to DSpace metadata fields is displayed (figure 5).
 
+<figure>
+<img src="images/importer-mapping.png" alt="Metadata Mapping">
+<figcaption><b>Figure 5</b>: Metadata mapping</figcaption>
+</figure>
+
+The column headings from the Excel worksheet are displayed on the left side of the form. Next to each column name are two dropdown lists. The first one has the metadata schemas in DSpace. The second has the metadata fields for the selected schema. If the metadata schema is changed, the metadata fields for that schema are displayed in the second dropdown list.
+
+The column containing the file names (if present in the Excel worksheet) does not have to be mapped to a metadata field. If the Excel worksheet has a column to identify the primary bitstream for the row, that column does not have to be mapped to a metadata field. The application expects at least one of the remaining columns to be mapped to a metadata field. The columns that are not mapped will be ignored (the data in those columns will not be uploaded to DSpace).
+
+Below the column mapping, are three dropdown lists containing the column names:
+
+- The first is to select the column containing the title of the item. This is required.
+- The second is to select the column containing the UUID of the item. This is required when updating items in DSpace. The application checks that the UUID entered belongs to an item existing in the selected collection. This is left blank when items are being added to DSpace.
+- The third is to select the column containing the name of the file that will be the primary bitstream for the item. This is optional. If the Excel worksheet has a column for identifying the primary bitstream but is empty for some rows, the application will not set the primary bitstream for those rows.
+
+Below these dropdown lists, are three No/Yes radio controls (No is selected by default):
+
+- The first asks if to update the metadata for existing items. This required the column containing the UUID of the items to update to be set. This radio control can be set to No of the column containing the UUID of the items is set, however, and can be used to change files for the items without modifying the metadata, for example.
+- The second asks if to update the metadata of the matched item to match the data in Excel. If this is set to No, the values in the Excel worksheet are **added** to the mapped metadata field (the existing metadata are not removed). If it is set to Yes, the existing metadata values are **replaced** with the values in the Excel worksheet. This takes effect if the **first radio control** is set to **Yes**.
+- The third question asks if to remove the metadata of the matched item that are not in the Excel worksheet. If this is set to Yes, the metadata fields not in the mapping above and those not defined in `metadataNotRemoveUpdate` configuration (in `config.toml`), are removed from the matched item. If this is set to No, the metadata fields are not removed. This takes effect if the **second radio control** is set to **Yes**.
+
+The `Next >` button is activated when at least one column/metadata mapping is set, the column with the title of the item is identified, and if items are to be updated, the column containing the UUID of the items is set. When clicked, the form to choose the directory containing the files to be uploaded is shown (figure 6).
