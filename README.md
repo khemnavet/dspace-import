@@ -42,9 +42,15 @@ The configuration values are stored in the file `config.toml`. The configuration
     | `wizardHeight` | The height of the GUI window. | 
     | `dspaceRestURL` | The URL of the DSpace REST server. | 
     | `metadataNotRemoveUpdate` | A comma delimited list of metadata fields not to be changed or removed when an item is updated by the application. The following are set `dc.identifier.uri, dc.description.provenance, dc.date.available, dc.date.accessioned` |
-    | `provenance.enabled` | A flag to indicate if to add provenance metadata when items are uploaded or updated. The key is set to `true` to enable. |
-    | `provenance.metadata-field` | The metadata field that would be used to store the provenance information |
-    | `provenance.add` | The value of the provenance metadata field when items are added. The following placeholders can be used: <ul><li>{u} - This is replaced by the email address of the user logged on to the application.</li><li>{t} - This is replaced by the current timestamp (UTC).</li></ul>  |
+    | `provenance.enabled` | A flag to indicate if to add provenance metadata when items are uploaded or updated. The key is set to `true` to enable or `false` for the application not to add the provenance metadata field. |
+    | `provenance.metadata-field` | The metadata field that would be used to store the provenance information. This field is added to the metadata submitted to DSpace if `provenance.enabled` is set to `true`.|
+    | `provenance.add` | The value of the provenance metadata field when items are added. |
+    | `provenance.update` | The value of the provenance metadata field when items are uodated. |
+    
+    The following place holders can be used within the `provenance.add` and `provenance.update` strings:  
+
+     - {u} - This is replaced by the email address of the user logged on to the application.
+     - {t} - This is replaced by the current timestamp (UTC).
 
     Edit the values to match the environment.
 8. Start the application.  
