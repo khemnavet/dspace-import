@@ -103,8 +103,28 @@ Below the column mapping, are three dropdown lists containing the column names:
 
 Below these dropdown lists, are three No/Yes radio controls (No is selected by default):
 
-- The first asks if to update the metadata for existing items. This required the column containing the UUID of the items to update to be set. This radio control can be set to No of the column containing the UUID of the items is set, however, and can be used to change files for the items without modifying the metadata, for example.
-- The second asks if to update the metadata of the matched item to match the data in Excel. If this is set to No, the values in the Excel worksheet are **added** to the mapped metadata field (the existing metadata are not removed). If it is set to Yes, the existing metadata values are **replaced** with the values in the Excel worksheet. This takes effect if the **first radio control** is set to **Yes**.
-- The third question asks if to remove the metadata of the matched item that are not in the Excel worksheet. If this is set to Yes, the metadata fields not in the mapping above and those not defined in `metadataNotRemoveUpdate` configuration (in `config.toml`), are removed from the matched item. If this is set to No, the metadata fields are not removed. This takes effect if the **second radio control** is set to **Yes**.
+- The first asks if to update the metadata for existing items. This required the column containing the UUID of the items to update to be set. This radio control can be set to `No` of the column containing the UUID of the items is set, however, and can be used to change files for the items without modifying the metadata, for example.
+- The second asks if to update the metadata of the matched item to match the data in Excel. If this is set to `No`, the values in the Excel worksheet are **added** to the mapped metadata field (the existing metadata are not removed). If it is set to `Yes`, the existing metadata values are **replaced** with the values in the Excel worksheet. This takes effect if the **first radio control** is set to `Yes`.
+- The third question asks if to remove the metadata of the matched item that are not in the Excel worksheet. If this is set to `Yes`, the metadata fields not in the mapping above and those not defined in `metadataNotRemoveUpdate` configuration (in `config.toml`), are removed from the matched item. If this is set to `No`, the metadata fields are not removed. This takes effect if the **second radio control** is set to `Yes`.
 
 The `Next >` button is activated when at least one column/metadata mapping is set, the column with the title of the item is identified, and if items are to be updated, the column containing the UUID of the items is set. When clicked, the form to choose the directory containing the files to be uploaded is shown (figure 6).
+
+<figure>
+<img src="images/importer-item-files.png" alt="Item files">
+<figcaption><b>Figure 6</b>: Item files</figcaption>
+</figure>
+
+The fields on this form are optional. If the Item Directory is left blank, the application will not upload any files.
+
+| Field | Notes |
+| ---   | ---   |
+| Item Directory | This is the directory containing the files to upload. Use the `Browse` button to select the directory. This field can be left blank. If it is blank, the application will not upload any files. |
+| Column with file name for the item | This is a dropdown list of the column names from the Excel worksheet. The name of the column containing the names of the files to upload is chosen. |
+| How to match item file names? | This indicates how the names entered in the Excel worksheet are used to search for files in the item directory. If schemes 1 or 2 (as outlined in the [Files](#files) section) is used, the `Exact Match` option is chosen. If scheme 3 is used, the `Begins with column value` is chosen. | 
+| Extension of the item files | The root of the file name can be without the extension entered in the Excel worksheet. This applies to schemes 1 and 3 from the [Files](#files) section. The extension is entered in this field. |
+| Remove files for existing items? | This takes effect if the radio control to update the metadata for existing items in `Metadata mapping` form. If set to `Yes` the existing files are removed. If set to `No` the new files are added without removing the existing files. |
+
+When `Next >` is clicked, the application checks that the files entered in the Excel worksheet are present in the file directory selected. If items are to be updated, it checks that the UUIDs entered in the Excel worksheet are for items in the selected collection. If either of these fail, the list of row numbers and titles are displayed. If there are no problems, a summary of the choices is displayed (figure 7).
+
+
+Click on the `Commit` button to import the items into DSpace. The application displays the title and a status of the import process. `Finished Import` is displayed when the import process is completed.
