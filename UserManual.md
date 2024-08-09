@@ -4,7 +4,7 @@ The application is used to batch add items to a collection in DSpace. The applic
 
 ## The Excel File
 
-The data can be uploaded from a single worksheet at a time. The worksheet has one item per row. The first row has the column headings. The column heading names can be repeated. The column heading names are mapped to metadata elements in DSpace. 
+The data can be uploaded from a single worksheet at a time. The worksheet has one item per row. The first row has column headings. The column heading names can be repeated. The column heading names are mapped to metadata elements in DSpace. 
 
 The Excel worksheet must have a column for the title of the item. This is required when items are being added or the metadata of existing items updated. 
 
@@ -66,7 +66,7 @@ The import is done by a DSpace user. The user will need at least submit access t
 <figcaption><b>Figure 1</b>: Logon Screen</figcaption>
 </figure>
 
-The `Next >` button is activated when a email address and password is entered. The application logs on to DSpace when `Next >` is clicked. If the username and password are invalid, an error message (figure 2) is displayed.
+The `Next >` button is activated when an email address and password is entered. The application logs on to DSpace when `Next >` is clicked. If the username and password are invalid, an error message (figure 2) is displayed.
 
 <figure>
 <img src="images/importer-invalid-login.png" alt="Logon Error Message">
@@ -80,8 +80,8 @@ After successful logon, the form to select the DSpace collection is shown (figur
 <figcaption><b>Figure 3</b>: The collection to import to</figcaption>
 </figure>
 
-The `Community` select contains the communities in DSpace. It first displays the top communities. When a community is selected, the `Community` select is redrawn to display the sub-communities of that community. Any collections in that community are displayed in the `Collection` select.  
-The selected community is displayed in the `Community` select. The next option is called `Back`. This option is used to display the communities previously shown. 
+The `Community` dropdown contains the communities in DSpace. It first displays the top communities. When a community is selected, the `Community` dropdown is redrawn to display the sub-communities of that community. Any collections in that community are displayed in the `Collection` dropdown.  
+The selected community is displayed in the `Community` dropdown. The next option is called `Back`. This option is used to display the communities previously shown. 
 
 The `Next >` button is activated when a collection is selected. When clicked, the form to select the Excel file is displayed (figure 4).
 
@@ -111,7 +111,7 @@ Below these dropdown lists, are three No/Yes radio controls (No is selected by d
 
 - The first asks if to update the metadata for existing items. This required the column containing the UUID of the items to update to be set. This radio control can be set to `No` of the column containing the UUID of the items is set, however, and can be used to change files for the items without modifying the metadata, for example.
 - The second asks if to update the metadata of the matched item to match the data in Excel. If this is set to `No`, the values in the Excel worksheet are **added** to the mapped metadata field (the existing metadata are not removed). If it is set to `Yes`, the existing metadata values are **replaced** with the values in the Excel worksheet. This takes effect if the **first radio control** is set to `Yes`.
-- The third question asks if to remove the metadata of the matched item that are not in the Excel worksheet. If this is set to `Yes`, the metadata fields not in the mapping above and those not defined in `metadataNotRemoveUpdate` configuration (in `config.toml`), are removed from the matched item. If this is set to `No`, the metadata fields are not removed. This takes effect if the **second radio control** is set to `Yes`.
+- The third question asks if to remove the metadata fields of the matched item that are not in the Excel worksheet. If this is set to `Yes`, the metadata fields not in the mapping above and those not defined in `metadataNotRemoveUpdate` configuration (in `config.toml`), are removed from the matched item. If this is set to `No`, the metadata fields are not removed. This takes effect if the **second radio control** is set to `Yes`.
 
 The `Next >` button is activated when at least one column/metadata mapping is set, the column with the title of the item is identified, and if items are to be updated, the column containing the UUID of the items is set. When clicked, the form to choose the directory containing the files to be uploaded is shown (figure 6).
 
@@ -128,7 +128,7 @@ The fields on this form are optional. If the Item Directory is left blank, the a
 | Column with file name for the item | This is a dropdown list of the column names from the Excel worksheet. The name of the column containing the names of the files to upload is chosen. |
 | How to match item file names? | This indicates how the names entered in the Excel worksheet are used to search for files in the item directory. If schemes 1 or 2 (as outlined in the [Files](#files) section) is used, the `Exact Match` option is chosen. If scheme 3 is used, the `Begins with column value` is chosen. | 
 | Extension of the item files | The root of the file name can be without the extension entered in the Excel worksheet. This applies to schemes 1 and 3 from the [Files](#files) section. The extension is entered in this field. |
-| Remove files for existing items? | This takes effect if the radio control to update the metadata for existing items in `Metadata mapping` form. If set to `Yes` the existing files are removed. If set to `No` the new files are added without removing the existing files. |
+| Remove files for existing items? | This takes effect if the radio control to update the metadata for existing items in `Metadata mapping` form is set to `Yes`. If this is set to `Yes`, the existing files are removed. If set to `No` the new files are added without removing the existing files. |
 
 When `Next >` is clicked, the application checks that the files entered in the Excel worksheet are present in the file directory selected. If items are to be updated, it checks that the UUIDs entered in the Excel worksheet are for items in the selected collection. If either of these fail, the list of row numbers and titles are displayed. If there are no problems, a summary of the choices is displayed (figure 7).
 
