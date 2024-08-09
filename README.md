@@ -45,7 +45,7 @@ The configuration values are stored in the file `config.toml`. The configuration
     | `provenance.enabled` | A flag to indicate if to add provenance metadata when items are uploaded or updated. The key is set to `true` to enable or `false` for the application not to add the provenance metadata field. |
     | `provenance.metadata-field` | The metadata field that would be used to store the provenance information. This field is added to the metadata submitted to DSpace if `provenance.enabled` is set to `true`.|
     | `provenance.add` | The value of the provenance metadata field when items are added. |
-    | `provenance.update` | The value of the provenance metadata field when items are uodated. |
+    | `provenance.update` | The value of the provenance metadata field when items are updated. |
     
     The following place holders can be used within the `provenance.add` and `provenance.update` strings:  
 
@@ -59,5 +59,5 @@ The configuration values are stored in the file `config.toml`. The configuration
     ./env/Scripts/python main.py
     ```
     The application will attempt to connect to the DSpace REST URL and if successful a login screen is displayed. The login is a DSpace login.
-
+9. The [User Manual](UserManual.md) has details on using the application.
 
