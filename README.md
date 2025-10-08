@@ -6,7 +6,7 @@ The application is a desktop GUI application built using [Python 3](https://www.
 
 ### Installation
 
-The application requires [Python 3](https://www.python.org/). It has been tested with Python 3.11 and 3.12. The recommended way to install the application is to use a virtual machine. 
+The application requires [Python 3](https://www.python.org/). It has been tested with Python 3.11 and 3.12. The recommended way to install the application is to use a virtual environment. 
 
 Steps:
 
