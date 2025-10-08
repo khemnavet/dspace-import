@@ -42,7 +42,7 @@ class DspaceAuthService:
     def logon(self, username, password) -> bool:
         try:
             # get the CSRF token and cookie
-            self.__save_cookie_csrf(self.__dspace_auth.auth_status())
+            self.__save_cookie_csrf(self.__dspace_auth.csrf())
 
             #print(self.__shared_data.cookie_jar)
             #print(self.__shared_data.csrf_token)

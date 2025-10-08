@@ -22,6 +22,13 @@ class DspaceAuthRequest:
         else:
             req.raise_for_status()
     
+    def csrf(self):
+        req = requests.get(self.__dspaceRestURL + "/api/security/csrf")
+        if req.status_code == requests.codes.no_content:
+            return req
+        else:
+            req.raise_for_status()
+    
     def password_logon(self, username, password, cookie_jar, csrf_token):
         data = {'user':urllib.parse.quote_plus(username, safe='@'),'password':password}
         headers = {"X-XSRF-TOKEN": csrf_token, "Content-Type": "application/x-www-form-urlencoded"}
