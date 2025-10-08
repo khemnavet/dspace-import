@@ -11,7 +11,7 @@ class DspaceRequest:
         self.dspaceRestURL = dspaceRestURL
 
     def auth_status(self):
-        auth_req = requests.get(self.dspaceRestURL + "/api/authn/status", headers={"Accept":"application/json"})
+        auth_req = requests.get(self.dspaceRestURL + "/api/authn/status", headers={"Accept":"application/json", "Authorization": self.authData.bearer_jwt})
         if auth_req.status_code == requests.codes.ok:
             return auth_req
         auth_req.raise_for_status()
@@ -20,9 +20,9 @@ class DspaceRequest:
         resp = self.auth_status()
         if "DSPACE-XSRF-TOKEN" in resp.headers:
             self.authData.csrf_token = resp.headers["DSPACE-XSRF-TOKEN"]
+            self.authData.auth_cookie = resp.cookies
         if "Authorization" in resp.headers:
             self.authData.bearer_jwt = resp.headers["Authorization"].split(" ")[1]
-        self.authData.auth_cookie = resp.cookies
     
     def success(self, req: requests.Response, status_code):
         if req.status_code == status_code:
